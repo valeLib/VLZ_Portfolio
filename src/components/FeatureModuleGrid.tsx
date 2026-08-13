@@ -1,0 +1,543 @@
+// A single feature module: media block (image / video / iframe) paired with a
+// text block (eyebrow + title + body + optional bullets), media positionable
+// left / right / above / below with a responsive stack breakpoint.
+
+import * as React from "react"
+import { useState, useEffect, useRef } from "react"
+import { motion } from "framer-motion"
+
+// ── Font stacks (shared with the rest of the project) ────────────────────
+const FONT_STACKS: Record<string, string> = {
+    "Fredoka":       "'Fredoka', system-ui, sans-serif",
+    "Jua":           "'Jua', system-ui, sans-serif",
+    "IBM Plex Mono": "'IBM Plex Mono', 'Courier New', monospace",
+    "Anonymous Pro": "'Anonymous Pro', 'Courier New', monospace",
+    "Caveat":        "'Caveat', cursive",
+    "Doppio One":    "'Doppio One', system-ui, sans-serif",
+    "Kantumruy Pro": "'Kantumruy Pro', system-ui, sans-serif",
+    "System":        "system-ui, -apple-system, sans-serif",
+    "Inherit":       "inherit",
+}
+
+type MediaType = "image" | "video" | "iframe"
+type MediaPosition = "left" | "right" | "above" | "below"
+
+// Image fields may arrive as a plain URL or as a {src, srcSet, alt} object.
+type ImageInput = string | { src: string; srcSet?: string; alt?: string }
+
+type FeatureModuleGridProps = {
+    // Layout
+    mediaPosition?: MediaPosition
+    breakpointBelow?: number
+    colGap?: number
+    rowGap?: number
+    verticalAlign?: "top" | "center" | "bottom"
+
+    // Media
+    mediaType?: MediaType
+    image?: ImageInput
+    videoSource?: "url" | "file"
+    videoFile?: string
+    videoUrl?: string
+    videoAutoplay?: boolean
+    videoLoop?: boolean
+    videoMuted?: boolean
+    videoControls?: boolean
+    iframeUrl?: string
+    iframeAllow?: string
+
+    // Media frame
+    mediaAspectRatio?: string
+    mediaFit?: "cover" | "contain"
+    mediaBgColor?: string
+    mediaRadius?: number
+    mediaBorderWidth?: number
+    mediaBorderColor?: string
+    showMediaShadow?: boolean
+    mediaShadowX?: number
+    mediaShadowY?: number
+    mediaShadowColor?: string
+
+    // Media badge
+    showMediaBadge?: boolean
+    badgeText?: string
+    badgeBg?: string
+    badgeTextColor?: string
+    badgeBorderColor?: string
+
+    // Text content
+    eyebrow?: string
+    title?: string
+    body?: any // FormattedText (React node) or HTML string
+    bullets?: string
+
+    // Text styling
+    textPadding?: number
+    contentGap?: number
+    accentColor?: string
+
+    eyebrowFont?: string
+    eyebrowSize?: number
+    eyebrowTracking?: number
+    eyebrowColor?: string
+    eyebrowUppercase?: boolean
+
+    titleFont?: string
+    titleWeight?: number
+    titleSize?: number
+    titleColor?: string
+    titleLineHeight?: number
+
+    bodyFont?: string
+    bodyWeight?: number
+    bodySize?: number
+    bodyColor?: string
+    bodyLineHeight?: number
+
+    bullet?: string
+    bulletColor?: string
+    bulletGap?: number
+
+    // Animation
+    animate?: string
+    animationTrigger?: string
+    animationDuration?: number
+    slideDistance?: number
+    bounce?: boolean
+
+    // Background
+    bgColor?: string
+}
+
+const DEFAULTS: Required<FeatureModuleGridProps> = {
+    mediaPosition: "left",
+    breakpointBelow: 720,
+    colGap: 32,
+    rowGap: 24,
+    verticalAlign: "center",
+
+    mediaType: "image",
+    image: "",
+    videoSource: "url",
+    videoFile: "",
+    videoUrl: "",
+    videoAutoplay: true,
+    videoLoop: true,
+    videoMuted: true,
+    videoControls: false,
+    iframeUrl: "",
+    iframeAllow: "fullscreen; clipboard-read; clipboard-write",
+
+    mediaAspectRatio: "4:3",
+    mediaFit: "cover",
+    mediaBgColor: "#f5eee6",
+    mediaRadius: 16,
+    mediaBorderWidth: 2,
+    mediaBorderColor: "#1a1520",
+    showMediaShadow: true,
+    mediaShadowX: 5,
+    mediaShadowY: 5,
+    mediaShadowColor: "#1a1520",
+
+    showMediaBadge: false,
+    badgeText: "01",
+    badgeBg: "",
+    badgeTextColor: "#1a1520",
+    badgeBorderColor: "",
+
+    eyebrow: "MODULE 01",
+    title: "Grid Placement",
+    body: "<p>Players place towers on a grid with hover and snap feedback. The system enforces buildable surfaces and gives instant visual confirmation.</p>",
+    bullets: "",
+
+    textPadding: 0,
+    contentGap: 12,
+    accentColor: "#D4DF68",
+
+    eyebrowFont: "IBM Plex Mono",
+    eyebrowSize: 11,
+    eyebrowTracking: 0.12,
+    eyebrowColor: "#4F58AF",
+    eyebrowUppercase: true,
+
+    titleFont: "Fredoka",
+    titleWeight: 700,
+    titleSize: 28,
+    titleColor: "#1a1520",
+    titleLineHeight: 1.2,
+
+    bodyFont: "Anonymous Pro",
+    bodyWeight: 400,
+    bodySize: 15,
+    bodyColor: "#1a1520",
+    bodyLineHeight: 1.65,
+
+    bullet: "▸",
+    bulletColor: "",
+    bulletGap: 6,
+
+    animate: "slideUp",
+    animationTrigger: "once",
+    animationDuration: 0.55,
+    slideDistance: 24,
+    bounce: false,
+
+    bgColor: "rgba(0,0,0,0)",
+}
+
+export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
+    const {
+        mediaPosition, breakpointBelow, colGap, rowGap, verticalAlign,
+
+        mediaType, image,
+        videoSource, videoFile, videoUrl, videoAutoplay, videoLoop, videoMuted, videoControls,
+        iframeUrl, iframeAllow,
+
+        mediaAspectRatio, mediaFit, mediaBgColor, mediaRadius,
+        mediaBorderWidth, mediaBorderColor,
+        showMediaShadow, mediaShadowX, mediaShadowY, mediaShadowColor,
+
+        showMediaBadge, badgeText, badgeBg, badgeTextColor, badgeBorderColor,
+
+        eyebrow, title, body, bullets,
+
+        textPadding, contentGap, accentColor,
+        eyebrowFont, eyebrowSize, eyebrowTracking, eyebrowColor, eyebrowUppercase,
+        titleFont, titleWeight, titleSize, titleColor, titleLineHeight,
+        bodyFont, bodyWeight, bodySize, bodyColor, bodyLineHeight,
+        bullet, bulletColor, bulletGap,
+
+        animate, animationTrigger, animationDuration, slideDistance, bounce,
+        bgColor,
+    } = { ...DEFAULTS, ...props }
+
+    const imageSrc = typeof image === "string" ? image : (image?.src || "")
+    const imageAlt = typeof image === "string" ? "" : (image?.alt || "")
+
+    const ffEyebrow = FONT_STACKS[eyebrowFont] ?? "inherit"
+    const ffTitle = FONT_STACKS[titleFont] ?? "inherit"
+    const ffBody = FONT_STACKS[bodyFont] ?? "inherit"
+
+    const useViewport = animate !== "none" && (animationTrigger === "once" || animationTrigger === "every")
+    const initialState = animate === "none" ? "visible" : "hidden"
+    const motionTriggerProp: any = animate === "none"
+        ? {}
+        : (useViewport
+            ? { whileInView: "visible", viewport: { once: animationTrigger === "once", amount: 0.2 } }
+            : { animate: "visible" })
+
+    const hidden: any = { opacity: 0 }
+    if (animate === "slideUp") hidden.y = slideDistance
+    else if (animate === "slideDown") hidden.y = -slideDistance
+    else if (animate === "slideLeft") hidden.x = slideDistance
+    else if (animate === "slideRight") hidden.x = -slideDistance
+    else if (animate === "scale") hidden.scale = 0.92
+
+    const motionVariants = { hidden, visible: { opacity: 1, x: 0, y: 0, scale: 1 } }
+    const motionTransition = bounce
+        ? { type: "spring" as const, stiffness: 320, damping: 18, mass: 0.9 }
+        : { duration: animationDuration, ease: [0.22, 1, 0.36, 1] as [number, number, number, number] }
+
+    const [replayKey, setReplayKey] = useState(0)
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+    useEffect(() => {
+        if (animationTrigger === "loop" && animate !== "none") {
+            const intervalMs = Math.max(1500, (animationDuration + 1) * 1000)
+            intervalRef.current = setInterval(() => setReplayKey(k => k + 1), intervalMs)
+            return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
+        }
+    }, [animationTrigger, animate, animationDuration])
+
+    // ── Responsive (only matters for left/right layouts) ─────────────────
+    const rootRef = useRef<HTMLDivElement>(null)
+    const [stacked, setStacked] = useState(false)
+    useEffect(() => {
+        if (!rootRef.current || typeof ResizeObserver === "undefined") return
+        const el = rootRef.current
+        const ro = new ResizeObserver(entries => {
+            for (const entry of entries) {
+                const w = entry.contentRect.width
+                setStacked(w < breakpointBelow)
+            }
+        })
+        ro.observe(el)
+        return () => ro.disconnect()
+    }, [breakpointBelow])
+
+    // ── Aspect ratio parsing ──────────────────────────────────────────────
+    const [arW, arH] = (mediaAspectRatio as string).split(":").map(Number)
+    const aspectPct = (arW && arH) ? `${(arH / arW) * 100}%` : "75%"
+
+    // ── Media renderer ────────────────────────────────────────────────────
+    function renderMedia() {
+        const activeVideoSrc = videoSource === "file" ? videoFile : videoUrl
+
+        if (mediaType === "video" && activeVideoSrc) {
+            return (
+                <video
+                    src={activeVideoSrc}
+                    autoPlay={videoAutoplay}
+                    loop={videoLoop}
+                    muted={videoMuted}
+                    controls={videoControls}
+                    playsInline
+                    style={{
+                        width: "100%", height: "100%",
+                        objectFit: mediaFit, display: "block",
+                    }}
+                />
+            )
+        }
+        if (mediaType === "iframe" && iframeUrl) {
+            return (
+                <iframe
+                    src={iframeUrl}
+                    allow={iframeAllow}
+                    allowFullScreen
+                    style={{
+                        width: "100%", height: "100%",
+                        border: "none", display: "block",
+                        background: mediaBgColor,
+                    }}
+                />
+            )
+        }
+        if (imageSrc) {
+            return (
+                <img
+                    src={imageSrc}
+                    alt={imageAlt || title || ""}
+                    style={{
+                        width: "100%", height: "100%",
+                        objectFit: mediaFit, display: "block",
+                    }}
+                />
+            )
+        }
+        // Placeholder box so the layout keeps its shape when media is missing.
+        return (
+            <div style={{
+                width: "100%", height: "100%",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontFamily: ffEyebrow, fontSize: 11, color: "#aaa",
+                letterSpacing: "0.08em", textTransform: "uppercase" as const,
+            }}>media slot</div>
+        )
+    }
+
+    // ── Bullets parsing ───────────────────────────────────────────────────
+    function parseBullets(text: string): string[] {
+        if (!text) return []
+        return text
+            .split(/\r?\n/)
+            .map(l => l.replace(/^[-•*▸]\s*/, "").trim())
+            .filter(l => l.length > 0)
+    }
+    const bulletList = parseBullets(bullets)
+
+    const eyebrowStyle: React.CSSProperties = {
+        fontFamily: ffEyebrow,
+        fontSize: eyebrowSize,
+        fontWeight: 700,
+        color: eyebrowColor,
+        letterSpacing: `${eyebrowTracking}em`,
+        textTransform: eyebrowUppercase ? ("uppercase" as const) : ("none" as const),
+        lineHeight: 1.4,
+    }
+
+    // ── Body renderer — accepts a React node or an HTML/plain string ─────
+    const bodyStyle: React.CSSProperties = {
+        fontFamily: ffBody,
+        fontWeight: bodyWeight as any,
+        fontSize: bodySize,
+        color: bodyColor,
+        lineHeight: bodyLineHeight,
+        width: "100%",
+    }
+    let bodyContent: React.ReactNode = null
+    if (body != null) {
+        if (typeof body !== "string") {
+            bodyContent = <div style={bodyStyle}>{body as React.ReactNode}</div>
+        } else if (body.length > 0) {
+            const looksLikeHtml = /<\/?[a-z][\s\S]*>/i.test(body)
+            if (looksLikeHtml) {
+                bodyContent = <div style={bodyStyle} dangerouslySetInnerHTML={{ __html: body }} />
+            } else {
+                bodyContent = (
+                    <div style={{ ...bodyStyle, whiteSpace: "pre-wrap" as const }}>{body}</div>
+                )
+            }
+        }
+    }
+
+    // ── Media block ───────────────────────────────────────────────────────
+    const mediaBlock = (
+        <div style={{
+            position: "relative",
+            width: "100%",
+            paddingBottom: aspectPct,
+            background: mediaBgColor,
+            borderRadius: mediaRadius,
+            border: mediaBorderWidth > 0 ? `${mediaBorderWidth}px solid ${mediaBorderColor}` : "none",
+            boxShadow: showMediaShadow
+                ? `${mediaShadowX}px ${mediaShadowY}px 0 ${mediaShadowColor}`
+                : "none",
+            overflow: "hidden",
+            boxSizing: "border-box" as const,
+        }}>
+            <div style={{ position: "absolute", inset: 0 }}>
+                {renderMedia()}
+            </div>
+            {showMediaBadge && badgeText && (
+                <div style={{
+                    position: "absolute",
+                    top: 10,
+                    left: 10,
+                    background: badgeBg || accentColor,
+                    border: `${Math.max(1, mediaBorderWidth)}px solid ${badgeBorderColor || mediaBorderColor}`,
+                    borderRadius: 999,
+                    padding: "4px 10px",
+                    boxShadow: `2px 2px 0 ${badgeBorderColor || mediaBorderColor}`,
+                    fontFamily: ffEyebrow,
+                    fontSize: Math.max(9, eyebrowSize - 1),
+                    fontWeight: 700,
+                    letterSpacing: `${eyebrowTracking}em`,
+                    textTransform: eyebrowUppercase ? ("uppercase" as const) : ("none" as const),
+                    color: badgeTextColor,
+                    pointerEvents: "none" as const,
+                    lineHeight: 1,
+                }}>{badgeText}</div>
+            )}
+        </div>
+    )
+
+    // ── Text block ────────────────────────────────────────────────────────
+    const textBlock = (
+        <div style={{
+            padding: textPadding,
+            display: "flex",
+            flexDirection: "column" as const,
+            gap: contentGap,
+            justifyContent:
+                verticalAlign === "top" ? "flex-start" :
+                verticalAlign === "bottom" ? "flex-end" :
+                "center",
+            boxSizing: "border-box" as const,
+            height: "100%",
+        }}>
+            {eyebrow && (
+                <div style={eyebrowStyle}>{eyebrow}</div>
+            )}
+            {title && (
+                <div style={{
+                    fontFamily: ffTitle,
+                    fontSize: titleSize,
+                    fontWeight: titleWeight,
+                    color: titleColor,
+                    lineHeight: titleLineHeight,
+                }}>{title}</div>
+            )}
+            {bodyContent}
+            {bulletList.length > 0 && (
+                <ul style={{
+                    listStyle: "none",
+                    padding: 0,
+                    margin: 0,
+                    display: "flex",
+                    flexDirection: "column" as const,
+                    gap: bulletGap,
+                }}>
+                    {bulletList.map((b, bi) => (
+                        <li key={bi} style={{
+                            display: "flex",
+                            gap: 10,
+                            alignItems: "flex-start",
+                            fontFamily: ffBody,
+                            fontSize: bodySize,
+                            color: bodyColor,
+                            lineHeight: bodyLineHeight,
+                        }}>
+                            <span style={{
+                                color: bulletColor || accentColor,
+                                lineHeight: bodyLineHeight,
+                                flexShrink: 0,
+                            }}>{bullet}</span>
+                            <span>{b}</span>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
+    )
+
+    // ── Compose layout based on mediaPosition ────────────────────────────
+    const effectivePosition: MediaPosition =
+        stacked && (mediaPosition === "left" || mediaPosition === "right")
+            ? "above"
+            : mediaPosition
+
+    let gridStyle: React.CSSProperties = {}
+    let children: React.ReactNode[] = []
+
+    switch (effectivePosition) {
+        case "left":
+            gridStyle = {
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: colGap,
+                alignItems: "stretch",
+            }
+            children = [mediaBlock, textBlock]
+            break
+        case "right":
+            gridStyle = {
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: colGap,
+                alignItems: "stretch",
+            }
+            children = [textBlock, mediaBlock]
+            break
+        case "above":
+            gridStyle = {
+                display: "flex",
+                flexDirection: "column" as const,
+                gap: rowGap,
+            }
+            children = [mediaBlock, textBlock]
+            break
+        case "below":
+            gridStyle = {
+                display: "flex",
+                flexDirection: "column" as const,
+                gap: rowGap,
+            }
+            children = [textBlock, mediaBlock]
+            break
+    }
+
+    return (
+        <div
+            ref={rootRef}
+            style={{
+                width: "100%",
+                background: bgColor,
+                boxSizing: "border-box" as const,
+                fontFamily: ffBody,
+            }}
+        >
+            <motion.div
+                key={replayKey}
+                initial={initialState}
+                {...motionTriggerProp}
+                variants={motionVariants}
+                transition={motionTransition}
+                style={gridStyle}
+            >
+                {children.map((child, i) => (
+                    <React.Fragment key={i}>{child}</React.Fragment>
+                ))}
+            </motion.div>
+        </div>
+    )
+}

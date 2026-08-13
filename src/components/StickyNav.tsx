@@ -1,16 +1,12 @@
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 
 /**
- * STICKY NAV
  * Retro / Y2K sticky navigation bar.
  * Smooth-scrolls to #section anchors, highlights the active section,
  * and can shrink (height + width) / re-align / fade / elevate / blur on scroll.
  * Optional always-on glassmorphism (frosted translucent bar).
  * Mobile: animated burger that morphs into an X, with a vertically
  * expanding dropdown of staggered links.
- *
- * Ported from Framer: framer imports + addPropertyControls removed,
- * RenderTarget canvas gate collapsed, defaultProps -> DEFAULTS merge (React 19).
  */
 
 const FONT_STACKS: Record<string, string> = {
@@ -31,6 +27,36 @@ const HOVER_CLASS: Record<string, string> = {
     Lift: "lift",
     "Scale up": "scale",
     Wiggle: "wiggle",
+}
+
+// Ignore sub-pixel / momentum jitter when deciding scroll direction.
+const DIR_THRESHOLD = 4
+
+/**
+ * Builds the wordmark's text-shadow.
+ *
+ * Relief stacks one shadow per pixel along the offset vector so the second
+ * colour becomes a continuous extruded side rather than a detached copy.
+ */
+function buildWordmarkShadow(
+    mode: string,
+    x: number,
+    y: number,
+    blur: number,
+    color: string
+): string {
+    if (mode === "Soft") return `${x}px ${y}px ${blur}px ${color}`
+    if (mode === "Relief") {
+        const steps = Math.max(1, Math.round(Math.max(Math.abs(x), Math.abs(y))))
+        const layers: string[] = []
+        for (let i = 1; i <= steps; i++) {
+            const px = Math.round(((x * i) / steps) * 100) / 100
+            const py = Math.round(((y * i) / steps) * 100) / 100
+            layers.push(`${px}px ${py}px 0 ${color}`)
+        }
+        return layers.join(", ")
+    }
+    return `${x}px ${y}px 0 ${color}`
 }
 
 const DEFAULTS = {
@@ -69,6 +95,30 @@ const DEFAULTS = {
     borderWidth: 2.5,
     radius: 0,
     maxWidth: 1200,
+    wordmarkFont: "Fredoka",
+    wordmarkLayer: false,
+    wordmarkLayerMode: "Relief",
+    wordmarkLayerColor: "#EE978E",
+    wordmarkLayerX: 3,
+    wordmarkLayerY: 3,
+    wordmarkLayerBlur: 6,
+    wordmarkOutline: false,
+    wordmarkOutlineWidth: 1.5,
+    overlay: false,
+    overlayTop: 20,
+    overlayInset: 24,
+    overlayMaxWidth: 930,
+    autoHide: false,
+    autoHideDelay: 2.5,
+    autoHideOffset: 120,
+    menuBg: "#F2EFE9",
+    menuOpacity: 1,
+    menuBlur: 14,
+    shadowMode: "On scroll",
+    shadowDepth: 6,
+    shadowRim: false,
+    shadowRimColor: "#F2EFE9",
+    shadowRimWidth: 0.5,
     links: [
         { label: "Work", anchor: "#work" },
         { label: "About", anchor: "#about" },
@@ -115,14 +165,42 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         borderWidth,
         radius,
         maxWidth,
+        wordmarkFont,
+        wordmarkLayer,
+        wordmarkLayerMode,
+        wordmarkLayerColor,
+        wordmarkLayerX,
+        wordmarkLayerY,
+        wordmarkLayerBlur,
+        wordmarkOutline,
+        wordmarkOutlineWidth,
+        overlay,
+        overlayTop,
+        overlayInset,
+        overlayMaxWidth,
+        autoHide,
+        autoHideDelay,
+        autoHideOffset,
+        menuBg,
+        menuOpacity,
+        menuBlur,
+        shadowMode,
+        shadowDepth,
+        shadowRim,
+        shadowRimColor,
+        shadowRimWidth,
         style,
     } = { ...DEFAULTS, ...props }
 
     const [scrolled, setScrolled] = useState(false)
     const [active, setActive] = useState<string>("")
     const [menuOpen, setMenuOpen] = useState(false)
+    const [retracted, setRetracted] = useState(false)
+    const lastY = useRef(0)
+    const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
     const stack = FONT_STACKS[font] ?? FONT_STACKS.Fredoka
+    const wordmarkStack = FONT_STACKS[wordmarkFont] ?? stack
     const items: any[] = links ?? []
     const hoverSuffix = HOVER_CLASS[linkHover] ?? "color"
 
@@ -144,6 +222,52 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [JSON.stringify(items)])
 
+    // Auto-hide: above the offset the bar is always visible; scrolling down
+    // retracts it; scrolling up reveals it and arms a timer that retracts it
+    // again once the scroll has been idle for autoHideDelay.
+    useEffect(() => {
+        const clearIdle = () => {
+            if (idleTimer.current) {
+                clearTimeout(idleTimer.current)
+                idleTimer.current = null
+            }
+        }
+        // barRetracted already gates on autoHide, so no reset is needed here.
+        if (!autoHide) {
+            clearIdle()
+            return
+        }
+        lastY.current = window.scrollY
+        const onScroll = () => {
+            const y = window.scrollY
+            const dy = y - lastY.current
+            if (Math.abs(dy) < DIR_THRESHOLD) return
+            lastY.current = y
+
+            if (y <= autoHideOffset) {
+                clearIdle()
+                setRetracted(false)
+                return
+            }
+            if (dy > 0) {
+                clearIdle()
+                setRetracted(true)
+            } else {
+                setRetracted(false)
+                clearIdle()
+                idleTimer.current = setTimeout(
+                    () => setRetracted(true),
+                    Math.max(0, autoHideDelay) * 1000
+                )
+            }
+        }
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => {
+            window.removeEventListener("scroll", onScroll)
+            clearIdle()
+        }
+    }, [autoHide, autoHideDelay, autoHideOffset])
+
     const goTo = (anchor: string) => (e: React.MouseEvent) => {
         const id = (anchor || "").replace(/^#/, "")
         const el = document.getElementById(id)
@@ -155,7 +279,11 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     }
 
     const height = shrinkOnScroll && scrolled ? shrunkHeight : baseHeight
-    const showShadow = elevateOnScroll && scrolled
+    // shadowMode "Always" matters in overlay mode, where the bar floats over the
+    // page from the first frame with nothing else separating it from the background.
+    const showShadow = elevateOnScroll && (shadowMode === "Always" || scrolled)
+    // An open menu always wins: never retract the bar out from under it.
+    const barRetracted = autoHide && retracted && !menuOpen
     const shrunk = shrinkWidthOnScroll && scrolled
     const navWidth = shrunk ? `${shrunkWidth}%` : "100%"
     const navOpacity = fadeOnScroll && scrolled ? scrolledOpacity : 1
@@ -173,10 +301,68 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     const filterCss = blurActive ? `blur(${blurAmount}px) saturate(${saturate}%)` : "none"
     const barBackground = blurActive ? hexToRgba(background, bgOpacity) : background
 
+    // Wordmark. The stroke, when on, paints under the fill (paint-order) so it
+    // thickens the letterforms from the outside instead of eating into them.
+    const wordmarkCss: React.CSSProperties = {
+        fontWeight: 600,
+        fontSize: wordmarkSize,
+        fontFamily: wordmarkStack,
+        letterSpacing: -0.5,
+        color: wordmarkColor,
+        textDecoration: "none",
+        whiteSpace: "nowrap",
+        textShadow: wordmarkLayer
+            ? buildWordmarkShadow(
+                  wordmarkLayerMode,
+                  wordmarkLayerX,
+                  wordmarkLayerY,
+                  wordmarkLayerBlur,
+                  wordmarkLayerColor
+              )
+            : "none",
+        ...(wordmarkOutline
+            ? {
+                  WebkitTextStrokeWidth: `${wordmarkOutlineWidth}px`,
+                  WebkitTextStrokeColor: wordmarkLayerColor,
+                  paintOrder: "stroke fill",
+              }
+            : {}),
+        transition: "font-size 0.25s ease, text-shadow 0.25s ease",
+    }
+
+    // Mobile dropdown surface, deliberately independent of the bar's translucency:
+    // a see-through bar is fine over a 72px strip, but the same alpha over a tall
+    // panel of links makes them unreadable.
+    const menuSolid = !(menuOpacity < 1)
+    const menuBackground = menuSolid ? menuBg : hexToRgba(menuBg, menuOpacity)
+    const menuFilterCss =
+        !menuSolid && menuBlur > 0 ? `blur(${menuBlur}px) saturate(${saturate}%)` : "none"
+
+    // Shadow stack. Earlier entries paint on top, so the rim is pushed last: it is
+    // the same offset shadow grown by `spread`, peeking out as a thin outline that
+    // keeps the pill legible over a dark section.
     const boxShadows: string[] = []
-    if (showShadow) boxShadows.push(`0 6px 0 ${shadowColor}`)
+    if (showShadow) {
+        boxShadows.push(`0 ${shadowDepth}px 0 0 ${shadowColor}`)
+        if (shadowRim) boxShadows.push(`0 ${shadowDepth}px 0 ${shadowRimWidth}px ${shadowRimColor}`)
+    }
     if (glass) boxShadows.push("inset 0 1px 0 rgba(255,255,255,0.45)")
     const barShadow = boxShadows.length ? boxShadows.join(", ") : "none"
+
+    // Overlay mode: a sticky element still reserves its box in the document flow.
+    // Fixed does not, so the bar floats over the sections instead of carving out
+    // a band at the top. Applied after the `style` spread so it wins.
+    const overlayOverrides = overlay
+        ? ({
+              position: "fixed",
+              top: `${overlayTop}px`,
+              left: `${overlayInset}px`,
+              right: `${overlayInset}px`,
+              bottom: "auto",
+              width: "auto",
+              height: "auto",
+          } as React.CSSProperties)
+        : {}
 
     const positionerStyle = {
         position: "sticky",
@@ -190,11 +376,22 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         "--nav-hover": hoverColor,
         "--nav-pill": hexToRgba(hoverColor, 0.16),
         "--nav-link-size": `${linkSize}px`,
+        "--menu-bg": menuBackground,
+        "--menu-blur": menuFilterCss,
+        "--nav-radius": typeof radius === "number" ? `${radius}px` : radius,
+        "--nav-border": fullBorder ? borderCss : "none",
+        "--nav-border-bottom": fullBorder || bottomBorder ? borderCss : "none",
+        "--nav-bw": fullBorder ? `${borderWidth}px` : "0px",
+        "--nav-shadow": barShadow,
+        "--nav-top": overlay ? `${overlayTop}px` : "0px",
         ...style,
+        ...overlayOverrides,
     } as React.CSSProperties
 
     const barStyle = {
+        position: "relative",
         width: navWidth,
+        maxWidth: overlay ? `${overlayMaxWidth}px` : undefined,
         margin: alignMargin,
         boxSizing: "border-box",
         opacity: navOpacity,
@@ -206,12 +403,21 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         borderRadius: radius,
         boxShadow: barShadow,
         transition:
-            "width 0.3s ease, margin 0.3s ease, box-shadow 0.25s ease, background 0.25s ease, opacity 0.25s ease, border-color 0.2s ease, backdrop-filter 0.25s ease",
+            "width 0.3s ease, margin 0.3s ease, box-shadow 0.25s ease, background 0.25s ease, opacity 0.25s ease, border-color 0.2s ease, backdrop-filter 0.25s ease, border-radius 0.2s ease, transform 0.34s cubic-bezier(0.4, 0, 0.2, 1)",
     } as React.CSSProperties
 
+    const navClass = [
+        "sticky-nav",
+        overlay ? "sn-overlay" : "",
+        autoHide ? "sn-autohide" : "",
+        barRetracted ? "is-retracted" : "",
+    ]
+        .filter(Boolean)
+        .join(" ")
+
     return (
-        <nav style={positionerStyle}>
-            <div style={barStyle}>
+        <nav className={navClass} style={positionerStyle}>
+            <div className={`sticky-nav-bar${menuOpen ? " is-open" : ""}`} style={barStyle}>
                 <div
                     style={{
                         maxWidth,
@@ -227,18 +433,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                     }}
                 >
                     {/* Wordmark */}
-                    <a
-                        href="#"
-                        onClick={goTo("#")}
-                        style={{
-                            fontWeight: 600,
-                            fontSize: wordmarkSize,
-                            letterSpacing: -0.5,
-                            color: wordmarkColor,
-                            textDecoration: "none",
-                            whiteSpace: "nowrap",
-                        }}
-                    >
+                    <a href="#" onClick={goTo("#")} style={wordmarkCss}>
                         {wordmark}
                     </a>
 
@@ -305,7 +500,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
 
                 {/* Mobile dropdown (always mounted so it can animate open/closed) */}
                 <div className={`sticky-nav-mobile${menuOpen ? " is-open" : ""}`}>
-                    <div className="sticky-nav-mobile-inner">
+                    <div className="sticky-nav-mobile-inner" style={{ maxWidth, margin: "0 auto" }}>
                         {items.map((l, i) => {
                             const id = (l.anchor || "").replace(/^#/, "")
                             const isActive = id && id === active
@@ -420,10 +615,31 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                 nav .sticky-nav-burger.is-open .snb-mid { opacity: 0; transform: scaleX(0); }
                 nav .sticky-nav-burger.is-open .snb-bot { top: 10px; transform: rotate(-45deg); }
 
-                /* Mobile dropdown */
+                /* Mobile dropdown.
+                   Absolutely positioned under the bar so the bar keeps a constant
+                   height whether the menu is open or closed: expanding it overlays
+                   the page instead of pushing the sections down.
+                   Negative left/right offsets pull it out to the bar's OUTER edge so
+                   its side borders line up with the bar's when Full border is on. */
                 nav .sticky-nav-mobile {
-                    display: none; overflow: hidden;
+                    display: none;
+                    position: absolute;
+                    top: 100%;
+                    left: calc(0px - var(--nav-bw));
+                    right: calc(0px - var(--nav-bw));
+                    z-index: 999;
+                    overflow: hidden;
+                    box-sizing: border-box;
                     max-height: 0; opacity: 0; pointer-events: none;
+                    background: var(--menu-bg);
+                    backdrop-filter: var(--menu-blur);
+                    -webkit-backdrop-filter: var(--menu-blur);
+                    border-left: var(--nav-border);
+                    border-right: var(--nav-border);
+                    border-bottom: var(--nav-border-bottom);
+                    border-bottom-left-radius: var(--nav-radius);
+                    border-bottom-right-radius: var(--nav-radius);
+                    box-shadow: var(--nav-shadow);
                     transition: max-height .34s ease, opacity .25s ease;
                 }
                 nav .sticky-nav-mobile.is-open {
@@ -432,7 +648,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                 nav .sticky-nav-mobile-inner {
                     display: flex; flex-direction: column; gap: 4px;
                     padding: 8px 24px 22px;
-                    border-bottom: 2.5px solid var(--nav-link);
+                    box-sizing: border-box; width: 100%;
                 }
                 nav .snl-m {
                     color: var(--nav-link); font-size: calc(var(--nav-link-size) + 2px);
@@ -447,12 +663,34 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                 nav .snl-m-cta {
                     margin-top: 14px; text-align: center; color: #1C1B22;
                     font-weight: 600; border-radius: 999px; padding: 13px 18px;
+                    border-bottom: none;
                 }
 
                 @media (max-width: 809px) {
                     nav .sticky-nav-links { display: none !important; }
                     nav .sticky-nav-burger { display: block !important; }
                     nav .sticky-nav-mobile { display: block !important; }
+
+                    /* While open, the bar drops its bottom corners, bottom border and
+                       drop shadow so nothing draws a seam between it and the panel. */
+                    nav .sticky-nav-bar.is-open {
+                        border-bottom-left-radius: 0 !important;
+                        border-bottom-right-radius: 0 !important;
+                        border-bottom-color: transparent !important;
+                        box-shadow: none !important;
+                    }
+
+                    /* Auto-hide. React only toggles .is-retracted; the translate lives
+                       here so the behaviour is mobile-only without measuring in JS.
+                       Travel = bar height (-100%) + its offset below the top edge
+                       (--nav-top) + 24px of slack for the retro drop shadow. */
+                    nav.sn-autohide.is-retracted .sticky-nav-bar {
+                        transform: translateY(calc(-100% - var(--nav-top, 0px) - 24px));
+                    }
+                }
+
+                @media (prefers-reduced-motion: reduce) {
+                    nav.sn-autohide .sticky-nav-bar { transition-duration: .01ms; }
                 }
             `}</style>
         </nav>

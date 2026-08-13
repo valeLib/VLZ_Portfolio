@@ -1,14 +1,12 @@
-// ProjectShowcase.tsx
 // Carousel of project / website cards in a macOS-style browser frame.
-// Ported from Framer: framer imports + addPropertyControls removed.
-// Top-level control defaults merged via DEFAULTS; per-item props (item1*…item8*)
-// are read off the merged object and fall back inline as in the original.
+// Per-item props are flat and positional (item1Title, item2Title, …) so a slot
+// can be filled or left empty independently of its neighbours.
 
 import { useState, useEffect, useRef } from "react"
 
 const MAX_ITEMS = 8
 
-// ── Font options ───────────────────────────────────────────────────────────
+// ── Font stacks ────────────────────────────────────────────────────────────
 const FONT_STACKS: Record<string, string> = {
     "Fredoka": "'Fredoka One', 'Fredoka', system-ui, sans-serif",
     "Jua": "'Jua', system-ui, sans-serif",
@@ -147,7 +145,6 @@ export default function ProjectShowcase(rawProps: any) {
         const buttonText = props[`item${i}ButtonText`] as string | undefined
         const showButton = props[`item${i}ShowButton`] as boolean | undefined
 
-        // Skip totally empty slots (no media + no metadata)
         const hasMedia = !!image || !!videoFile || !!videoUrl || !!iframeUrl
         const hasMeta = !!urlBar || !!subtitle || !!tags || !!link
         if (!hasMedia && !hasMeta) continue
@@ -246,7 +243,6 @@ export default function ProjectShowcase(rawProps: any) {
     const prevDisabled = !loop && index === 0
     const nextDisabled = !loop && index === total - 1
 
-    // Resolve the active video source string
     const activeVideoSrc =
         current.videoSource === "file" ? current.videoFile : current.videoUrl
 

@@ -1,5 +1,4 @@
-// OutlineText — ported verbatim from Framer (framer imports + addPropertyControls removed,
-// defaults merged via DEFAULTS for React 19).
+// Display text drawn as a stroked outline, optionally with a solid fill.
 
 type OutlineTextProps = {
     text?: string

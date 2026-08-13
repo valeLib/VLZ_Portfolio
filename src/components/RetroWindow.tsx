@@ -1,6 +1,4 @@
-// RetroWindow.tsx
-// A retro OS-style window chrome component.
-// Ported from Framer: framer imports + addPropertyControls removed, DEFAULTS merge.
+// Retro OS-style window chrome.
 
 type ContentMode = "frame" | "text" | "richText"
 type Align = "start" | "center" | "end"
@@ -61,7 +59,7 @@ const DEFAULTS = {
     plainTextColor: "#1a1520",
     plainTextSize: 14,
     plainTextAlign: "left" as "left" | "center" | "right",
-    richText: "<p>Bind this to a <strong>CMS formatted text field</strong>.</p>",
+    richText: "<p>Pass formatted content via the <strong>richText</strong> prop.</p>",
     richTextColor: "#1a1520",
     richTextSize: 14,
 }

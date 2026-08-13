@@ -1,6 +1,5 @@
-// ScrollIndicator — approximation of the Framer marketplace ScrollIndicator.
-// Renders a minimalist mouse/pill outline with an animated dot, used as the
-// hero "scroll down" cue. Clicking scrolls to the next section if provided.
+// Minimalist mouse/pill outline with an animated dot, used as the hero
+// "scroll down" cue. Clicking scrolls to the next section if one is provided.
 
 type ScrollIndicatorProps = {
   borderColor?: string
@@ -14,6 +13,7 @@ type ScrollIndicatorProps = {
   animationSpeed?: number
   targetId?: string
   style?: React.CSSProperties
+  className?: string
 }
 
 export default function ScrollIndicator({
@@ -28,6 +28,7 @@ export default function ScrollIndicator({
   animationSpeed = 3,
   targetId = "about",
   style,
+  className,
 }: ScrollIndicatorProps) {
   const onClick = () => {
     const el = document.getElementById(targetId)
@@ -38,6 +39,7 @@ export default function ScrollIndicator({
     <button
       aria-label="Scroll down"
       onClick={onClick}
+      className={className}
       style={{
         background: "transparent",
         border: "none",

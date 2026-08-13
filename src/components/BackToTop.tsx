@@ -1,4 +1,3 @@
-// BackToTop — approximation of the Framer marketplace BackToTop button.
 // Fixed circular button that appears after scrolling and smooth-scrolls to top.
 
 import { useEffect, useState } from "react"

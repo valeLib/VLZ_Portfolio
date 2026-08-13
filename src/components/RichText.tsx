@@ -1,5 +1,5 @@
-// RichText — renders CMS Formatted Text (HTML) with styling that matches the
-// portfolio's body typography. Used for project case studies and work entries.
+// Renders an HTML string with the portfolio's body typography.
+// Used for project case studies and work entries.
 
 import { useMemo } from "react"
 

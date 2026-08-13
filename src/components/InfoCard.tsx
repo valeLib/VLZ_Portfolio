@@ -1,6 +1,4 @@
-// InfoCard.tsx
 // Scrapbook-style info card.
-// Ported from Framer: framer imports + addPropertyControls removed, DEFAULTS merge.
 
 type InfoCardProps = {
     device?: string

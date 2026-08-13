@@ -1,10 +1,5 @@
-// GLBModelViewer.tsx
-// Ported from Framer. Uses @google/model-viewer (imported as a side-effect to
-// register the <model-viewer> custom element) instead of loading it from a CDN.
-//
-// The original also had an optional MediaPipe webcam hand-gesture mode; that is
-// intentionally dropped here (it requires camera permission + heavy MediaPipe
-// scripts and was off by default). Orbit / auto-rotate / camera framing are kept.
+// @google/model-viewer is imported for its side effect: it registers the
+// <model-viewer> custom element used below.
 
 import { useEffect, useRef } from "react"
 import "@google/model-viewer"

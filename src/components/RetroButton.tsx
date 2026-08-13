@@ -1,9 +1,4 @@
-// RetroButton.tsx
-// A versatile retro-style button / stat badge component.
-// Covers: CTA buttons (primary/ghost) and stat cards with value + label.
-//
-// Ported from Framer: framer imports + addPropertyControls removed,
-// defaults handled via DEFAULTS merge (React 19).
+// Covers both CTA buttons (primary/ghost) and stat cards with value + label.
 
 type RetroButtonProps = {
     variant?: string

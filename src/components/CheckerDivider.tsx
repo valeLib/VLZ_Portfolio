@@ -1,7 +1,3 @@
-// CheckerDivider.tsx
-// A customizable checkerboard divider component.
-// Ported from Framer: framer imports + addPropertyControls removed, DEFAULTS merge.
-
 type CheckerDividerProps = {
     color1?: string
     color2?: string
@@ -27,7 +23,7 @@ export default function CheckerDivider(props: CheckerDividerProps) {
 
     const height = cellSize * rows
 
-    // We use an SVG pattern — infinitely scalable, no pixel math needed
+    // An SVG pattern instead of pixel math, so the board scales to any width.
     const patternId = `chk-${color1.replace(/[^a-z0-9]/gi, "")}-${color2.replace(/[^a-z0-9]/gi, "")}-${cellSize}`
 
     return (

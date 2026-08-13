@@ -1,6 +1,4 @@
-// PatternBackground.tsx
 // Unified pattern background with gradient support.
-// Ported from Framer: framer imports + addPropertyControls removed, DEFAULTS merge.
 
 type PatternBackgroundProps = {
     patternType?: string

@@ -1,8 +1,4 @@
-// ContactPage.tsx
 // Retro / Y2K contact section with a styled form (Formspree/webhook + mailto fallback).
-// Ported from Framer: framer imports + addPropertyControls removed,
-// RenderTarget canvas gate collapsed (isCanvas = false),
-// defaultProps + property-control `details` default merged into DEFAULTS.
 
 import { useEffect, useRef, useState } from "react"
 
@@ -44,6 +40,9 @@ const DEFAULTS = {
     padding: 64,
     breakpoint: 720,
     mobilePadding: 28,
+    gap: 40,
+    mobileGap: 28,
+    mobileAlign: "flex-start",
     details: [
         { label: "Email", value: "hello@valentina.dev", url: "mailto:hello@valentina.dev", color: "#4F58AF", newTab: false },
         { label: "Based in", value: "Santiago, Chile", url: "#", color: "#EE978E", newTab: false },
@@ -76,6 +75,9 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
         radius,
         padding,
         breakpoint,
+        gap,
+        mobileGap,
+        mobileAlign,
         mobilePadding,
         style,
     } = { ...DEFAULTS, ...props }
@@ -102,17 +104,14 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
 
     const headingStack = FONT_STACKS[headingFont] ?? FONT_STACKS.Fredoka
     const bodyStack = FONT_STACKS[bodyFont] ?? FONT_STACKS["Anonymous Pro"]
-    const isCanvas = false
 
-    // Responsive values
     const pad = isNarrow ? mobilePadding : padding
-    const colGap = isNarrow ? 28 : 40
+    const colGap = isNarrow ? mobileGap : gap
     const headlineSize = isNarrow ? 32 : 44
     const introSize = isNarrow ? 15 : 16
     const cardPad = isNarrow ? 20 : 28
 
     const submit = async () => {
-        if (isCanvas) return
         if (!from || !message) {
             setStatus("error")
             return
@@ -169,7 +168,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                 flexWrap: isNarrow ? "nowrap" : "wrap",
                 gap: colGap,
                 alignItems: isNarrow ? "stretch" : "flex-start",
-                justifyContent: "center",
+                justifyContent: isNarrow ? mobileAlign : "center",
                 ...style,
             }}
         >

@@ -1,12 +1,6 @@
 import { useMemo } from "react"
 
-/**
- * FOOTER
- * Retro / Y2K portfolio footer.
- *
- * Ported from Framer: framer imports + addPropertyControls removed,
- * defaultProps + property-control defaults merged into DEFAULTS (React 19).
- */
+// Retro / Y2K portfolio footer.
 
 const FONT_STACKS: Record<string, string> = {
     Fredoka: '"Fredoka", sans-serif',

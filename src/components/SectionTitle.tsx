@@ -1,7 +1,4 @@
-// SectionTitle.tsx
 // Section heading with optional dot, optional label (kicker), title, and line/border.
-// Ported from Framer: framer imports + addPropertyControls removed, RenderTarget canvas
-// gate collapsed (isCanvas = false), DEFAULTS merge.
 
 import { motion } from "framer-motion"
 import { useState, useEffect, useRef } from "react"
@@ -41,15 +38,14 @@ function AnimatedTitle({
         return <span style={baseStyle}>{text}</span>
     }
 
-    const isCanvas = false
-    const useViewport = !isCanvas && (trigger === "once" || trigger === "every")
+    const useViewport = trigger === "once" || trigger === "every"
     const viewportConfig = useViewport
         ? { viewport: { once: trigger === "once", amount: 0.3 as const } }
         : {}
     const motionTrigger = useViewport
         ? { whileInView: "visible" }
         : { animate: "visible" }
-    const initial = isCanvas ? "visible" : "hidden"
+    const initial = "hidden"
 
     // ── Whole-text animations (fade, slide, bounce) ───────────────────────
     if (animation === "fade" || animation === "slideUp" || animation === "slideDown" || animation === "bounce") {

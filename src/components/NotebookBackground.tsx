@@ -1,10 +1,6 @@
-// NotebookBackground.tsx
 // Notebook paper background with grid, dot, ruled, or cross patterns.
 // Paper: solid color OR multi-stop gradient (up to 5 stops, angle, positions).
 // Grid: solid color OR 2–3 color gradient.
-//
-// Ported from Framer: framer imports + addPropertyControls removed,
-// property-control defaults merged via DEFAULTS (React 19).
 
 type NotebookBackgroundProps = {
     paperColor?: string
@@ -112,11 +108,9 @@ export default function NotebookBackground(props: NotebookBackgroundProps) {
     }
     const gv = angleToVec(gridGradientAngle)
 
-    // Effective stroke/fill for grid elements
     const gridFill = useGridGradient ? `url(#${gradId})` : gridColor
     const op = gridOpacity
 
-    // Build gradient stops for grid (2 or 3 colors)
     const gridStops = [
         { offset: "0%", color: gridColor },
         { offset: gridGradientColor3 ? "50%" : "100%", color: gridGradientColor2 },

@@ -1,6 +1,5 @@
 /**
- * Design tokens — ported from the Framer project's Color Styles and Text Styles.
- * Palette: warm cream base with five accents.
+ * Design tokens: a warm cream base with five accents, plus the shared type stacks.
  */
 
 export const colors = {
@@ -52,7 +51,7 @@ export const fonts = {
   code: '"IBM Plex Mono", monospace', // code blocks
 } as const
 
-/** Shared font-family stacks (matches the FONT_STACKS maps inside the code components). */
+/** Font-family stacks, mirrored by the local FONT_STACKS maps inside components. */
 export const FONT_STACKS: Record<string, string> = {
   Fredoka: '"Fredoka", sans-serif',
   Jua: '"Jua", sans-serif',

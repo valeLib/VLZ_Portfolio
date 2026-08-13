@@ -1,12 +1,8 @@
 import { Link } from "react-router-dom"
 import { projects } from "../data/projects"
-import ProjectShowcase from "../components/ProjectShowcase_1"
+import ProjectShowcase from "../components/ProjectShowcase"
 import Footer from "../components/Footer"
 import NotebookBackground from "../components/NotebookBackground"
-
-/**
- * PROJECTS — /projects index. Lists every project, linking to its detail page.
- */
 
 export default function Projects() {
   return (

@@ -1,6 +1,3 @@
-// SectionHeader.tsx
-// Ported from Framer: framer imports + addPropertyControls removed, DEFAULTS merge.
-
 type SectionHeaderProps = {
     num?: string
     label?: string
@@ -49,7 +46,6 @@ export default function SectionHeader(props: SectionHeaderProps) {
 
     return (
         <div style={{ width: "100%" }}>
-            {/* Eyebrow row — only rendered if dot or label is visible */}
             {hasEyebrowRow && (
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
                     {showDot && (

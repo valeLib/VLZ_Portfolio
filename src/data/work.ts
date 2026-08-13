@@ -1,4 +1,4 @@
-// Work Experience — ported from the Framer "Work Experience" CMS collection (Bxh5oBE4O).
+// Work experience entries rendered by the home page Experience section.
 
 export const asset = (file: string) => `${import.meta.env.BASE_URL}assets/${file}`
 
