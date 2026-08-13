@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react"
+import { scrollToElement } from "../lib/scroll"
 
 /**
  * Retro / Y2K sticky navigation bar.
@@ -273,7 +274,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         const el = document.getElementById(id)
         if (el) {
             e.preventDefault()
-            el.scrollIntoView({ behavior: "smooth", block: "start" })
+            scrollToElement(el)
             setMenuOpen(false)
         }
     }

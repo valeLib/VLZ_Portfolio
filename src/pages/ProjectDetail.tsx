@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 import { motion, useScroll, useTransform } from "framer-motion"
 import { projects } from "../data/projects"
 import { projectSections } from "../data/projectSections"
 import type { ProjectSections, SectionItem } from "../data/projectSections"
 import { colors } from "../tokens"
+import { useBreakpoint } from "../hooks/useBreakpoint"
 import RichText from "../components/RichText"
 import Appear from "../components/Appear"
 import NotebookBackground from "../components/NotebookBackground"
@@ -31,24 +31,6 @@ import ProjectShowcase from "../components/ProjectShowcase"
 
 // Drives the prev / next footer links.
 const PROJECT_ORDER = ["claws-and-cue-balls", "pawtchi", "goblin-td", "matcha-puzzle"]
-
-type Breakpoint = "desktop" | "tablet" | "phone"
-
-function useBreakpoint(): Breakpoint {
-    const get = (): Breakpoint => {
-        if (typeof window === "undefined") return "desktop"
-        if (window.matchMedia("(max-width: 809.98px)").matches) return "phone"
-        if (window.matchMedia("(max-width: 1199.98px)").matches) return "tablet"
-        return "desktop"
-    }
-    const [bp, setBp] = useState<Breakpoint>(get)
-    useEffect(() => {
-        const onResize = () => setBp(get())
-        window.addEventListener("resize", onResize)
-        return () => window.removeEventListener("resize", onResize)
-    }, [])
-    return bp
-}
 
 // Shared SectionTitle configuration; only the dot/line accents differ per section.
 const sectionTitleBase = {

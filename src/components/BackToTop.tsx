@@ -1,6 +1,8 @@
-// Fixed circular button that appears after scrolling and smooth-scrolls to top.
+// Circular button that smooth-scrolls to top. Fixed to the viewport by
+// default; with fixed={false} it renders in place so the parent positions it.
 
 import { useEffect, useState } from "react"
+import { scrollToTop } from "../lib/scroll"
 
 type BackToTopProps = {
   size?: number
@@ -8,6 +10,8 @@ type BackToTopProps = {
   iconColor?: string
   hoverFill?: string
   showAfter?: number // fraction of viewport scrolled before showing
+  alwaysShow?: boolean
+  fixed?: boolean
   sideOffset?: number
   bottom?: number
 }
@@ -18,29 +22,33 @@ export default function BackToTop({
   iconColor = "rgb(255, 255, 255)",
   hoverFill = "rgb(238, 151, 142)",
   showAfter = 0.25,
+  alwaysShow = false,
+  fixed = true,
   sideOffset = 24,
   bottom = 24,
 }: BackToTopProps) {
-  const [visible, setVisible] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const [hover, setHover] = useState(false)
+  const visible = alwaysShow || scrolled
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > window.innerHeight * showAfter)
+    if (alwaysShow) return
+    const onScroll = () => setScrolled(window.scrollY > window.innerHeight * showAfter)
     onScroll()
     window.addEventListener("scroll", onScroll, { passive: true })
     return () => window.removeEventListener("scroll", onScroll)
-  }, [showAfter])
+  }, [showAfter, alwaysShow])
 
   return (
     <button
       aria-label="Back to top"
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      onClick={scrollToTop}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => setHover(false)}
       style={{
-        position: "fixed",
-        right: sideOffset,
-        bottom,
+        ...(fixed
+          ? { position: "fixed" as const, right: sideOffset, bottom }
+          : { position: "relative" as const }),
         width: size,
         height: size,
         borderRadius: "50%",

@@ -113,7 +113,9 @@ export default function RetroButton(props: RetroButtonProps) {
         alignItems: isStat ? "flex-start" : "center",
         justifyContent: isStat ? "flex-end" : "center",
         gap: isStat ? 2 : 0,
-        width: "100%",
+        // Size to content: in a flex row the buttons and stat cards keep their
+        // intrinsic width instead of stretching to fill the line.
+        width: "fit-content",
         boxSizing: "border-box",
         padding: `${paddingV}px ${paddingH}px`,
         background: bgColor,

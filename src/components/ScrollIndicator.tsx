@@ -1,6 +1,8 @@
 // Minimalist mouse/pill outline with an animated dot, used as the hero
 // "scroll down" cue. Clicking scrolls to the next section if one is provided.
 
+import { scrollToElement } from "../lib/scroll"
+
 type ScrollIndicatorProps = {
   borderColor?: string
   borderOpacity?: number
@@ -32,7 +34,7 @@ export default function ScrollIndicator({
 }: ScrollIndicatorProps) {
   const onClick = () => {
     const el = document.getElementById(targetId)
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" })
+    if (el) scrollToElement(el)
   }
 
   return (
