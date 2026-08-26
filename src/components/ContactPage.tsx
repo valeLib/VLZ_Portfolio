@@ -172,10 +172,12 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                 ...style,
             }}
         >
-            {/* Left: copy + details */}
+            {/* Left: copy + details. When stacked, 0 0 auto pins the column to its
+                content height — a grow factor would absorb surplus frame height and
+                stretch the gap between the columns. */}
             <div
                 style={{
-                    flex: isNarrow ? "1 1 auto" : "1 1 320px",
+                    flex: isNarrow ? "0 0 auto" : "1 1 320px",
                     width: isNarrow ? "100%" : undefined,
                     maxWidth: isNarrow ? "100%" : 460,
                 }}
@@ -245,7 +247,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
             {/* Right: form card */}
             <div
                 style={{
-                    flex: isNarrow ? "1 1 auto" : "1 1 320px",
+                    flex: isNarrow ? "0 0 auto" : "1 1 320px",
                     width: isNarrow ? "100%" : undefined,
                     maxWidth: isNarrow ? "100%" : 440,
                     background: cardColor,

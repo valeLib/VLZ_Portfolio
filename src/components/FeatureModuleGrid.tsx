@@ -28,10 +28,19 @@ type ImageInput = string | { src: string; srcSet?: string; alt?: string }
 type FeatureModuleGridProps = {
     // Layout
     mediaPosition?: MediaPosition
+    /** % of the row the media column takes in left/right layouts (10–90). */
+    mediaColumnWidth?: number
     breakpointBelow?: number
     colGap?: number
     rowGap?: number
     verticalAlign?: "top" | "center" | "bottom"
+
+    // Stacked / narrow overrides
+    stackedOrder?: "mediaFirst" | "textFirst"
+    stackedMediaWidth?: number
+    stackedMediaAlign?: "left" | "center" | "right"
+    stackedAspectRatio?: string
+    stackedTextScale?: number
 
     // Media
     mediaType?: MediaType
@@ -70,6 +79,20 @@ type FeatureModuleGridProps = {
     title?: string
     body?: any // FormattedText (React node) or HTML string
     bullets?: string
+
+    // Panel (fill / radius / frame / shadow around the text block or module)
+    panelScope?: "text" | "module"
+    textBg?: string
+    textRadius?: number
+    showFrame?: boolean
+    textBorderStyle?: "solid" | "dashed" | "dotted" | "double" | "none"
+    textBorderWidth?: number
+    textBorderColor?: string
+    textBorderOffset?: number
+    showTextShadow?: boolean
+    textShadowX?: number
+    textShadowY?: number
+    textShadowColor?: string
 
     // Text styling
     textPadding?: number
@@ -111,10 +134,17 @@ type FeatureModuleGridProps = {
 
 const DEFAULTS: Required<FeatureModuleGridProps> = {
     mediaPosition: "left",
+    mediaColumnWidth: 50,
     breakpointBelow: 720,
     colGap: 32,
     rowGap: 24,
     verticalAlign: "center",
+
+    stackedOrder: "mediaFirst",
+    stackedMediaWidth: 65,
+    stackedMediaAlign: "left",
+    stackedAspectRatio: "inherit",
+    stackedTextScale: 0.9,
 
     mediaType: "image",
     image: "",
@@ -149,6 +179,19 @@ const DEFAULTS: Required<FeatureModuleGridProps> = {
     title: "Grid Placement",
     body: "<p>Players place towers on a grid with hover and snap feedback. The system enforces buildable surfaces and gives instant visual confirmation.</p>",
     bullets: "",
+
+    panelScope: "text",
+    textBg: "rgba(0,0,0,0)",
+    textRadius: 0,
+    showFrame: false,
+    textBorderStyle: "solid",
+    textBorderWidth: 2,
+    textBorderColor: "#1a1520",
+    textBorderOffset: 0,
+    showTextShadow: false,
+    textShadowX: 5,
+    textShadowY: 5,
+    textShadowColor: "#1a1520",
 
     textPadding: 0,
     contentGap: 12,
@@ -187,7 +230,8 @@ const DEFAULTS: Required<FeatureModuleGridProps> = {
 
 export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
     const {
-        mediaPosition, breakpointBelow, colGap, rowGap, verticalAlign,
+        mediaPosition, mediaColumnWidth, breakpointBelow, colGap, rowGap, verticalAlign,
+        stackedOrder, stackedMediaWidth, stackedMediaAlign, stackedAspectRatio, stackedTextScale,
 
         mediaType, image,
         videoSource, videoFile, videoUrl, videoAutoplay, videoLoop, videoMuted, videoControls,
@@ -200,6 +244,10 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         showMediaBadge, badgeText, badgeBg, badgeTextColor, badgeBorderColor,
 
         eyebrow, title, body, bullets,
+
+        panelScope, textBg, textRadius,
+        showFrame, textBorderStyle, textBorderWidth, textBorderColor, textBorderOffset,
+        showTextShadow, textShadowX, textShadowY, textShadowColor,
 
         textPadding, contentGap, accentColor,
         eyebrowFont, eyebrowSize, eyebrowTracking, eyebrowColor, eyebrowUppercase,
@@ -264,9 +312,39 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         return () => ro.disconnect()
     }, [breakpointBelow])
 
+    // ── Layout resolution ─────────────────────────────────────────────────
+    // A collapsed side-by-side layout stacks in the configured order.
+    const effectivePosition: MediaPosition =
+        stacked && (mediaPosition === "left" || mediaPosition === "right")
+            ? (stackedOrder === "textFirst" ? "below" : "above")
+            : mediaPosition
+    const isColumn = effectivePosition === "above" || effectivePosition === "below"
+
+    // Narrow widths scale the type down; column layouts may swap the ratio.
+    const typeScale = stacked ? stackedTextScale : 1
+    const effTitleSize = Math.max(10, Math.round(titleSize * typeScale))
+    const effBodySize = Math.max(9, Math.round(bodySize * typeScale))
+
     // ── Aspect ratio parsing ──────────────────────────────────────────────
-    const [arW, arH] = (mediaAspectRatio as string).split(":").map(Number)
+    const activeRatio = isColumn && stackedAspectRatio !== "inherit" ? stackedAspectRatio : mediaAspectRatio
+    const [arW, arH] = (activeRatio as string).split(":").map(Number)
     const aspectPct = (arW && arH) ? `${(arH / arW) * 100}%` : "75%"
+
+    // ── Panel style (text block or whole module, never both) ──────────────
+    const hasFrame = showFrame === true && textBorderWidth > 0
+    const frameStyle = textBorderStyle === "none" ? "solid" : textBorderStyle
+    const panelStyle: React.CSSProperties = {
+        background: textBg,
+        borderRadius: textRadius,
+        padding: textPadding,
+        boxSizing: "border-box" as const,
+        ...(hasFrame
+            ? { outline: `${textBorderWidth}px ${frameStyle} ${textBorderColor}`, outlineOffset: textBorderOffset }
+            : {}),
+        ...(showTextShadow
+            ? { boxShadow: `${textShadowX}px ${textShadowY}px 0 ${textShadowColor}` }
+            : {}),
+    }
 
     // ── Media renderer ────────────────────────────────────────────────────
     function renderMedia() {
@@ -354,6 +432,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         lineHeight: bodyLineHeight,
         width: "100%",
     }
+    bodyStyle.fontSize = effBodySize
     let bodyContent: React.ReactNode = null
     if (body != null) {
         if (typeof body !== "string") {
@@ -412,9 +491,10 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
     )
 
     // ── Text block ────────────────────────────────────────────────────────
+    // The panel styles wrap either this block or the whole module, never both.
     const textBlock = (
         <div style={{
-            padding: textPadding,
+            ...(panelScope === "module" ? { padding: 0 } : panelStyle),
             display: "flex",
             flexDirection: "column" as const,
             gap: contentGap,
@@ -431,7 +511,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
             {title && (
                 <div style={{
                     fontFamily: ffTitle,
-                    fontSize: titleSize,
+                    fontSize: effTitleSize,
                     fontWeight: titleWeight,
                     color: titleColor,
                     lineHeight: titleLineHeight,
@@ -453,7 +533,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                             gap: 10,
                             alignItems: "flex-start",
                             fontFamily: ffBody,
-                            fontSize: bodySize,
+                            fontSize: effBodySize,
                             color: bodyColor,
                             lineHeight: bodyLineHeight,
                         }}>
@@ -470,11 +550,20 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         </div>
     )
 
-    // ── Compose layout based on mediaPosition ────────────────────────────
-    const effectivePosition: MediaPosition =
-        stacked && (mediaPosition === "left" || mediaPosition === "right")
-            ? "above"
-            : mediaPosition
+    // ── Compose layout based on the resolved position ─────────────────────
+    // In column layouts the media is width-constrained and aligned.
+    const mediaChild = isColumn ? (
+        <div style={{
+            width: `${stackedMediaWidth}%`,
+            marginLeft: stackedMediaAlign === "left" ? 0 : "auto",
+            marginRight: stackedMediaAlign === "right" ? 0 : "auto",
+        }}>
+            {mediaBlock}
+        </div>
+    ) : mediaBlock
+
+    const mediaCol = Math.max(10, Math.min(90, mediaColumnWidth ?? 50))
+    const textCol = 100 - mediaCol
 
     let gridStyle: React.CSSProperties = {}
     let children: React.ReactNode[] = []
@@ -483,20 +572,20 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         case "left":
             gridStyle = {
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: `${mediaCol}fr ${textCol}fr`,
                 gap: colGap,
                 alignItems: "stretch",
             }
-            children = [mediaBlock, textBlock]
+            children = [mediaChild, textBlock]
             break
         case "right":
             gridStyle = {
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr",
+                gridTemplateColumns: `${textCol}fr ${mediaCol}fr`,
                 gap: colGap,
                 alignItems: "stretch",
             }
-            children = [textBlock, mediaBlock]
+            children = [textBlock, mediaChild]
             break
         case "above":
             gridStyle = {
@@ -504,7 +593,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                 flexDirection: "column" as const,
                 gap: rowGap,
             }
-            children = [mediaBlock, textBlock]
+            children = [mediaChild, textBlock]
             break
         case "below":
             gridStyle = {
@@ -512,7 +601,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                 flexDirection: "column" as const,
                 gap: rowGap,
             }
-            children = [textBlock, mediaBlock]
+            children = [textBlock, mediaChild]
             break
     }
 
@@ -532,7 +621,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                 {...motionTriggerProp}
                 variants={motionVariants}
                 transition={motionTransition}
-                style={gridStyle}
+                style={panelScope === "module" ? { ...gridStyle, ...panelStyle } : gridStyle}
             >
                 {children.map((child, i) => (
                     <React.Fragment key={i}>{child}</React.Fragment>

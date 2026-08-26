@@ -22,67 +22,101 @@ import ScrollIndicator from "../components/ScrollIndicator"
 import BackToTop from "../components/BackToTop"
 import Sticker from "../components/Sticker"
 import Appear from "../components/Appear"
-import { projects, asset } from "../data/projects"
+import { publicProjects, asset } from "../data/projects"
 import { useBreakpoint } from "../hooks/useBreakpoint"
+import { pick, useLocale, useLocalePath, useT } from "../lib/i18n"
+import type { L10n, Locale } from "../lib/i18n"
 import { colors } from "../tokens"
 
-const HOME_PROJECT_ORDER = ["claws-and-cue-balls", "pawtchi", "goblin-td", "matcha-puzzle"]
-const homeProjects = HOME_PROJECT_ORDER
-    .map((slug) => projects.find((p) => p.slug === slug))
-    .filter((p): p is (typeof projects)[number] => Boolean(p))
+// Featured Work renders the public projects in catalogue order; drafts never
+// appear here.
 
-const workCards = [
+type LTags = { en: string[]; es: string[] }
+const tags = (en: string[], es?: string[]): LTags => ({ en, es: es ?? en })
+
+// Work cards are static page content, not part of the project catalogue.
+const workCards: { title: L10n; label: L10n; badge: L10n; tags: LTags }[] = [
     {
-        title: "Pignus", label: "Unity Dev + Frontend", badge: "2023–Now",
-        tags: ["Unity", "C#", "Meta Quest", "Vue.js"], dark: true,
+        title: { en: "Icnovatio", es: "Icnovatio" },
+        label: { en: "Frontend & UI Designer", es: "Diseñador de Frontend y de Interfaz de Usuario" },
+        badge: { en: "2026–Now", es: "2026–Presente" },
+        tags: tags(["React", "Typescript", "Figma"], ["React", "TypeScript", "Figma"]),
     },
     {
-        title: "AmblyopiaVR — Oxford", label: "Unity Dev & Technical Artist", badge: "2022",
-        tags: ["Unity", "HLSL", "VR"],
+        title: { en: "Rehaviour —  Pignus", es: "Rehaviour — Pignus" },
+        label: { en: "Unity Dev & Frontend", es: "Desarrollador Unity y Frontend" },
+        badge: { en: "2023–Now", es: "2023–presente" },
+        tags: tags(
+            ["Unity", "C#", "Blender", "HLSL", "VR", "Meta Quest", "Vue.js"],
+            ["Unidad", "C#", "Licuadora", "HLSL", "RV", "Meta Quest", "Vue.js"]
+        ),
     },
     {
-        title: "NeurospeechAI — UCL", label: "Frontend & UI/UX", badge: "2023",
-        tags: ["React", "TypeScript", "WCAG 2.1"],
+        title: { en: "AmblyopiaVR — Oxford", es: "AmblyopiaVR — Oxford" },
+        label: { en: "Unity Dev & Technical Artist", es: "Desarrollador Unity y Artista Técnico" },
+        badge: { en: "2022", es: "2022" },
+        tags: tags(["Unity", "HLSL", "VR"], ["Unidad", "HLSL", "RV"]),
     },
     {
-        title: "U. de Chile", label: "Unity Dev & UI/UX", badge: "2020-2021",
-        tags: ["Unity", "Blender", "Meta Quest"],
+        title: { en: "NeurospeechAI  — UCL", es: "NeurospeechAI — UCL" },
+        label: { en: "Frontend & UI/UX", es: "Frontend y UI/UX" },
+        badge: { en: "2023", es: "2023" },
+        tags: tags(["React", "TypeScript", "WCAG 2.1"], ["Reaccionar", "TypeScript", "WCAG 2.1"]),
     },
     {
-        title: "Eye-Search — UCL", label: "Frontend & UI/UX", badge: "2022",
-        tags: ["React", "TypeScript", "Unity WebGL"],
+        title: { en: "U. de Chile", es: "U. de Chile" },
+        label: { en: "Unity Dev & UI/UX", es: "Desarrollo en Unity y UI/UX" },
+        badge: { en: "2020-2021", es: "2020-2021" },
+        tags: tags(["Unity", "Blender", "Meta Quest"], ["Unidad", "licuadora", "Meta Quest"]),
     },
     {
-        title: "Radar— Pulso Escolar", label: "Full-Stack Developer", badge: "2019",
-        tags: ["Vue.js", "Node.js", "GCP"],
+        title: { en: "Eye-Search — UCL", es: "Búsqueda ocular — UCL" },
+        label: { en: "Frontend & UI/UX", es: "Frontend y UI/UX" },
+        badge: { en: "2022", es: "2022" },
+        tags: tags(["React", "TypeScript", "Unity WebGL"]),
     },
     {
-        title: "Capitalizarme", label: "Frontend & UI/UX", badge: "2022-2023",
-        tags: ["React", "Next.js", "Redux"],
+        title: { en: "Radar— Pulso Escolar", es: "Radar — Pulso Escolar" },
+        label: { en: "Full-Stack Developer", es: "Desarrollador Full-Stack" },
+        badge: { en: "2019", es: "2019" },
+        tags: tags(["Vue.js", "Node.js", "GCP"]),
+    },
+    {
+        title: { en: "Capitalizarme", es: "Capitalizarme" },
+        label: { en: "Frontend & UI/UX", es: "Frontend y UI/UX" },
+        badge: { en: "2022-2023", es: "2022-2023" },
+        tags: tags(["React", "Next.js", "Redux"]),
     },
 ]
 
 const skillCards = [
     {
-        emoji: "🎮", title: "Game & VR", className: "hs-skill-a", hoverRotate: 1,
-        bg: colors.teal, border: colors.gunmetalBlack, titleColor: colors.liberty, paddingV: 16,
-        tags: ["Unity 6 (URP)", "C++", "Unreal 5", "C#", "HLSL", "Blender", "Substance Painter", "VR", "Meta Quest"],
+        emoji: "🎮", title: { en: "Game & VR", es: "Juegos y RV" }, className: "hs-skill-a", hoverRotate: 1,
+        bg: colors.teal, border: colors.gunmetalBlack, titleColor: colors.liberty, paddingV: 16, tagFontSize: 13,
+        tags: tags(
+            ["Unity 6 (URP)", "C++", "Unreal 5", "C#", "HLSL", "Blender", "Substance Painter", "VR", "Meta Quest"],
+            ["Unity 6 (URP)", "C++", "Unreal 5", "C#", "HLSL", "Licuadora", "Substance Painter", "RV", "Meta Quest"]
+        ),
         tagBg: "rgb(122, 199, 178)", tagText: "rgb(51, 102, 102)", tagRadius: 6,
     },
     {
-        emoji: "💻", title: "Frontend", className: "hs-skill-b", hoverRotate: -1,
-        bg: colors.tangerine, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 16,
-        tags: ["React", "TypeScript", "Next.js", "Vue.js", "Vite", "GSAP", "Three.js", "R3F", "Lenis", "Lottie", "Framer Motion", "Framer"],
+        emoji: "💻", title: { en: "Frontend", es: "Frontend" }, className: "hs-skill-b", hoverRotate: -1,
+        bg: colors.tangerine, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 16, tagFontSize: 11,
+        tags: tags(["React", "TypeScript", "Next.js", "Vue.js", "Vite", "GSAP", "Three.js", "R3F", "Lenis", "Lottie", "Framer Motion", "Framer"]),
         tagBg: colors.babyPink, tagText: "rgb(135, 104, 109)", tagRadius: 6,
     },
     {
-        emoji: "✨", title: "Shared", className: "hs-skill-c", hoverRotate: 1,
-        bg: colors.liberty, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 30,
-        tags: ["Git", "Node.js", "Python", "MongoDB", "PostgreSQL", "Figma", "Krita", "Affinity"],
+        emoji: "✨", title: { en: "Shared", es: "Compartido" }, className: "hs-skill-c", hoverRotate: 1,
+        bg: colors.liberty, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 30, tagFontSize: 13,
+        tags: tags(
+            ["Git", "Node.js", "Python", "MongoDB", "PostgreSQL", "Figma", "Krita", "Affinity"],
+            ["Git", "Node.js", "Python", "MongoDB", "PostgreSQL", "Figma", "Krita", "Afinidad"]
+        ),
         tagBg: "rgb(114, 121, 191)", tagText: colors.surface, tagRadius: 8,
     },
 ]
 
+// The PROFILE.EXE terminal keeps its code-styled EN copy in both locales.
 const whoamiRows = [
     { label: "Name:", value: "Valentina Liberona", valueColor: colors.tangerine },
     { label: "Role:", value: "Unity Dev + Frontend Eng", valueColor: colors.teal },
@@ -91,12 +125,6 @@ const whoamiRows = [
 ]
 
 const whoamiTags = ["C#", "C++", "HLSL", "Unity", "Unreal Engine", "React", "Typescript", "Vue.js", "Python", "Figma"]
-
-const contactDetails = [
-    { label: "Email", value: "vliberonazuniga@gmail.com", url: "mailto:vliberonazuniga@gmail.com", color: colors.liberty, newTab: false },
-    { label: "Based in", value: "Santiago, Chile", url: "#", color: colors.tangerine, newTab: false },
-    { label: "GitHub", value: "@valeLib", url: "https://github.com/valeLib", color: colors.straw, newTab: true },
-]
 
 const checkerStrip = (
     <div style={{ width: 168, height: 56 }}>
@@ -139,6 +167,7 @@ function SectionHead({
                     dotGap={10}
                     fontFamily="caveat"
                     fontSize={20}
+                    fontWeight={400}
                     titleColor={titleColor}
                     showBorder
                     borderColor="rgb(54, 49, 59)"
@@ -162,17 +191,23 @@ function SectionHead({
 }
 
 // PROFILE.EXE + LOCATION.EXE, shared by the desktop reveal stage and the
-// in-section phone layout.
-function AboutWindows() {
+// in-section phone layout. Tablet/phone use the compact terminal variant and a
+// counter-rotated profile window (net 0°).
+function AboutWindows({ compact }: { compact: boolean }) {
     return (
         <>
-            <Appear trigger="mount" transition="spring-duration 0.4s 0.2 0s" className="hs-win hs-win-profile">
+            <Appear
+                trigger="mount"
+                transition="spring-duration 0.4s 0.2 0s"
+                className="hs-win hs-win-profile"
+                style={compact ? { transform: "none" } : undefined}
+            >
                 <RetroWindow
                     title="PROFILE.EXE"
                     titleBarColor={colors.liberty}
                     titleColor={colors.surface}
                     bodyColor="#ffffff"
-                    bodyPadding={0}
+                    bodyPadding={compact ? 2 : 0}
                     borderRadius={8}
                     dotRed={colors.tangerine}
                     dotYellow={colors.saffron}
@@ -184,14 +219,14 @@ function AboutWindows() {
                             topCommands={["whoami"]}
                             rows={whoamiRows}
                             bottomCommands={["skills --list"]}
-                            commandSize={16}
+                            commandSize={compact ? 15 : 16}
                             commandTextColor={colors.liberty}
                             promptColor={colors.liberty}
-                            rowSize={14}
+                            rowSize={compact ? 13 : 14}
                             labelColor={colors.gunmetalBlack}
                             labelValueGap={6}
-                            rowGap={4}
-                            sectionGap={10}
+                            rowGap={compact ? 3 : 4}
+                            sectionGap={compact ? 8 : 10}
                         />
                         <TagCloud
                             inputMode="array"
@@ -231,6 +266,8 @@ function AboutWindows() {
                             subtitle="GMT-3 · Remote friendly"
                             accentLine="Open to relocation"
                             accentSuffix="✓"
+                            bgColor="rgba(255, 255, 255, 0)"
+                            padding={6}
                         />
                     </div>
                 </RetroWindow>
@@ -243,6 +280,10 @@ export default function Home() {
     const bp = useBreakpoint()
     const phone = bp === "phone"
     const tablet = bp === "tablet"
+    const locale = useLocale()
+    const t = useT()
+    const lp = useLocalePath()
+    const LT = (v: LTags) => (locale === "es" ? v.es : v.en)
 
     const navProps = {
         wordmark: "Valentina LZ",
@@ -257,25 +298,25 @@ export default function Home() {
         linkSize: 16,
         linkHover: "Underline grow",
         showCTA: false,
-        ctaLabel: "Contact",
+        ctaLabel: t("navContact"),
         ctaAnchor: "#contact",
         ctaColor: colors.saffron,
         font: "Fredoka",
         background: phone ? "rgba(255, 253, 247, 0.7)" : "rgba(255, 253, 247, 0.41)",
         textColor: colors.liberty,
-        wordmarkColor: phone ? colors.liberty : colors.tangerine,
+        wordmarkColor: colors.tangerine,
         activeColor: colors.tangerine,
         hoverColor: colors.babyPink,
         overlay: true,
-        overlayTop: phone ? 12 : 24,
-        overlayInset: phone ? 16 : tablet ? 20 : 24,
-        overlayMaxWidth: tablet ? 760 : 930,
-        baseHeight: phone ? 48 : 56,
+        overlayTop: phone ? 12 : 27,
+        overlayInset: phone ? 16 : tablet ? 20 : 30,
+        overlayMaxWidth: tablet ? 760 : 870,
+        baseHeight: phone ? 48 : 52,
         shrinkOnScroll: true,
         shrunkHeight: 45,
         shrinkWidthOnScroll: true,
-        shrunkWidth: phone ? 85 : tablet ? 95 : 50,
-        scrollAlign: "right",
+        shrunkWidth: phone ? 85 : tablet ? 95 : 64,
+        scrollAlign: "center",
         fadeOnScroll: true,
         scrolledOpacity: phone ? 0.96 : 0.98,
         autoHide: phone,
@@ -302,11 +343,13 @@ export default function Home() {
         borderWidth: 0.5,
         radius: 30,
         maxWidth: 1085,
+        showLocale: true,
+        localeSize: 13,
         links: [
-            { label: "Work", anchor: "#work" },
-            { label: "About", anchor: "#about" },
-            { label: "Projects", anchor: "#projects" },
-            { label: "Contact", anchor: "#contact" },
+            { label: t("navWork"), anchor: "#work" },
+            { label: t("navAbout"), anchor: "#about" },
+            { label: t("navProjects"), anchor: "#projects" },
+            { label: t("navContact"), anchor: "#contact" },
         ],
     }
 
@@ -316,7 +359,8 @@ export default function Home() {
     const btnFontSize = tablet ? 13 : 14
     const btnPadH = tablet ? 12 : 16
     const btnPadV = tablet ? 8 : 10
-    const badgePadV = tablet ? 4 : 6
+    const badgePadV = phone || tablet ? 4 : 6
+    const badgePadH = phone ? 6 : 20
 
     const statHover = (rotate: number) => ({
         whileHover: { y: -1, scale: 1.1, rotate },
@@ -351,13 +395,13 @@ export default function Home() {
                                 <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s">
                                     <div className="hs-tags">
                                         <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
-                                            <RetroButton variant="primary" label="Unity Dev" bgColor={colors.teal} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={20} paddingV={badgePadV} />
+                                            <RetroButton variant="primary" label={t("statUnityDev")} bgColor={colors.teal} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
                                         </span>
                                         <span style={{ transform: "rotate(1deg)", display: "inline-flex" }}>
-                                            <RetroButton variant="primary" label="Creative Frontend" bgColor={colors.lilac} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={20} paddingV={badgePadV} />
+                                            <RetroButton variant="primary" label={t("statCreativeFrontend")} bgColor={colors.lilac} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
                                         </span>
                                         <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
-                                            <RetroButton variant="primary" label="Chile 🌍" bgColor={colors.tangerine} textColor={colors.surface} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={20} paddingV={badgePadV} />
+                                            <RetroButton variant="primary" label="Chile 🌍" bgColor={colors.tangerine} textColor={colors.surface} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
                                         </span>
                                     </div>
                                 </Appear>
@@ -365,37 +409,35 @@ export default function Home() {
                                 {/* "My" overlaps the top-left of "Portfolio". */}
                                 <h1 className="hs-wordmark">
                                     <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s" className="hs-portfolio-wrap">
-                                        <span className="hs-portfolio">Portfolio</span>
+                                        <span className="hs-portfolio">{t("heroPortfolio")}</span>
                                     </Appear>
                                     <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s" className="hs-my-wrap">
-                                        <span className="hs-my">My</span>
+                                        <span className="hs-my">{t("heroMy")}</span>
                                     </Appear>
                                 </h1>
                             </div>
 
                             <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.6s">
                                 <div className="hs-intro-row">
-                                    <p className="hs-intro">
-                                        7+ years building games, VR experiences, and motion-driven web interfaces.
-                                    </p>
+                                    <p className="hs-intro">{t("heroTagline")}</p>
                                 </div>
                             </Appear>
 
                             <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.8s">
                                 <div className="hs-cta-block">
                                     <div className="hs-btn-row">
-                                        <RetroButton variant="primary" label="See my work ↓" href="#projects" bgColor={colors.lilac} textColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
-                                        <RetroButton variant="primary" label="Get in touch" href="#contact" bgColor={colors.linen} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
+                                        <RetroButton variant="primary" label={t("heroSeeWork")} href="#projects" bgColor={colors.lilac} textColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
+                                        <RetroButton variant="primary" label={t("heroGetInTouch")} href="#projects" bgColor={colors.linen} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
                                     </div>
                                     <div className="hs-stat-row">
                                         <motion.div {...statHover(2)}>
-                                            <RetroButton variant="stat" statValue="7+" statLabel="Years XP" hoverLift={false} statValueSize={statSize} bgColor={colors.babyPink} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
+                                            <RetroButton variant="stat" statValue="7+" statLabel={t("statYearsXP")} statValueSize={statSize} bgColor={colors.babyPink} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
                                         </motion.div>
                                         <motion.div {...statHover(-2)}>
-                                            <RetroButton variant="stat" statValue="4+" statLabel="Fields" hoverLift={false} statValueSize={statSize} bgColor={colors.lilac} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
+                                            <RetroButton variant="stat" statValue="4+" statLabel={t("statFields")} statValueSize={statSize} bgColor={colors.lilac} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
                                         </motion.div>
                                         <motion.div {...statHover(-2)}>
-                                            <RetroButton variant="stat" statValue="20+" statLabel="Skills" hoverLift={false} statValueSize={statSize} bgColor={colors.liberty} textColor={colors.surface} statLabelColor={colors.surface} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
+                                            <RetroButton variant="stat" statValue="20+" statLabel={t("statSkills")} statValueSize={statSize} bgColor={colors.liberty} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
                                         </motion.div>
                                     </div>
                                 </div>
@@ -403,9 +445,9 @@ export default function Home() {
                         </div>
 
                         <div className="hs-hero-cat">
-                            <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.6s" className="hs-strip">
-                                {checkerStrip}
-                            </Appear>
+                            {/* The top strip renders immediately; only the spacer
+                                below it carries the appear delay. */}
+                            <div className="hs-strip">{checkerStrip}</div>
                             <div className="hs-shelf" aria-hidden />
                             <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.4s" className="hs-glb-row">
                                 <div className="hs-glb">
@@ -426,21 +468,26 @@ export default function Home() {
 
                     {/* ── ABOUT — stage 1: text on the left ────────────────── */}
                     <section id="about" className="hs hs-about" style={{ zIndex: 2 }}>
-                        <div className="hs-bg">
+                        <div className="hs-bg hs-about-bg">
                             <NotebookBackground paperColor={colors.liberty} gridType="grid" gridColor={colors.lilac} gridOpacity={0.05} gridSize={28} gridWeight={4} />
                         </div>
                         <CheckerDivider color1="rgb(114, 121, 191)" color2={colors.lilac} cellSize={12} rows={2} />
                         <div className="hs-about-inner">
                             <div className="hs-about-row">
                                 <div className="hs-about-text">
-                                    <SectionTitle title="ABOUT ME" layout="inline" showDot dotStyle="shadow" dotColor={colors.tangerine} dotBorderColor={colors.gunmetalBlack} dotBorderWidth={2} dotShadowColor={colors.gunmetalBlack} dotShadowX={1.5} dotShadowY={1} dotGap={10} fontFamily="caveat" fontSize={20} titleColor={colors.tangerine} showBorder borderColor="rgb(54, 49, 59)" borderWidth={2} borderStyle="dashed" paddingBottom={1} />
+                                    <SectionTitle title={t("aboutEyebrow")} layout="inline" showDot dotStyle="shadow" dotColor={colors.tangerine} dotBorderColor={colors.gunmetalBlack} dotBorderWidth={2} dotShadowColor={colors.gunmetalBlack} dotShadowX={1.5} dotShadowY={1} dotGap={10} fontFamily="caveat" fontSize={20} fontWeight={400} titleColor={colors.tangerine} showBorder borderColor="rgb(54, 49, 59)" borderWidth={2} borderStyle="dashed" paddingBottom={1} />
                                     <Appear trigger="inView" transition="spring-duration 0.5s 0.2 0.2s">
-                                        <SectionHeader showDot={false} showLabel={false} title="Hi, I'm Vale." titleColor={colors.linen} titleSize={34} intro="" />
+                                        <SectionHeader showDot={false} showLabel={false} title={t("aboutTitle")} titleColor={colors.linen} titleSize={34} intro="" />
                                     </Appear>
                                     <Appear trigger="inView" transition="spring-duration 0.5s 0.2 0.2s">
-                                        <p className="hs-body" style={{ color: colors.linen }}>
-                                            I’m a game developer based in Chile, working remotely, focused on building optimized systems that are both performant and visually clear. My work spans Unity and Unreal, where I design gameplay, AI behaviors, and scalable architectures. I also use frontend tools when needed to support interfaces and interactive systems.
-                                        </p>
+                                        <div
+                                            className="hs-body"
+                                            style={{ color: colors.linen }}
+                                            dangerouslySetInnerHTML={{ __html: pick(locale, {
+                                                en: "I’m a game developer based in Chile, working remotely, focused on building optimized systems that are both performant and visually clear. My work spans Unity and Unreal, where I design gameplay, AI behaviors, and scalable architectures. I also use frontend tools when needed to support interfaces and interactive systems.",
+                                                es: "Soy un desarrollador de videojuegos radicado en Chile, trabajo de forma remota y me enfoco en construir sistemas optimizados que sean de alto rendimiento y visualmente claros. Mi trabajo abarca Unity y Unreal, donde diseño jugabilidad, comportamientos de IA y arquitecturas escalables. También utilizo herramientas de frontend cuando es necesario para dar soporte a interfaces y sistemas interactivos.",
+                                            }) }}
+                                        />
                                     </Appear>
                                 </div>
                                 {/* On desktop and tablet this stays empty — the windows
@@ -449,7 +496,7 @@ export default function Home() {
                             </div>
                             {/* Phone shows the windows inline, below the text. */}
                             <div className="hs-about-winmobile">
-                                <AboutWindows />
+                                <AboutWindows compact />
                             </div>
                         </div>
                     </section>
@@ -461,7 +508,7 @@ export default function Home() {
                         <div className="hs-about2-inner">
                             <div className="hs-about2-spacer" aria-hidden />
                             <div className="hs-about2-col">
-                                <AboutWindows />
+                                <AboutWindows compact={tablet} />
                             </div>
                         </div>
                     </section>
@@ -477,26 +524,26 @@ export default function Home() {
                         </div>
                         <CheckerDivider color1={colors.tangerine} color2={tablet ? colors.libertyHover : colors.linen} cellSize={12} rows={2} />
                         <div className="hs-proj-inner">
-                            <SectionHead title="PROJECTS" titleColor={colors.liberty} header="Featured Work" headerColor={colors.gunmetalBlack} />
+                            <SectionHead title={t("projectsEyebrow")} titleColor={colors.liberty} header={t("projectsTitle")} headerColor={colors.gunmetalBlack} />
                             <div className="hs-project-grid">
-                                {homeProjects.map((p) => (
-                                    <Link key={p.slug} to={`/projects/${p.slug}`} className="hs-proj-cell">
+                                {publicProjects.map((p) => (
+                                    <Link key={p.slug} to={lp(`/projects/${p.slug}`)} className="hs-proj-cell">
                                         <ProjectShowcase
                                             itemCount={1}
                                             item1MediaType="image"
                                             item1Image={p.cover ?? ""}
-                                            item1UrlBar={p.title}
-                                            item1Title={p.title}
-                                            item1Tags={p.tracks}
+                                            item1UrlBar={pick(locale, p.title)}
+                                            item1Title={pick(locale, p.title)}
+                                            item1Tags={pick(locale, p.tags)}
                                             item1ShowButton={false}
                                             showHeader={false}
-                                            showCounter={false}
-                                            showArrows={false}
-                                            showDots={false}
+                                            showCounter
+                                            showArrows
+                                            showDots
                                             showSubtitle={false}
                                             showTags={!phone}
                                             imageFit="contain"
-                                            imageBgColor={p.cover ? colors.linen : p.color}
+                                            imageBgColor="#f5eee6"
                                             frameBorderColor={colors.gunmetalBlack}
                                             dotRed={colors.tangerine}
                                             dotYellow={colors.saffron}
@@ -512,45 +559,54 @@ export default function Home() {
 
                     {/* ── WORK / EXPERIENCE ────────────────────────────────── */}
                     <section id="work" className="hs hs-work" style={{ zIndex: 4 }}>
-                        <div className="hs-bg" style={{ background: colors.babyPink }} />
+                        <div className="hs-bg">
+                            <NotebookBackground paperColor="rgb(100, 108, 185)" gridType="dot" gridColor={colors.liberty} gridOpacity={1} gridSize={34} gridWeight={2.6} />
+                        </div>
                         <div className="hs-work-divider">
-                            <PatternDivider pattern="Dots" tile={37} color={colors.surface} background="rgba(0,0,0,0)" />
+                            <PatternDivider pattern="Scallop" tile={30} color={colors.linen} background="rgba(0,0,0,0)" flip />
                         </div>
                         <div className="hs-work-content">
-                            <SectionHead title="EXPERIENCE" titleColor={colors.liberty} header="Where I've worked" headerColor={colors.primaryTxt} />
+                            <SectionHead title={t("workEyebrow")} titleColor={colors.liberty} header={t("workTitle")} headerColor={colors.primaryTxt} />
                             <div className="hs-work-grid">
                                 {workCards.map((w) => (
-                                    <Appear key={w.title} trigger="scroll" transition="spring-duration 1s 0.2 0.2s">
+                                    <Appear key={w.title.en} trigger="scroll" transition="spring-duration 1s 0.2 0.2s">
                                         <motion.div whileHover={{ scale: 1.02, rotate: 1 }} transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}>
                                             <InfoCard
                                                 device={phone ? "mobile" : "desktop"}
-                                                label={w.label}
+                                                label={pick(locale, w.label)}
                                                 labelPosition="below"
-                                                labelColor={w.dark ? colors.teal : colors.liberty}
-                                                title={w.title}
-                                                titleSize={22}
+                                                labelColor={colors.liberty}
+                                                title={pick(locale, w.title)}
+                                                titleSize={23}
                                                 showBadge
-                                                badgeText={w.badge}
-                                                badgeBg={w.dark ? "rgb(54, 49, 59)" : "rgb(237, 235, 231)"}
-                                                badgeText2={w.dark ? colors.lilac : colors.gunmetalBlack}
-                                                badgeBorderColor={w.dark ? "rgb(102, 102, 102)" : colors.gunmetalBlack}
+                                                badgeText={pick(locale, w.badge)}
+                                                badgeBg="rgb(237, 235, 231)"
+                                                badgeText2={colors.gunmetalBlack}
+                                                badgeBorderColor={colors.gunmetalBlack}
                                                 badgeFontSize={tablet ? 12 : 13}
                                                 badgePaddingH={tablet ? 8 : 12}
                                                 badgePaddingV={tablet ? 5 : 6}
                                                 bodyMode="tags"
-                                                tags={w.tags}
-                                                tagBg={w.dark ? "rgb(54, 49, 59)" : colors.lilac}
-                                                tagText={w.dark ? colors.surface : colors.gunmetalBlack}
-                                                tagBorder="rgba(36, 38, 46, 0.28)"
-                                                tagBorderWidth={1.5}
-                                                bgColor={w.dark ? colors.gunmetalBlack : colors.surface}
-                                                borderColor={w.dark ? colors.gunmetalBlack : "#1a1520"}
-                                                borderWidth={2}
-                                                titleColor={w.dark ? colors.surface : colors.gunmetalBlack}
+                                                tags={LT(w.tags)}
+                                                tagBg={colors.saffron}
+                                                tagText={colors.gunmetalBlack}
+                                                tagBorder={colors.gunmetalBlack}
+                                                tagBorderWidth={2}
+                                                tagBorderRadius={6}
+                                                tagFontSize={13}
+                                                tagPaddingH={10}
+                                                tagPaddingV={1}
+                                                tagGap={4}
+                                                bgColor={colors.surface}
+                                                borderColor={colors.gunmetalBlack}
+                                                borderWidth={1}
+                                                titleColor={colors.gunmetalBlack}
                                                 showShadow
-                                                shadowColor="rgba(36, 38, 46, 0.28)"
+                                                shadowColor={colors.gunmetalBlack}
                                                 shadowX={3}
                                                 shadowY={3}
+                                                paddingH={34}
+                                                paddingV={16}
                                                 borderRadius={14}
                                             />
                                         </motion.div>
@@ -567,12 +623,12 @@ export default function Home() {
                         </div>
                         <CheckerDivider color1={colors.liberty} color2={colors.linen} cellSize={12} rows={2} />
                         <div className="hs-skills-body">
-                            <SectionHead title="SKILLS" titleColor={colors.tangerine} header="What I use" headerColor={colors.primaryTxt} />
+                            <SectionHead title={t("skillsEyebrow")} titleColor={colors.tangerine} header={t("skillsTitle")} headerColor={colors.gunmetalBlack} />
                             {/* Desktop staggers the three cards diagonally with
                                 absolute anchors; tablet and phone stack them. */}
                             <div className="hs-skill-stage">
                                 {skillCards.map((c, i) => (
-                                    <Appear key={c.title} trigger="scroll" transition={`spring-duration 1s 0.2 ${0.2 + i * 0.2}s`} className={`hs-skill-card ${c.className}`}>
+                                    <Appear key={c.title.en} trigger="scroll" transition={`spring-duration 1s 0.2 ${0.2 + i * 0.2}s`} className={`hs-skill-card ${c.className}`}>
                                         <motion.div whileHover={{ scale: 1.02, rotate: c.hoverRotate }} transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}>
                                             <InfoCard
                                                 device={phone ? "mobile" : "desktop"}
@@ -580,17 +636,17 @@ export default function Home() {
                                                 iconEmoji={c.emoji}
                                                 iconSize={22}
                                                 label=""
-                                                title={c.title}
+                                                title={pick(locale, c.title)}
                                                 titleSize={22}
                                                 showBadge={false}
                                                 bodyMode="tags"
-                                                tags={c.tags}
+                                                tags={LT(c.tags)}
                                                 tagBg={c.tagBg}
                                                 tagText={c.tagText}
                                                 tagBorder="rgba(36, 38, 46, 0.28)"
                                                 tagBorderWidth={1.5}
                                                 tagBorderRadius={c.tagRadius}
-                                                tagFontSize={13}
+                                                tagFontSize={c.tagFontSize}
                                                 tagPaddingH={8}
                                                 tagPaddingV={6}
                                                 tagGap={5}
@@ -620,25 +676,27 @@ export default function Home() {
                         </div>
                         <CheckerDivider color1={colors.tangerine} color2={colors.linen} cellSize={12} rows={2} />
                         <div className="hs-contact-body">
-                            <ContactPage
-                                eyebrow="Get in touch"
-                                headline="Let's build something playful."
-                                intro="Have a game, an interface, or a wild idea? Drop a line and I'll get back to you."
-                                email="vliberonazuniga@gmail.com"
-                                accent={colors.tangerine}
-                                background="rgba(242, 239, 233, 0)"
-                                cardColor={colors.surface}
-                                textColor={colors.primaryTxt}
-                                mutedColor={colors.secondaryTxt}
-                                details={contactDetails}
-                                hardShadow
-                                shadowColor={colors.primaryTxt}
-                                radius={20}
-                                padding={64}
-                                gap={40}
-                                mobilePadding={28}
-                                mobileGap={48}
-                            />
+                            <div className="hs-contact-inner">
+                                <ContactPage
+                                    eyebrow={t("heroGetInTouch")}
+                                    headline={t("contactTitle")}
+                                    intro={t("contactBody")}
+                                    email="vliberonazuniga@gmail.com"
+                                    accent={colors.tangerine}
+                                    background="rgba(242, 239, 233, 0)"
+                                    cardColor={colors.surface}
+                                    textColor={colors.primaryTxt}
+                                    mutedColor={colors.secondaryTxt}
+                                    details={contactDetails(locale)}
+                                    hardShadow
+                                    shadowColor={colors.primaryTxt}
+                                    radius={20}
+                                    padding={64}
+                                    gap={40}
+                                    mobilePadding={28}
+                                    mobileGap={48}
+                                />
+                            </div>
                         </div>
                     </section>
 
@@ -651,7 +709,9 @@ export default function Home() {
                     <BackToTop fixed={false} alwaysShow fill={colors.liberty} hoverFill={colors.tangerine} />
                 </div>
 
-                {/* Above the section stack, so it slides over pinned Contact. */}
+                {/* Above the section stack, so it slides over pinned Contact.
+                    The band's transparent padding floats the bar off the page
+                    bottom, letting the pinned Contact background show through. */}
                 <div className="hs-footer">
                     <Footer
                         wordmark="Valentina Liberona"
@@ -696,7 +756,13 @@ export default function Home() {
                 .hs-bg { position: absolute; inset: 0; z-index: 0; }
                 .hs-spacer, .hs-about2 { background: transparent; }
                 .hs-spacer { pointer-events: none; }
-                .hs-tail { height: 2017px; pointer-events: none; }
+                .hs-tail { height: 1925px; pointer-events: none; }
+
+                /* Above 1200px the section column stays fixed at 1200px, centered
+                   over the cream page background. */
+                @media (min-width: 1200.02px) {
+                    .hs-stack { width: 1200px; margin: 0 auto; }
+                }
 
                 /* Hero — two columns: title (1fr) + cat (38.42%) */
                 .hs-hero { flex-direction: row; gap: 40px; padding: 0 40px 0 80px; }
@@ -734,13 +800,14 @@ export default function Home() {
                     flex: 0 0 38.42%; display: flex; flex-direction: column;
                     align-items: center; gap: 10px; padding-top: 80px;
                 }
+                .hs-strip { display: flex; }
                 .hs-shelf { width: 100%; height: 71px; }
                 .hs-glb-row { width: 100%; display: flex; justify-content: center; }
                 .hs-glb { width: 348px; max-width: 100%; height: 348px; }
                 .hs-strip-row { width: 100%; height: 85px; display: flex; justify-content: flex-end; align-items: center; padding: 16px 12px 0 0; box-sizing: border-box; }
                 .hs-scroll-ind { position: absolute; bottom: 30px; left: 54.58%; transform: translateX(-50%); z-index: 8; }
                 .hs-sticker-drag { position: absolute; top: 156px; left: 756px; width: 129px; height: 79px; z-index: 4; }
-                .hs-sticker-peel { position: absolute; bottom: 81px; left: 1018px; width: 150px; height: 166px; z-index: 4; transform: rotate(-1deg); }
+                .hs-sticker-peel { position: absolute; bottom: 81px; left: 976px; width: 150px; height: 166px; transform: rotate(-1deg); }
 
                 /* About stage 1 — text in the left 36.25%, right side empty */
                 .hs-about-inner { position: relative; z-index: 1; margin-top: 40px; padding: 20px 80px 0; }
@@ -765,7 +832,7 @@ export default function Home() {
                 .hs-win-profile { transform: rotate(1deg); }
                 .hs-win-loc { transform: rotate(-1deg); }
                 .hs-win > * { width: 95%; margin: 0 auto; }
-                .hs-whoami { display: flex; flex-direction: column; gap: 18px; padding: 10px 7px 10px 20px; }
+                .hs-whoami { display: flex; flex-direction: column; gap: 18px; padding: 10px 7px 10px 27px; }
                 .hs-loc { padding: 0 42px; }
                 .hs-about-winmobile { display: none; }
 
@@ -775,21 +842,21 @@ export default function Home() {
                     width: 86.667%; margin: 0 auto; padding-top: 20px;
                     display: flex; flex-direction: column; gap: 10px;
                 }
-                .hs-project-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 10px; }
+                .hs-project-grid { display: grid; grid-template-columns: repeat(3, 306px); justify-content: flex-start; gap: 20px; margin-top: 20px; }
                 .hs-proj-cell { text-decoration: none; display: block; width: 90%; }
 
-                /* Work */
-                .hs-work-divider { position: relative; z-index: 6; width: 100%; height: 9%; min-height: 40px; }
+                /* Work — violet dot-grid paper behind the cards */
+                .hs-work-divider { position: relative; z-index: 6; width: 100%; height: 3%; min-height: 24px; }
                 .hs-work-content {
                     position: relative; z-index: 2; flex: 1; min-height: 0;
-                    padding: 80px 80px 0; box-sizing: border-box;
+                    padding: 70px 80px 0; box-sizing: border-box;
                     display: flex; flex-direction: column; gap: 10px;
                 }
                 .hs-work-grid {
-                    display: flex; flex-wrap: wrap; gap: 12px 80px;
-                    align-items: center; padding: 0 0 10px 42px; width: 99%;
+                    display: flex; flex-wrap: wrap; gap: 14px 80px;
+                    align-items: center; padding: 8px 0 10px 42px; width: 99%;
                 }
-                .hs-work-grid > * { width: 42%; }
+                .hs-work-grid > * { width: 40%; }
 
                 /* Skills — desktop cascades the cards along a diagonal */
                 .hs-skills-body {
@@ -809,9 +876,10 @@ export default function Home() {
                     padding: 80px 80px 0; box-sizing: border-box;
                     display: flex; flex-direction: column; justify-content: center;
                 }
+                .hs-contact-inner { padding-top: 20px; }
 
-                .hs-backtotop { position: absolute; right: 24px; bottom: 447px; z-index: 9; }
-                .hs-footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; }
+                .hs-backtotop { position: absolute; right: 24px; bottom: 355px; z-index: 9; }
+                .hs-footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; padding: 56px 0; }
 
                 /* ── Tablet (810–1199) ─────────────────────────────────────── */
                 @media (max-width: 1199.98px) {
@@ -821,7 +889,6 @@ export default function Home() {
                     .hs-portfolio { font-size: 96px; }
                     .hs-my { font-size: 56px; }
                     .hs-my-wrap { left: 44px; bottom: 95px; }
-                    .hs-portfolio-wrap { bottom: 20px; }
                     .hs-intro-row { padding: 0 0 0 18px; }
                     .hs-cta-block { gap: 8px; padding: 24px 0 8px; }
                     .hs-btn-row, .hs-stat-row { height: auto; padding: 0 6px 2px; }
@@ -833,7 +900,9 @@ export default function Home() {
 
                     .hs-about-text { width: 32.46%; }
                     .hs-about2 { height: 66vh; }
+                    .hs-about2-spacer { width: 34.46%; }
                     .hs-win { width: 100%; }
+                    .hs-win-profile { transform: none; }
 
                     .hs-project-grid { grid-template-columns: repeat(2, 1fr); }
 
@@ -845,6 +914,12 @@ export default function Home() {
 
                     .hs-skill-stage { display: flex; flex-wrap: wrap; gap: 36px 18px; padding: 28px 0; min-height: 0; align-items: flex-start; }
                     .hs-skill-card { position: static; width: 80%; transform: none; }
+
+                    .hs-contact-body { justify-content: flex-start; }
+                    .hs-contact-inner { padding-top: 0; }
+
+                    .hs-backtotop { right: 47px; bottom: 228px; }
+                    .hs-footer { padding: 428px 0; }
 
                     .hs-tail { height: 849px; }
                 }
@@ -861,24 +936,26 @@ export default function Home() {
                     .hs-desktop-only, .hs-tail { display: none; }
 
                     .hs-hero { flex-direction: column; align-items: center; gap: 0; padding: 20px 16px 0; min-height: 110vh; }
-                    .hs-hero-title { flex: none; width: 100%; padding: 40px 0 0; min-height: 76vh; align-items: center; }
+                    .hs-hero-bg { inset: 0 0 -20px 0; }
+                    .hs-hero-title { flex: none; width: 100%; padding: 70px 0 0; min-height: 68vh; align-items: center; }
                     .hs-title-box { width: 99.4%; height: 238px; padding: 50px 0 0; display: flex; flex-direction: column; align-items: center; }
                     .hs-tags { width: 96%; min-width: 0; justify-content: center; }
                     .hs-portfolio { font-size: 86px; }
                     .hs-my { font-size: 42px; }
-                    .hs-my-wrap { left: 56px; bottom: 83px; }
+                    .hs-my-wrap { left: 6px; bottom: 83px; }
                     .hs-portfolio-wrap { bottom: 27px; }
-                    .hs-intro-row { padding: 0 0 0 18px; width: 352px; }
+                    .hs-intro-row { padding: 0 0 0 18px; width: 340px; }
                     .hs-cta-block { align-items: center; }
                     .hs-btn-row, .hs-stat-row { height: auto; justify-content: center; padding: 8px 6px 0; }
-                    .hs-hero-cat { flex: none; flex-direction: row; justify-content: center; width: 73%; height: 30vh; padding-top: 40px; gap: 0; }
+                    .hs-hero-cat { flex: none; flex-direction: row; justify-content: center; width: 73%; height: 30vh; padding-top: 0; gap: 0; }
                     .hs-strip, .hs-strip-row, .hs-shelf { display: none; }
                     .hs-glb { width: 197px; height: 197px; }
                     .hs-sticker-drag, .hs-sticker-peel { display: none; }
-                    .hs-scroll-ind { left: 47.95%; bottom: 162px; }
+                    .hs-scroll-ind { left: 50%; bottom: 334px; }
 
-                    .hs-about { min-height: 111vh; }
-                    .hs-about-inner { padding: 40px 42px 0; }
+                    .hs-about { min-height: 111vh; background: rgb(245, 238, 230); }
+                    .hs-about-bg { top: 20px; bottom: auto; height: 824px; }
+                    .hs-about-inner { padding: 40px 42px 0; margin-top: 0; }
                     .hs-about-row { flex-direction: column; }
                     .hs-about-text { width: 100%; gap: 4px; }
                     .hs-about-side { display: none; }
@@ -887,6 +964,7 @@ export default function Home() {
                         gap: 10px; padding: 10px 0 40px; margin-top: 20px;
                     }
                     .hs-about-winmobile .hs-win { width: 100%; }
+                    .hs-about-winmobile .hs-win-profile { transform: none; }
 
                     .hs-proj-inner { width: 80%; padding: 40px 0 20px; gap: 20px; }
                     .hs-project-grid { display: flex; flex-wrap: wrap; gap: 11px 5px; margin-top: 0; }
@@ -898,15 +976,16 @@ export default function Home() {
                     .hs-work-grid { display: grid; grid-template-columns: 1fr; gap: 18px 0; padding: 6px; width: 315px; max-width: 100%; }
                     .hs-work-grid > * { width: auto; }
 
-                    .hs-skills { min-height: 127vh; }
+                    .hs-skills { min-height: 124.88vh; }
                     .hs-skills-body { padding: 40px 40px 222px; align-items: center; }
                     .hs-skill-stage { display: flex; flex-direction: column; gap: 40px; padding: 40px 8px 20px; min-height: 0; width: 100%; }
                     .hs-skill-card { position: static; width: 100%; transform: none; }
 
-                    .hs-contact { min-height: 129vh; }
-                    .hs-contact-body { padding: 40px 20px 0; justify-content: flex-start; }
+                    .hs-contact { min-height: 160vh; }
+                    .hs-contact-body { padding: 40px 20px 0; justify-content: center; }
 
-                    .hs-backtotop { right: auto; left: 50%; transform: translateX(-50%); bottom: 191px; }
+                    .hs-backtotop { right: auto; left: 50%; transform: translateX(-50%); bottom: 250px; }
+                    .hs-footer { padding: 22px 0; }
                 }
 
                 /* Reduced motion: Lenis and appear effects are disabled elsewhere;
@@ -921,4 +1000,12 @@ export default function Home() {
             `}</style>
         </div>
     )
+}
+
+function contactDetails(locale: Locale) {
+    return [
+        { label: pick(locale, { en: "Email", es: "Correo electrónico" }), value: "vliberonazuniga@gmail.com", url: "mailto:vliberonazuniga@gmail.com", color: colors.liberty, newTab: false },
+        { label: pick(locale, { en: "Based in", es: "Basado en" }), value: "Santiago, Chile", url: "#", color: colors.tangerine, newTab: false },
+        { label: "GitHub", value: "@valeLib", url: "https://github.com/valeLib", color: colors.straw, newTab: true },
+    ]
 }
