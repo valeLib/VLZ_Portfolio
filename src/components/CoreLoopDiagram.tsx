@@ -347,9 +347,10 @@ export default function CoreLoopDiagram(props: CoreLoopDiagramProps) {
         const normX = nxv / nlen
         const normY = nyv / nlen
 
-        const curveSign = sweep > 0 ? 1 : -1
-        const ctrlX = mx + normX * arrowCurve * curveSign
-        const ctrlY = my + normY * arrowCurve * curveSign
+        // Control point always pushes along the outward radial normal — positive
+        // arrowCurve bows outward in both travel directions.
+        const ctrlX = mx + normX * arrowCurve
+        const ctrlY = my + normY * arrowCurve
 
         const tangentX = ex - ctrlX
         const tangentY = ey - ctrlY

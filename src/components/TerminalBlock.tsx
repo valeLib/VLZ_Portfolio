@@ -40,8 +40,13 @@ const DEFAULTS: Required<TerminalBlockProps> = {
     rowGap: 6,
     sectionGap: 18,
     topCommands: ["whoami"],
-    rows: [],
-    bottomCommands: [],
+    rows: [
+        { label: "Name:", value: "Valentina Liberona", valueColor: "#EE978E" },
+        { label: "Role:", value: "Unity Dev + Frontend Eng", valueColor: "#7AC7B2" },
+        { label: "Base:", value: "Santiago, Chile", valueColor: "#FABA32" },
+        { label: "Status:", value: "Available", valueColor: "#3a8265", showDot: true, dotColor: "#3a8265" },
+    ],
+    bottomCommands: ["skills --list"],
     commandFont: "'IBM Plex Mono', 'Courier New', monospace",
     commandWeight: 700,
     commandSize: 15,
@@ -88,6 +93,7 @@ export default function TerminalBlock(props: TerminalBlockProps) {
     return (
         <div style={{
             width: "100%",
+            height: "100%",
             background: backgroundColor,
             padding,
             boxSizing: "border-box",

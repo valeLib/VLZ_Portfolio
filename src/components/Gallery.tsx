@@ -81,7 +81,7 @@ type GalleryProps = {
     enableDrag?: boolean
     dragThreshold?: number
     imageAspectRatio?: string
-    aspectRatio?: string          // template alias for imageAspectRatio
+    aspectRatio?: string          // alias for imageAspectRatio
     imageFit?: string
     imageBgColor?: string
     cardRadius?: number
@@ -89,7 +89,7 @@ type GalleryProps = {
     cardBorderColor?: string
     cardShadow?: string
     containerHeight?: number
-    stageHeight?: number          // template alias for containerHeight
+    stageHeight?: number          // alias for containerHeight
     containerBg?: string
     showTitle?: boolean
     titlePosition?: string
@@ -114,7 +114,7 @@ type GalleryProps = {
     showDots?: boolean
     arrowPlacement?: string
     arrowStyle?: string
-    arrowShape?: string           // template alias for arrowStyle
+    arrowShape?: string           // alias for arrowStyle
     arrowBorderColor?: string
     arrowIconColor?: string
     arrowBg?: string
@@ -127,7 +127,7 @@ type GalleryProps = {
     stackPeek?: number
     stackRotation?: number
     stackOpacity?: number
-    stackBackOpacity?: number     // template alias for stackOpacity
+    stackBackOpacity?: number     // alias for stackOpacity
     fanSpread?: number
     fanRotation?: number
     scaleSide?: number

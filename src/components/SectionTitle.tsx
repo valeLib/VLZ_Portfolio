@@ -180,6 +180,8 @@ type SectionTitleProps = {
     borderColor?: string
     borderWidth?: number
     borderStyle?: string
+    /** Hide the gradient line while keeping the layout's spacing. */
+    showLine?: boolean
     lineColor?: string
     lineColor2?: string
     lineThickness?: number
@@ -224,6 +226,7 @@ const DEFAULTS: Required<SectionTitleProps> = {
     borderColor: "#1a1520",
     borderWidth: 3,
     borderStyle: "solid",
+    showLine: true,
     lineColor: "#EE978E",
     lineColor2: "transparent",
     lineThickness: 1.5,
@@ -248,13 +251,13 @@ export default function SectionTitle(props: SectionTitleProps) {
         dotGap,
         fontFamily, fontSize, fontWeight, titleColor, letterSpacing, textTransform,
         showBorder, borderColor, borderWidth, borderStyle,
-        lineColor, lineColor2, lineThickness, lineGap, lineGapBelow,
+        showLine, lineColor, lineColor2, lineThickness, lineGap, lineGapBelow,
         labelGap, paddingBottom,
         animation, animationDuration, staggerDelay, bounce, animationTrigger,
     } = { ...DEFAULTS, ...props }
 
     const ff =
-        fontFamily === "fredoka" ? "'Fredoka', cursive" :
+        fontFamily === "fredoka" ? "'Fredoka One', 'Fredoka', cursive" :
         fontFamily === "caveat" ? "'Caveat', cursive" :
         fontFamily === "mono" ? "'IBM Plex Mono', monospace" :
         fontFamily === "anon" ? "'Anonymous Pro', monospace" :
@@ -375,7 +378,7 @@ export default function SectionTitle(props: SectionTitleProps) {
             {DotEl}
             {labelInline && LabelEl}
             {TitleEl}
-            {isInlineLine && (
+            {isInlineLine && showLine !== false && (
                 <>
                     <div style={{ width: lineGap, flexShrink: 0 }} />
                     {gradientLine}
@@ -384,7 +387,7 @@ export default function SectionTitle(props: SectionTitleProps) {
         </div>
     )
 
-    const lineBelowEl = isLineBelow ? (
+    const lineBelowEl = isLineBelow && showLine !== false ? (
         <div style={{
             width: "100%",
             marginTop: lineGapBelow,

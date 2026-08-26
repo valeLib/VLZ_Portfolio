@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from "react"
 import { scrollToElement } from "../lib/scroll"
+import { LOCALES, useLocale, useSetLocale } from "../lib/i18n"
 
 /**
  * Retro / Y2K sticky navigation bar.
  * Smooth-scrolls to #section anchors, highlights the active section,
  * and can shrink (height + width) / re-align / fade / elevate / blur on scroll.
  * Optional always-on glassmorphism (frosted translucent bar).
- * Mobile: animated burger that morphs into an X, with a vertically
- * expanding dropdown of staggered links.
+ * Built-in locale pill (globe + language code) with a dropdown that switches
+ * the app locale in place. Mobile: animated burger that morphs into an X,
+ * with a vertically expanding dropdown of staggered links; the pill stays in
+ * the bar next to the burger.
  */
 
 const FONT_STACKS: Record<string, string> = {
@@ -118,8 +121,20 @@ const DEFAULTS = {
     shadowMode: "On scroll",
     shadowDepth: 6,
     shadowRim: false,
-    shadowRimColor: "#F2EFE9",
-    shadowRimWidth: 0.5,
+    shadowRimColor: "#FFFDF8",
+    shadowRimWidth: 1.5,
+    showLocale: true,
+    localeLabelMode: "code",
+    localeShowGlobe: true,
+    localeSize: 14,
+    localeBg: "#FFFDF8",
+    localeColor: "#1C1B22",
+    localeAccent: "#4F58AF",
+    localeBorderWidth: 0,
+    localeBorderColor: "#1C1B22",
+    localeRadius: 999,
+    localeMenuBg: "#FFFDF8",
+    localeMenuRadius: 14,
     links: [
         { label: "Work", anchor: "#work" },
         { label: "About", anchor: "#about" },
@@ -190,6 +205,18 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         shadowRim,
         shadowRimColor,
         shadowRimWidth,
+        showLocale,
+        localeLabelMode,
+        localeShowGlobe,
+        localeSize,
+        localeBg,
+        localeColor,
+        localeAccent,
+        localeBorderWidth,
+        localeBorderColor,
+        localeRadius,
+        localeMenuBg,
+        localeMenuRadius,
         style,
     } = { ...DEFAULTS, ...props }
 
@@ -197,8 +224,37 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     const [active, setActive] = useState<string>("")
     const [menuOpen, setMenuOpen] = useState(false)
     const [retracted, setRetracted] = useState(false)
+    const [localeOpen, setLocaleOpen] = useState(false)
     const lastY = useRef(0)
     const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+    const localeRef = useRef<HTMLDivElement>(null)
+
+    const activeLocale = useLocale()
+    const setLocale = useSetLocale()
+    const localeList = LOCALES
+    const currentEntry = localeList.find((l) => l.code === activeLocale)
+    const currentLabel = currentEntry
+        ? localeLabelMode === "name"
+            ? currentEntry.name
+            : currentEntry.code.slice(0, 2).toUpperCase()
+        : "EN"
+
+    // Close the locale dropdown on outside mousedown / Escape while open.
+    useEffect(() => {
+        if (!localeOpen) return
+        const onDown = (e: MouseEvent) => {
+            if (localeRef.current && !localeRef.current.contains(e.target as Node)) setLocaleOpen(false)
+        }
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === "Escape") setLocaleOpen(false)
+        }
+        document.addEventListener("mousedown", onDown)
+        document.addEventListener("keydown", onKey)
+        return () => {
+            document.removeEventListener("mousedown", onDown)
+            document.removeEventListener("keydown", onKey)
+        }
+    }, [localeOpen])
 
     const stack = FONT_STACKS[font] ?? FONT_STACKS.Fredoka
     const wordmarkStack = FONT_STACKS[wordmarkFont] ?? stack
@@ -385,6 +441,16 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         "--nav-bw": fullBorder ? `${borderWidth}px` : "0px",
         "--nav-shadow": barShadow,
         "--nav-top": overlay ? `${overlayTop}px` : "0px",
+        "--nav-pad": "24px",
+        "--loc-bg": localeBg,
+        "--loc-color": localeColor,
+        "--loc-accent": localeAccent,
+        "--loc-menu-bg": localeMenuBg,
+        "--loc-menu-radius": `${localeMenuRadius}px`,
+        "--loc-hover": hexToRgba(localeAccent, 0.12),
+        "--loc-radius": `${localeRadius}px`,
+        "--loc-size": `${localeSize}px`,
+        "--loc-border": localeBorderWidth > 0 ? `${localeBorderWidth}px solid ${localeBorderColor}` : "none",
         ...style,
         ...overlayOverrides,
     } as React.CSSProperties
@@ -438,65 +504,120 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                         {wordmark}
                     </a>
 
-                    {/* Desktop links */}
-                    <div
-                        className="sticky-nav-links"
-                        style={{ display: "flex", alignItems: "center", gap: 28 }}
-                    >
-                        {items.map((l, i) => {
-                            const id = (l.anchor || "").replace(/^#/, "")
-                            const isActive = id && id === active
-                            return (
+                    {/* Right-hand group: links · locale pill · burger */}
+                    <div className="sticky-nav-right">
+                        {/* Desktop links */}
+                        <div className="sticky-nav-links">
+                            {items.map((l, i) => {
+                                const id = (l.anchor || "").replace(/^#/, "")
+                                const isActive = id && id === active
+                                return (
+                                    <a
+                                        key={i}
+                                        href={l.anchor || "#"}
+                                        onClick={goTo(l.anchor)}
+                                        className={`snl snl-${hoverSuffix}${isActive ? " is-active" : ""}`}
+                                        style={{
+                                            fontSize: linkSize,
+                                            fontWeight: 500,
+                                            textDecoration: "none",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        {l.label}
+                                    </a>
+                                )
+                            })}
+
+                            {showCTA && (
                                 <a
-                                    key={i}
-                                    href={l.anchor || "#"}
-                                    onClick={goTo(l.anchor)}
-                                    className={`snl snl-${hoverSuffix}${isActive ? " is-active" : ""}`}
+                                    href={ctaAnchor || "#contact"}
+                                    onClick={goTo(ctaAnchor)}
+                                    className="snl-cta"
                                     style={{
-                                        fontSize: linkSize,
-                                        fontWeight: 500,
+                                        padding: "9px 18px",
+                                        background: ctaColor,
+                                        color: "#1C1B22",
+                                        fontWeight: 600,
+                                        fontSize: linkSize - 1,
+                                        borderRadius: 999,
+                                        border: `2.5px solid ${textColor}`,
                                         textDecoration: "none",
                                         whiteSpace: "nowrap",
                                     }}
                                 >
-                                    {l.label}
+                                    {ctaLabel}
                                 </a>
-                            )
-                        })}
+                            )}
+                        </div>
 
-                        {showCTA && (
-                            <a
-                                href={ctaAnchor || "#contact"}
-                                onClick={goTo(ctaAnchor)}
-                                className="snl-cta"
-                                style={{
-                                    padding: "9px 18px",
-                                    background: ctaColor,
-                                    color: "#1C1B22",
-                                    fontWeight: 600,
-                                    fontSize: linkSize - 1,
-                                    borderRadius: 999,
-                                    border: `2.5px solid ${textColor}`,
-                                    textDecoration: "none",
-                                    whiteSpace: "nowrap",
-                                }}
-                            >
-                                {ctaLabel}
-                            </a>
+                        {/* Locale pill */}
+                        {showLocale && (
+                            <div className="sn-loc" ref={localeRef}>
+                                <button
+                                    type="button"
+                                    className={`sn-loc-btn${localeOpen ? " is-open" : ""}`}
+                                    aria-haspopup="listbox"
+                                    aria-expanded={localeOpen}
+                                    aria-label="Language"
+                                    onClick={() => setLocaleOpen((o) => !o)}
+                                >
+                                    {localeShowGlobe && <GlobeIcon size={localeSize + 3} stroke={localeAccent} />}
+                                    <span className="sn-loc-label">{currentLabel}</span>
+                                    <svg
+                                        className="sn-loc-chev"
+                                        width={localeSize - 2}
+                                        height={localeSize - 2}
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth={2.5}
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        aria-hidden="true"
+                                    >
+                                        <path d="M5 9l7 7 7-7" />
+                                    </svg>
+                                </button>
+                                {localeOpen && localeList.length > 0 && (
+                                    <div className="sn-loc-menu" role="listbox">
+                                        {localeList.map((loc) => {
+                                            const isCur = loc.code === activeLocale
+                                            return (
+                                                <button
+                                                    key={loc.code}
+                                                    type="button"
+                                                    role="option"
+                                                    aria-selected={isCur}
+                                                    className={`sn-loc-item${isCur ? " is-active" : ""}`}
+                                                    onClick={() => {
+                                                        setLocale(loc.code)
+                                                        setLocaleOpen(false)
+                                                        setMenuOpen(false)
+                                                    }}
+                                                >
+                                                    <span className="sn-loc-code">{loc.code.toUpperCase()}</span>
+                                                    <span className="sn-loc-name">{loc.name}</span>
+                                                </button>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
                         )}
-                    </div>
 
-                    {/* Mobile hamburger / cross */}
-                    <button
-                        aria-label="Menu"
-                        aria-expanded={menuOpen}
-                        className={`sticky-nav-burger${menuOpen ? " is-open" : ""}`}
-                        onClick={() => setMenuOpen((o) => !o)}
-                    >
-                        <span className="snb-bar snb-top" />
-                        <span className="snb-bar snb-mid" />
-                        <span className="snb-bar snb-bot" />
-                    </button>
+                        {/* Mobile hamburger / cross */}
+                        <button
+                            aria-label="Menu"
+                            aria-expanded={menuOpen}
+                            className={`sticky-nav-burger${menuOpen ? " is-open" : ""}`}
+                            onClick={() => setMenuOpen((o) => !o)}
+                        >
+                            <span className="snb-bar snb-top" />
+                            <span className="snb-bar snb-mid" />
+                            <span className="snb-bar snb-bot" />
+                        </button>
+                    </div>
                 </div>
 
                 {/* Mobile dropdown (always mounted so it can animate open/closed) */}
@@ -537,6 +658,58 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
 
             {/* Scoped styles: responsive switch, hover effects, burger morph, dropdown expand */}
             <style>{`
+                nav .sticky-nav-right { display: flex; align-items: center; gap: 18px; }
+                nav .sticky-nav-links { display: flex; align-items: center; gap: 28px; }
+
+                /* Locale pill */
+                nav .sn-loc { position: static; flex-shrink: 0; }
+                nav .sn-loc-btn {
+                    display: inline-flex; align-items: center; gap: 8px;
+                    padding: 7px 12px;
+                    background: var(--loc-bg); color: var(--loc-color);
+                    border: var(--loc-border); border-radius: var(--loc-radius);
+                    font: inherit; font-size: var(--loc-size); font-weight: 600; line-height: 1;
+                    cursor: pointer; white-space: nowrap;
+                    transition: background .18s ease, transform .15s ease;
+                }
+                nav .sn-loc-btn:hover { background: var(--loc-hover); }
+                nav .sn-loc-btn:active { transform: translateY(1px); }
+                nav .sn-loc-label { letter-spacing: .02em; }
+                nav .sn-loc-chev { opacity: .7; transition: transform .22s ease; }
+                nav .sn-loc-btn.is-open .sn-loc-chev { transform: rotate(180deg); }
+                nav .sn-loc-menu {
+                    position: absolute;
+                    top: calc(100% + 10px);
+                    right: var(--nav-pad);
+                    min-width: 160px; max-width: calc(100vw - 32px);
+                    z-index: 1200;
+                    display: flex; flex-direction: column;
+                    padding: 6px;
+                    background: var(--loc-menu-bg);
+                    border: var(--loc-border);
+                    border-radius: var(--loc-menu-radius);
+                    box-shadow: 0 4px 14px rgba(0,0,0,.14);
+                    animation: sn-loc-in .16s ease-out;
+                }
+                @keyframes sn-loc-in {
+                    from { opacity: 0; transform: translateY(-6px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                nav .sn-loc-item {
+                    display: flex; align-items: center; gap: 10px;
+                    padding: 9px 12px;
+                    background: transparent; border: none;
+                    border-radius: max(4px, calc(var(--loc-menu-radius) - 5px));
+                    color: var(--loc-color);
+                    font: inherit; font-size: var(--loc-size); text-align: left;
+                    cursor: pointer;
+                    transition: background .15s ease, color .15s ease;
+                }
+                nav .sn-loc-item:hover { background: var(--loc-hover); }
+                nav .sn-loc-item.is-active { color: var(--loc-accent); font-weight: 700; }
+                nav .sn-loc-code { font-weight: 700; letter-spacing: .04em; min-width: 22px; }
+                nav .sn-loc-name { opacity: .75; font-size: calc(var(--loc-size) - 1px); }
+
                 /* base link */
                 nav .snl {
                     position: relative;
@@ -671,6 +844,8 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                     nav .sticky-nav-links { display: none !important; }
                     nav .sticky-nav-burger { display: block !important; }
                     nav .sticky-nav-mobile { display: block !important; }
+                    nav .sticky-nav-right { gap: 12px; }
+                    nav .sn-loc-btn { padding: 6px 9px; gap: 6px; }
 
                     /* While open, the bar drops its bottom corners, bottom border and
                        drop shadow so nothing draws a seam between it and the panel. */
@@ -692,9 +867,30 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
 
                 @media (prefers-reduced-motion: reduce) {
                     nav.sn-autohide .sticky-nav-bar { transition-duration: .01ms; }
+                    nav .sn-loc-menu { animation: none; }
                 }
             `}</style>
         </nav>
+    )
+}
+
+function GlobeIcon({ size, stroke }: { size: number; stroke: string }) {
+    return (
+        <svg
+            width={size}
+            height={size}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke={stroke}
+            strokeWidth={2}
+            strokeLinecap="round"
+            aria-hidden="true"
+            style={{ flexShrink: 0, display: "block" }}
+        >
+            <circle cx={12} cy={12} r={9.5} />
+            <ellipse cx={12} cy={12} rx={4.2} ry={9.5} />
+            <path d="M2.9 8.6h18.2M2.9 15.4h18.2" />
+        </svg>
     )
 }
 
