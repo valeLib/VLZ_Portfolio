@@ -55,3 +55,25 @@ h6,
 p {
   margin: 0;
 }
+
+/* Keyboard focus is always visible; pointer focus keeps each component's own
+   hover and pressed feedback. */
+:focus-visible {
+  outline: 3px solid rgb(79, 88, 175);
+  outline-offset: 3px;
+}
+
+/* Reduced motion: keep every state change, drop the choreography. Component
+   entrances are gated in Appear; this catches CSS-driven motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

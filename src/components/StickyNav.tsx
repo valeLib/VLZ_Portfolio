@@ -904,6 +904,19 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                     nav.sn-autohide .sticky-nav-bar { transition-duration: .01ms; }
                     nav .sn-loc-menu { animation: none; }
                 }
+            
+                /* Entrance: the bar settles down into place. Fill mode is
+                   backwards so the transform releases to the stylesheet once the
+                   animation ends — the auto-hide translate must still win. */
+                @keyframes sn-enter {
+                    from { opacity: 0; transform: translateY(-10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                nav .sticky-nav-bar { animation: sn-enter .55s cubic-bezier(.22, 1, .36, 1) .08s backwards; }
+                nav .snl:active, nav .snl-m:active, nav .snl-cta:active { transform: translateY(1px); }
+                @media (prefers-reduced-motion: reduce) {
+                    nav .sticky-nav-bar { animation: none; }
+                }
             `}</style>
         </nav>
     )

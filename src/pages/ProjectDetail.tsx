@@ -1,6 +1,6 @@
 import { useRef } from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
-import { motion, useScroll, useSpring, useTransform } from "framer-motion"
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion"
 import type { MotionValue } from "framer-motion"
 import { getProject, getPublicProject, publicProjects } from "../data/projects"
 import { projectSections } from "../data/projectSections"
@@ -26,6 +26,7 @@ import CoreLoopDiagram from "../components/CoreLoopDiagram"
 import DecisionImpactTable from "../components/DecisionImpactTable"
 import FeatureModuleGrid from "../components/FeatureModuleGrid"
 import ExternalLink from "../components/ExternalLink"
+import PageEnter from "../components/PageEnter"
 
 /**
  * One layout for every public project detail page: sticky hero, then Brief /
@@ -39,7 +40,7 @@ import ExternalLink from "../components/ExternalLink"
 const sectionTitleBase = {
     layout: "inline-line",
     animation: "typewriter",
-    animationTrigger: "every",
+    animationTrigger: "once",
     animationDuration: 0.6,
     staggerDelay: 0.04,
     showLabel: false,
@@ -164,7 +165,8 @@ function useSectionExit(target: React.RefObject<HTMLElement | null>): {
         offset: ["end end", "end start"],
     })
     const smooth = useSpring(scrollYProgress, { stiffness: 500, damping: 60 })
-    const y = useTransform(smooth, [0, 1], [0, SECTION_LIFT])
+    const reduce = useReducedMotion()
+    const y = useTransform(smooth, [0, 1], [0, reduce ? 0 : SECTION_LIFT])
     // Held at full opacity through the first part of the exit so the fade reads
     // as the section leaving rather than as it dimming in place.
     const opacity = useTransform(smooth, [0.35, 1], [1, 0])
@@ -270,7 +272,7 @@ export default function ProjectDetail() {
 
     return (
         <div className="pd-page">
-            <div className="pd-scroll">
+            <PageEnter className="pd-scroll">
                 <div className="pd-paper">
                     <NotebookBackground
                         paperColor={colors.background}
@@ -465,14 +467,18 @@ export default function ProjectDetail() {
                             </div>
                             <div className="pd-card-col">
                                 {snapItems[0] && (
-                                    <LiftCard>
-                                        <PastelCardItem locale={locale} item={snapItems[0]} background="rgba(238, 151, 142, 0.88)" />
-                                    </LiftCard>
+                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0s" style={{ width: "100%" }}>
+                                        <LiftCard>
+                                            <PastelCardItem locale={locale} item={snapItems[0]} background="rgba(238, 151, 142, 0.88)" />
+                                        </LiftCard>
+                                    </Appear>
                                 )}
                                 {snapItems[1] && (
-                                    <LiftCard rotate={3}>
-                                        <PastelCardItem locale={locale} item={snapItems[1]} background="rgba(139, 217, 195, 0.88)" />
-                                    </LiftCard>
+                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0.1s" style={{ width: "100%" }}>
+                                        <LiftCard rotate={3}>
+                                            <PastelCardItem locale={locale} item={snapItems[1]} background="rgba(139, 217, 195, 0.88)" />
+                                        </LiftCard>
+                                    </Appear>
                                 )}
                             </div>
                             <div style={{ width: "100%" }}>
@@ -486,14 +492,18 @@ export default function ProjectDetail() {
                             </div>
                             <div className="pd-card-col">
                                 {snapItems[2] && (
-                                    <LiftCard rotate={-3}>
-                                        <PastelCardItem locale={locale} item={snapItems[2]} background="rgb(114, 121, 191)" />
-                                    </LiftCard>
+                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0s" style={{ width: "100%" }}>
+                                        <LiftCard rotate={-3}>
+                                            <PastelCardItem locale={locale} item={snapItems[2]} background="rgb(114, 121, 191)" />
+                                        </LiftCard>
+                                    </Appear>
                                 )}
                                 {snapItems[3] && (
-                                    <LiftCard>
-                                        <PastelCardItem locale={locale} item={snapItems[3]} background="rgba(238, 151, 142, 0.89)" />
-                                    </LiftCard>
+                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0.1s" style={{ width: "100%" }}>
+                                        <LiftCard>
+                                            <PastelCardItem locale={locale} item={snapItems[3]} background="rgba(238, 151, 142, 0.89)" />
+                                        </LiftCard>
+                                    </Appear>
                                 )}
                             </div>
                         </ProjectSection>
@@ -612,7 +622,6 @@ export default function ProjectDetail() {
                                                 locale={locale}
                                                 sub={sub}
                                                 index={i}
-                                                section={development}
                                                 phone={phone}
                                                 tablet={tablet}
                                                 tableLeftHeader={t("tableLeftHeader")}
@@ -775,7 +784,7 @@ export default function ProjectDetail() {
                         </ProjectSection>
                     )}
                 </div>
-            </div>
+            </PageEnter>
 
             {/* Sticky prev / next footer bar (public projects, CMS order) */}
             <div className="pd-footer">
@@ -1296,21 +1305,18 @@ function ImpactTable({ locale, phone, dsl, leftHeader, rightHeader }: {
 }
 
 /**
- * One Development subsection: heading, body, feature modules, diagram, table.
+ * One Development subsection: heading, body, feature items, diagram, table.
  *
- * The field bindings are deliberately irregular and must not be "corrected"
- * without re-checking every project's page: subsection 1's body shows the
- * section body; subsection 3 shows subsection 2's body; each subsection's flow
- * diagram reads subsection 1's diagram1 (vertical in slot 1, horizontal after);
- * slot 2/3 diagrams are additionally gated on the section-level diagram1; tables
- * in slots 1/2 read the section-level table while gated on the subsection's own
- * table1.
+ * A diagram documents the first item, so it renders directly after it: a
+ * subsection with one item reads item → diagram, one with several reads
+ * item 1 → diagram → items 2…. Plain step lists flow left to right; steps that
+ * carry sublabels need the width and stack instead, as does everything on a
+ * phone.
  */
-function DevSubsection({ locale, sub, index, section, phone, tablet, tableLeftHeader, tableRightHeader }: {
+function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tableRightHeader }: {
     locale: "en" | "es"
     sub: SubSection
     index: number
-    section: ProjectSection
     phone: boolean
     tablet: boolean
     tableLeftHeader: string
@@ -1318,69 +1324,76 @@ function DevSubsection({ locale, sub, index, section, phone, tablet, tableLeftHe
 }) {
     const L = (v?: L10n) => pick(locale, v)
     const first = index === 0
-    const items = (sub.items ?? []).slice(0, first ? 1 : 4)
-    const bodyHtml = first ? section.bodyHtml : index === 1 ? sub.bodyHtml : section.subsections?.[1]?.bodyHtml
-    const sub1Diagram = section.subsections?.[0]?.diagram1
-    const diagramVisible = first ? Boolean(sub.diagram1) : Boolean(section.diagram1)
-    const tableDsl = index === 2 ? sub.table1 : section.table
-    const tableVisible = Boolean(sub.table1) && Boolean(tableDsl)
+    const items = sub.items ?? []
+    const rest = items.slice(1)
+    const diagram = sub.diagram1 ? L(sub.diagram1) : ""
+    const vertical = phone || diagram.includes("|")
+
+    const feature = (item: SectionItem, i: number) => (
+        <FeatureModuleGrid
+            key={item.id}
+            {...featureBase}
+            mediaPosition={i % 2 === 0 ? "left" : "right"}
+            mediaColumnWidth={first ? 40 : tablet ? 70 : 50}
+            verticalAlign={first ? "top" : "center"}
+            stackedMediaWidth={phone ? 100 : tablet ? (first ? 65 : 60) : 40}
+            stackedMediaAlign={phone ? "center" : "left"}
+            stackedTextScale={phone ? 0.85 : 0.9}
+            mediaRadius={tablet ? 15 : 16}
+            image={item.icon ?? ""}
+            eyebrow=""
+            title={L(item.displayTitle)}
+            body={L(item.bodyHtml)}
+            textPadding={phone ? 18 : 10}
+            textRadius={phone ? 16 : 22}
+        />
+    )
 
     return (
         <div className="pd-subsection">
             {sub.displayTitle && (
                 <SectionTitle {...subsectionTitle} title={L(sub.displayTitle)} />
             )}
-            {bodyHtml && (
+            {sub.bodyHtml && (
                 <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
-                    <RichText html={L(bodyHtml)} />
+                    <RichText html={L(sub.bodyHtml)} />
                 </Appear>
             )}
-            {items.some(Boolean) && (
-                <div className="pd-sub-features">
-                    {items.map((item, i) =>
-                        item ? (
-                            <FeatureModuleGrid
-                                key={item.id}
-                                {...featureBase}
-                                mediaPosition={i % 2 === 0 ? "left" : "right"}
-                                mediaColumnWidth={first ? 40 : tablet ? 70 : 50}
-                                verticalAlign={first ? "top" : "center"}
-                                stackedMediaWidth={phone ? 100 : tablet ? (first ? 65 : 60) : 40}
-                                stackedMediaAlign={phone ? "center" : "left"}
-                                stackedTextScale={phone ? 0.85 : 0.9}
-                                mediaRadius={tablet ? 15 : 16}
-                                image={item.icon ?? ""}
-                                eyebrow=""
-                                title={L(item.displayTitle)}
-                                body={L(item.bodyHtml)}
-                                textPadding={phone ? 18 : 10}
-                                textRadius={phone ? 16 : 22}
-                            />
-                        ) : null
+            {diagram ? (
+                <>
+                    {items[0] && <div className="pd-sub-features">{feature(items[0], 0)}</div>}
+                    <div className="pd-sub-diagram">
+                        <FlowDiagram
+                            inputMode="string"
+                            flowString={diagram}
+                            direction={vertical ? "vertical" : "horizontal"}
+                            wrap
+                            minNodeWidth={vertical ? 100 : 110}
+                            nodePaddingH={vertical ? 4 : 26}
+                            nodePaddingV={10}
+                            nodeFontSize={vertical ? 11 : 12}
+                            sublabelSize={vertical ? 8 : 10}
+                            arrowThickness={vertical ? 1.5 : 2}
+                            arrowLength={vertical ? 24 : 36}
+                            arrowLabelSize={vertical ? 7 : 9}
+                        />
+                    </div>
+                    {rest.some(Boolean) && (
+                        <div className="pd-sub-features">
+                            {rest.map((item, i) => (item ? feature(item, i + 1) : null))}
+                        </div>
                     )}
-                </div>
+                </>
+            ) : (
+                items.some(Boolean) && (
+                    <div className="pd-sub-features">
+                        {items.map((item, i) => (item ? feature(item, i) : null))}
+                    </div>
+                )
             )}
-            {diagramVisible && sub1Diagram && (
-                <div className="pd-sub-diagram">
-                    <FlowDiagram
-                        inputMode="string"
-                        flowString={L(sub1Diagram)}
-                        direction={first ? "vertical" : "horizontal"}
-                        wrap
-                        minNodeWidth={first ? 100 : 110}
-                        nodePaddingH={first ? 4 : 26}
-                        nodePaddingV={10}
-                        nodeFontSize={first ? 11 : 12}
-                        sublabelSize={first ? 8 : 10}
-                        arrowThickness={first ? 1.5 : 2}
-                        arrowLength={first ? 24 : 36}
-                        arrowLabelSize={first ? 7 : 9}
-                    />
-                </div>
-            )}
-            {tableVisible && tableDsl && (
+            {sub.table1 && (
                 <div className="pd-table">
-                    <ImpactTable locale={locale} phone={phone} dsl={tableDsl}
+                    <ImpactTable locale={locale} phone={phone} dsl={sub.table1}
                         leftHeader={tableLeftHeader} rightHeader={tableRightHeader} />
                 </div>
             )}

@@ -1,15 +1,19 @@
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import type { Transition } from "framer-motion"
 import type { ReactNode } from "react"
 
 /**
- * Opacity-fade wrapper. The transition is passed as a compact string so section
- * markup can declare timing inline instead of building a Transition object:
+ * Entrance wrapper: a short fade with a small upward settle. The transition is
+ * passed as a compact string so section markup can declare timing inline
+ * instead of building a Transition object:
  *
  *   "tween <x1,y1,x2,y2> <duration> <delay>"
  *   "spring-duration <duration> <bounce> <delay>"
  *
  * `trigger` picks when it plays: on mount, or on entering the viewport.
+ * Viewport entrances play once and stay — replaying on every pass reads as
+ * flicker whenever the reader scrolls back a little. Under
+ * prefers-reduced-motion the wrapper is inert and the content is simply there.
  */
 
 const secs = (s: string) => parseFloat(s) || 0
@@ -35,8 +39,9 @@ export default function Appear({
     children,
     transition,
     trigger = "mount",
-    threshold = 0.5,
-    once = false,
+    threshold = 0.3,
+    once = true,
+    y = 14,
     style,
     className,
 }: {
@@ -44,37 +49,41 @@ export default function Appear({
     transition: string
     trigger?: "mount" | "inView" | "scroll"
     threshold?: number
-    /** Keep the element visible once revealed, instead of fading it back out. */
+    /** Replay the entrance on every viewport entry instead of holding it. */
     once?: boolean
+    /** Upward settle distance in px; 0 for a plain fade. Keep it 0 on an
+     *  element whose own stylesheet transform must survive. */
+    y?: number
     style?: React.CSSProperties
     className?: string
 }) {
+    const reduce = useReducedMotion()
+    if (reduce) {
+        return (
+            <div className={className} style={style}>
+                {children}
+            </div>
+        )
+    }
+
     const t = parseTransition(transition)
+    const hidden = { opacity: 0, y }
+    const shown = { opacity: 1, y: 0 }
 
     if (trigger === "mount") {
         return (
-            <motion.div
-                className={className}
-                style={style}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={t}
-            >
+            <motion.div className={className} style={style} initial={hidden} animate={shown} transition={t}>
                 {children}
             </motion.div>
         )
     }
 
-    // By default the fade replays on every entry and reverses on exit. `once`
-    // pins it open, for content that must not blink out while it is still on
-    // screen — a block taller than the threshold allows can otherwise sit at
-    // zero opacity for the whole time it is being read.
     return (
         <motion.div
             className={className}
             style={style}
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
+            initial={hidden}
+            whileInView={shown}
             viewport={{ amount: threshold, once }}
             transition={t}
         >

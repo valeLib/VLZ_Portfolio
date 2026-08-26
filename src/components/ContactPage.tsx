@@ -1,6 +1,7 @@
 // Retro / Y2K contact section with a styled form (Formspree/webhook + mailto fallback).
 
 import { useEffect, useRef, useState } from "react"
+import { motion, useReducedMotion } from "framer-motion"
 
 const FONT_STACKS: Record<string, string> = {
     Fredoka: '"Fredoka", sans-serif',
@@ -86,6 +87,18 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
     const [from, setFrom] = useState("")
     const [message, setMessage] = useState("")
     const [status, setStatus] = useState<"idle" | "sending" | "done" | "error">("idle")
+
+    // The copy leads and the form follows a beat behind.
+    const reduce = useReducedMotion()
+    const enter = (delay: number) =>
+        reduce
+            ? {}
+            : {
+                  initial: { opacity: 0, y: 14 },
+                  whileInView: { opacity: 1, y: 0 },
+                  viewport: { once: true, amount: 0.2 },
+                  transition: { type: "spring" as const, duration: 0.6, bounce: 0.2, delay },
+              }
 
     // Container-query style responsiveness: track the section's own width.
     const containerRef = useRef<HTMLElement>(null)
@@ -175,7 +188,8 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
             {/* Left: copy + details. When stacked, 0 0 auto pins the column to its
                 content height — a grow factor would absorb surplus frame height and
                 stretch the gap between the columns. */}
-            <div
+            <motion.div
+                {...enter(0)}
                 style={{
                     flex: isNarrow ? "0 0 auto" : "1 1 320px",
                     width: isNarrow ? "100%" : undefined,
@@ -242,10 +256,11 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                         </a>
                     ))}
                 </div>
-            </div>
+            </motion.div>
 
             {/* Right: form card */}
-            <div
+            <motion.div
+                {...enter(0.15)}
                 style={{
                     flex: isNarrow ? "0 0 auto" : "1 1 320px",
                     width: isNarrow ? "100%" : undefined,
@@ -333,7 +348,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                         </button>
                     </div>
                 )}
-            </div>
+            </motion.div>
         </section>
     )
 }

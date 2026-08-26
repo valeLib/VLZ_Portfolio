@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { useLayoutEffect, useRef, useState } from "react"
-import { motion } from "framer-motion"
+import { motion, useReducedMotion } from "framer-motion"
 import StickyNav from "../components/StickyNav"
 import SmoothScroll from "../components/SmoothScroll"
 import Footer from "../components/Footer"
@@ -23,6 +23,7 @@ import ScrollIndicator from "../components/ScrollIndicator"
 import BackToTop from "../components/BackToTop"
 import Sticker from "../components/Sticker"
 import Appear from "../components/Appear"
+import PageEnter from "../components/PageEnter"
 import { publicProjects, asset } from "../data/projects"
 import { useBreakpoint } from "../hooks/useBreakpoint"
 import { pick, useLocale, useLocalePath, useT } from "../lib/i18n"
@@ -139,6 +140,21 @@ const checkerStrip = (
     </div>
 )
 
+// One hero tag; the three settle in one after another.
+function HeroTag({ rotate, delay, children }: { rotate: number; delay: number; children: React.ReactNode }) {
+    const reduce = useReducedMotion()
+    return (
+        <motion.span
+            style={{ display: "inline-flex", rotate }}
+            initial={reduce ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: "spring", duration: 0.6, bounce: 0.25, delay }}
+        >
+            {children}
+        </motion.span>
+    )
+}
+
 // Caveat eyebrow + big Fredoka heading used by every section.
 function SectionHead({
     title,
@@ -155,7 +171,7 @@ function SectionHead({
 }) {
     return (
         <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ maxWidth: 615 }}>
+            <Appear trigger="inView" threshold={0.2} transition="tween 0.44,0,0.56,1 0.45s 0s" style={{ maxWidth: 615 }}>
                 <SectionTitle
                     title={title}
                     layout="inline"
@@ -178,8 +194,8 @@ function SectionHead({
                     borderStyle="dashed"
                     paddingBottom={1}
                 />
-            </div>
-            <Appear trigger="scroll" transition="tween 0.44,0,0.56,1 0.5s 0.2s">
+            </Appear>
+            <Appear trigger="scroll" threshold={0.2} transition="tween 0.44,0,0.56,1 0.5s 0.15s">
                 <SectionHeader
                     showDot={false}
                     showLabel={false}
@@ -199,82 +215,81 @@ function SectionHead({
 function AboutWindows({ compact }: { compact: boolean }) {
     return (
         <>
-            <Appear
-                trigger="mount"
-                transition="spring-duration 0.4s 0.2 0s"
-                className="hs-win hs-win-profile"
-                style={compact ? { transform: "none" } : undefined}
-            >
-                <RetroWindow
-                    title="PROFILE.EXE"
-                    titleBarColor={colors.liberty}
-                    titleColor={colors.surface}
-                    bodyColor="#ffffff"
-                    bodyPadding={compact ? 2 : 0}
-                    borderRadius={8}
-                    dotRed={colors.tangerine}
-                    dotYellow={colors.saffron}
-                    dotGreen={colors.straw}
-                    contentMode="frame"
-                >
-                    <div className="hs-whoami">
-                        <TerminalBlock
-                            topCommands={["whoami"]}
-                            rows={whoamiRows}
-                            bottomCommands={["skills --list"]}
-                            commandSize={compact ? 15 : 16}
-                            commandTextColor={colors.liberty}
-                            promptColor={colors.liberty}
-                            rowSize={compact ? 13 : 14}
-                            labelColor={colors.gunmetalBlack}
-                            labelValueGap={6}
-                            rowGap={compact ? 3 : 4}
-                            sectionGap={compact ? 8 : 10}
-                        />
-                        <TagCloud
-                            inputMode="array"
-                            tagsArray={whoamiTags}
-                            colorScheme="portfolio"
-                            fontSize={11}
-                            paddingH={10}
-                            paddingV={5}
-                            borderRadius={6}
-                            borderWidth={1.5}
-                            shadowX={2}
-                            shadowY={2}
-                            gap={8}
-                            rowGap={8}
-                        />
-                    </div>
-                </RetroWindow>
-            </Appear>
-            <Appear trigger="mount" transition="spring-duration 0.4s 0.2 0.2s" className="hs-win hs-win-loc">
-                <RetroWindow
-                    title="LOCATION.EXE"
-                    titleBarColor={colors.teal}
-                    titleColor="#ffffff"
-                    bodyColor={colors.surface}
-                    bodyPadding={0}
-                    borderRadius={8}
-                    dotRed={colors.tangerine}
-                    dotYellow={colors.saffron}
-                    dotGreen={colors.saffron}
-                    contentMode="frame"
-                >
-                    <div className="hs-loc">
-                        <LocationCard
-                            iconEmoji="🗺️"
-                            iconSize={40}
-                            title="Santiago, Chile"
-                            subtitle="GMT-3 · Remote friendly"
-                            accentLine="Open to relocation"
-                            accentSuffix="✓"
-                            bgColor="rgba(255, 255, 255, 0)"
-                            padding={6}
-                        />
-                    </div>
-                </RetroWindow>
-            </Appear>
+            <div className="hs-win hs-win-profile" style={compact ? { transform: "none" } : undefined}>
+                <Appear trigger="inView" threshold={0.25} transition="spring-duration 0.55s 0.2 0s">
+                    <RetroWindow
+                        title="PROFILE.EXE"
+                        titleBarColor={colors.liberty}
+                        titleColor={colors.surface}
+                        bodyColor="#ffffff"
+                        bodyPadding={compact ? 2 : 0}
+                        borderRadius={8}
+                        dotRed={colors.tangerine}
+                        dotYellow={colors.saffron}
+                        dotGreen={colors.straw}
+                        contentMode="frame"
+                    >
+                        <div className="hs-whoami">
+                            <TerminalBlock
+                                topCommands={["whoami"]}
+                                rows={whoamiRows}
+                                bottomCommands={["skills --list"]}
+                                commandSize={compact ? 15 : 16}
+                                commandTextColor={colors.liberty}
+                                promptColor={colors.liberty}
+                                rowSize={compact ? 13 : 14}
+                                labelColor={colors.gunmetalBlack}
+                                labelValueGap={6}
+                                rowGap={compact ? 3 : 4}
+                                sectionGap={compact ? 8 : 10}
+                            />
+                            <TagCloud
+                                inputMode="array"
+                                tagsArray={whoamiTags}
+                                colorScheme="portfolio"
+                                fontSize={11}
+                                paddingH={10}
+                                paddingV={5}
+                                borderRadius={6}
+                                borderWidth={1.5}
+                                shadowX={2}
+                                shadowY={2}
+                                gap={8}
+                                rowGap={8}
+                            />
+                        </div>
+                    </RetroWindow>
+                </Appear>
+            </div>
+            <div className="hs-win hs-win-loc">
+                <Appear trigger="inView" threshold={0.25} transition="spring-duration 0.55s 0.2 0.15s">
+                    <RetroWindow
+                        title="LOCATION.EXE"
+                        titleBarColor={colors.teal}
+                        titleColor="#ffffff"
+                        bodyColor={colors.surface}
+                        bodyPadding={0}
+                        borderRadius={8}
+                        dotRed={colors.tangerine}
+                        dotYellow={colors.saffron}
+                        dotGreen={colors.saffron}
+                        contentMode="frame"
+                    >
+                        <div className="hs-loc">
+                            <LocationCard
+                                iconEmoji="🗺️"
+                                iconSize={40}
+                                title="Santiago, Chile"
+                                subtitle="GMT-3 · Remote friendly"
+                                accentLine="Open to relocation"
+                                accentSuffix="✓"
+                                bgColor="rgba(255, 255, 255, 0)"
+                                padding={6}
+                            />
+                        </div>
+                    </RetroWindow>
+                </Appear>
+            </div>
         </>
     )
 }
@@ -283,6 +298,10 @@ export default function Home() {
     const bp = useBreakpoint()
     const phone = bp === "phone"
     const tablet = bp === "tablet"
+
+    // The grid sizes its cards by how many projects there are; four or more
+    // share one wrapping layout.
+    const projectCount = publicProjects.length >= 4 ? "many" : String(publicProjects.length)
 
     // The footer band rises over the last pinned section, so that section has to
     // reserve the height the band actually occupies. Measured rather than
@@ -424,7 +443,7 @@ export default function Home() {
             <SmoothScroll />
             <StickyNav {...navProps} />
 
-            <div className="hs-wrap">
+            <PageEnter className="hs-wrap">
                 <main className="hs-stack">
                     {/* ── HERO ─────────────────────────────────────────────── */}
                     <section id="hero" className="hs hs-hero" style={{ zIndex: 1 }}>
@@ -450,15 +469,15 @@ export default function Home() {
                                 <div className="hs-title-box">
                                     <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s">
                                         <div className="hs-tags">
-                                            <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
+                                            <HeroTag rotate={-1} delay={0.25}>
                                                 <RetroButton variant="primary" label={t("statUnityDev")} bgColor={colors.teal} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
-                                            </span>
-                                            <span style={{ transform: "rotate(1deg)", display: "inline-flex" }}>
+                                            </HeroTag>
+                                            <HeroTag rotate={1} delay={0.35}>
                                                 <RetroButton variant="primary" label={t("statCreativeFrontend")} bgColor={colors.lilac} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
-                                            </span>
-                                            <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
+                                            </HeroTag>
+                                            <HeroTag rotate={-1} delay={0.45}>
                                                 <RetroButton variant="primary" label="Chile 🌍" bgColor={colors.tangerine} textColor={colors.surface} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
-                                            </span>
+                                            </HeroTag>
                                         </div>
                                     </Appear>
 
@@ -586,33 +605,35 @@ export default function Home() {
                         <div className="hs-divider"><CheckerDivider color1={colors.tangerine} color2={tablet ? colors.libertyHover : colors.linen} cellSize={12} rows={2} /></div>
                         <div className="hs-proj-inner">
                             <SectionHead title={t("projectsEyebrow")} titleColor={colors.liberty} header={t("projectsTitle")} headerColor={colors.gunmetalBlack} />
-                            <div className="hs-project-grid">
-                                {publicProjects.map((p) => (
-                                    <Link key={p.slug} to={lp(`/projects/${p.slug}`)} className="hs-proj-cell">
-                                        <ProjectShowcase
-                                            itemCount={1}
-                                            item1MediaType="image"
-                                            item1Image={p.cover ?? ""}
-                                            item1UrlBar={pick(locale, p.title)}
-                                            item1Title={pick(locale, p.title)}
-                                            item1Tags={pick(locale, p.tags)}
-                                            item1ShowButton={false}
-                                            showHeader={false}
-                                            showCounter
-                                            showArrows
-                                            showDots
-                                            showSubtitle={false}
-                                            showTags={!phone}
-                                            imageFit="contain"
-                                            imageBgColor="#f5eee6"
-                                            frameBorderColor={colors.gunmetalBlack}
-                                            dotRed={colors.tangerine}
-                                            dotYellow={colors.saffron}
-                                            dotGreen={colors.straw}
-                                            urlBarBg={colors.linen}
-                                            urlBarTextColor="rgb(107, 101, 128)"
-                                        />
-                                    </Link>
+                            <div className="hs-project-grid" data-count={projectCount}>
+                                {publicProjects.map((p, i) => (
+                                    <Appear key={p.slug} trigger="inView" threshold={0.2} transition={`spring-duration 0.7s 0.2 ${0.1 + i * 0.1}s`} className="hs-proj-item">
+                                        <Link to={lp(`/projects/${p.slug}`)} className="hs-proj-cell">
+                                            <ProjectShowcase
+                                                itemCount={1}
+                                                item1MediaType="image"
+                                                item1Image={p.cover ?? ""}
+                                                item1UrlBar={pick(locale, p.title)}
+                                                item1Title={pick(locale, p.title)}
+                                                item1Tags={pick(locale, p.tags)}
+                                                item1ShowButton={false}
+                                                showHeader={false}
+                                                showCounter
+                                                showArrows
+                                                showDots
+                                                showSubtitle={false}
+                                                showTags={!phone}
+                                                imageFit="contain"
+                                                imageBgColor="#f5eee6"
+                                                frameBorderColor={colors.gunmetalBlack}
+                                                dotRed={colors.tangerine}
+                                                dotYellow={colors.saffron}
+                                                dotGreen={colors.straw}
+                                                urlBarBg={colors.linen}
+                                                urlBarTextColor="rgb(107, 101, 128)"
+                                            />
+                                        </Link>
+                                    </Appear>
                                 ))}
                             </div>
                         </div>
@@ -629,8 +650,8 @@ export default function Home() {
                         <div className="hs-work-content">
                             <SectionHead title={t("workEyebrow")} titleColor={colors.countryWhite} dotColor={colors.tangerine} header={t("workTitle")} headerColor={colors.primaryTxt} />
                             <div className="hs-work-grid">
-                                {workCards.map((w) => (
-                                    <Appear key={w.title.en} trigger="scroll" transition="spring-duration 1s 0.2 0.2s">
+                                {workCards.map((w, i) => (
+                                    <Appear key={w.title.en} trigger="scroll" threshold={0.2} transition={`spring-duration 0.8s 0.2 ${0.1 + i * 0.06}s`}>
                                         <motion.div whileHover={{ scale: 1.02, rotate: 1 }} transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}>
                                             <InfoCard
                                                 device={phone ? "mobile" : "desktop"}
@@ -689,42 +710,44 @@ export default function Home() {
                                 absolute anchors; tablet and phone stack them. */}
                             <div className="hs-skill-stage">
                                 {skillCards.map((c, i) => (
-                                    <Appear key={c.title.en} trigger="scroll" transition={`spring-duration 1s 0.2 ${0.2 + i * 0.2}s`} className={`hs-skill-card ${c.className}`}>
-                                        <motion.div whileHover={{ scale: 1.02, rotate: c.hoverRotate }} transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}>
-                                            <InfoCard
-                                                device={phone ? "mobile" : "desktop"}
-                                                iconType="emoji"
-                                                iconEmoji={c.emoji}
-                                                iconSize={22}
-                                                label=""
-                                                title={pick(locale, c.title)}
-                                                titleSize={22}
-                                                showBadge={false}
-                                                bodyMode="tags"
-                                                tags={LT(c.tags)}
-                                                tagBg={c.tagBg}
-                                                tagText={c.tagText}
-                                                tagBorder="rgba(36, 38, 46, 0.28)"
-                                                tagBorderWidth={1.5}
-                                                tagBorderRadius={c.tagRadius}
-                                                tagFontSize={c.tagFontSize}
-                                                tagPaddingH={8}
-                                                tagPaddingV={6}
-                                                tagGap={5}
-                                                bgColor={c.bg}
-                                                borderColor={c.border}
-                                                borderWidth={2}
-                                                titleColor={c.titleColor}
-                                                showShadow
-                                                shadowColor={colors.gunmetalBlack}
-                                                shadowX={4}
-                                                shadowY={4}
-                                                paddingH={24}
-                                                paddingV={c.paddingV}
-                                                borderRadius={14}
-                                            />
-                                        </motion.div>
-                                    </Appear>
+                                    <div key={c.title.en} className={`hs-skill-card ${c.className}`}>
+                                        <Appear trigger="scroll" threshold={0.2} transition={`spring-duration 0.8s 0.2 ${0.1 + i * 0.15}s`}>
+                                            <motion.div whileHover={{ scale: 1.02, rotate: c.hoverRotate }} transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}>
+                                                <InfoCard
+                                                    device={phone ? "mobile" : "desktop"}
+                                                    iconType="emoji"
+                                                    iconEmoji={c.emoji}
+                                                    iconSize={22}
+                                                    label=""
+                                                    title={pick(locale, c.title)}
+                                                    titleSize={22}
+                                                    showBadge={false}
+                                                    bodyMode="tags"
+                                                    tags={LT(c.tags)}
+                                                    tagBg={c.tagBg}
+                                                    tagText={c.tagText}
+                                                    tagBorder="rgba(36, 38, 46, 0.28)"
+                                                    tagBorderWidth={1.5}
+                                                    tagBorderRadius={c.tagRadius}
+                                                    tagFontSize={c.tagFontSize}
+                                                    tagPaddingH={8}
+                                                    tagPaddingV={6}
+                                                    tagGap={5}
+                                                    bgColor={c.bg}
+                                                    borderColor={c.border}
+                                                    borderWidth={2}
+                                                    titleColor={c.titleColor}
+                                                    showShadow
+                                                    shadowColor={colors.gunmetalBlack}
+                                                    shadowX={4}
+                                                    shadowY={4}
+                                                    paddingH={24}
+                                                    paddingV={c.paddingV}
+                                                    borderRadius={14}
+                                                />
+                                            </motion.div>
+                                        </Appear>
+                                    </div>
                                 ))}
                             </div>
                         </div>
@@ -795,7 +818,7 @@ export default function Home() {
                     />
                     </div>
                 </div>
-            </div>
+            </PageEnter>
 
             <style>{`
                 /* Layered sticky stack (desktop + tablet): every section pins at
@@ -913,11 +936,32 @@ export default function Home() {
                 /* Projects */
                 .hs-proj-inner {
                     position: relative; z-index: 1;
-                    width: 86.667%; margin: 0 auto; padding-top: 20px;
+                    width: 86.667%; margin: 0 auto; padding-top: 56px;
                     display: flex; flex-direction: column; gap: 10px;
                 }
-                .hs-project-grid { display: grid; grid-template-columns: repeat(3, 306px); justify-content: flex-start; gap: 20px; margin-top: 20px; }
-                .hs-proj-cell { text-decoration: none; display: block; width: 90%; }
+                /* The row is shared between the cards that exist, so each card
+                   is as large as the count allows: one is a feature, two a pair,
+                   three share the row, four or more wrap into a grid. The cap
+                   keeps a lone card from becoming a banner, and keeps every card
+                   short enough to sit inside the 100vh sheet under the heading
+                   (a card is 3:4 of its width plus its browser chrome). */
+                .hs-project-grid {
+                    --card-max: min(560px, calc((100vh - 430px) / 0.75));
+                    display: grid; justify-content: center; align-items: start;
+                    gap: 32px; margin-top: 40px;
+                    /* Four fit one row of the reading column; a 100vh sheet has no
+                       room for a second row on a short viewport. */
+                    grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
+                }
+                .hs-project-grid[data-count="1"] { grid-template-columns: minmax(0, var(--card-max)); }
+                .hs-project-grid[data-count="2"] { grid-template-columns: repeat(2, minmax(0, var(--card-max))); }
+                .hs-project-grid[data-count="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+                .hs-proj-item { min-width: 0; }
+                /* Hover lifts the whole card and lets a soft shadow follow its
+                   silhouette (the frame itself does not clip, so the thumbnail
+                   is not scaled). */
+                .hs-proj-cell { text-decoration: none; display: block; width: 100%; transition: transform .25s ease, filter .25s ease; }
+                .hs-proj-cell:hover { transform: translateY(-4px); filter: drop-shadow(0 10px 14px rgba(26, 21, 32, 0.14)); }
 
                 /* Work — violet dot-grid paper behind the cards */
                 .hs-work-divider { position: relative; z-index: 6; width: 100%; height: 3%; min-height: 24px; }
@@ -1020,7 +1064,11 @@ export default function Home() {
                     .hs-win { width: 100%; }
                     .hs-win-profile { transform: none; }
 
-                    .hs-project-grid { grid-template-columns: repeat(2, 1fr); }
+                    /* Tablet widths are landscape tablets and small laptops, so the
+                       sheet is short: cards keep to one row, smaller, rather than
+                       wrapping into a second row that a 768px viewport cannot hold. */
+                    .hs-project-grid { gap: 24px; }
+                    .hs-project-grid[data-count="many"] { grid-template-columns: repeat(auto-fill, minmax(min(100%, 190px), 1fr)); }
 
                     .hs-work-grid {
                         display: grid; grid-template-columns: repeat(2, 1fr);
@@ -1094,9 +1142,9 @@ export default function Home() {
                     .hs-about-winmobile .hs-win { width: 100%; }
                     .hs-about-winmobile .hs-win-profile { transform: none; }
 
-                    .hs-proj-inner { width: 80%; padding: 40px 0 20px; gap: 20px; }
-                    .hs-project-grid { display: flex; flex-wrap: wrap; gap: 11px 5px; margin-top: 0; }
-                    .hs-proj-cell { width: 100%; max-width: 283px; margin: 0 auto; }
+                    .hs-proj-inner { width: 80%; padding: 40px 0 24px; gap: 20px; }
+                    .hs-project-grid, .hs-project-grid[data-count] { grid-template-columns: minmax(0, 1fr); gap: 24px; margin-top: 16px; }
+                    .hs-proj-item { width: 100%; max-width: 320px; margin: 0 auto; }
                     .hs-projects { min-height: 0; }
 
                     .hs-work { min-height: 0; }

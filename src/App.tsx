@@ -5,6 +5,7 @@ import Projects from "./pages/Projects"
 import ProjectDetail from "./pages/ProjectDetail"
 import { LocaleContext, STRINGS, pick, stripLocale, type Locale } from "./lib/i18n"
 import { jumpTo } from "./lib/scroll"
+import { MotionConfig } from "framer-motion"
 
 /**
  * Scroll position across route changes.
@@ -81,12 +82,16 @@ function LocalizedRoutes({ locale }: { locale: Locale }) {
 // HashRouter chosen for GitHub Pages reliability (zero server config).
 export default function App() {
     return (
-        <HashRouter>
-            <ScrollManager />
-            <Routes>
-                <Route path="/es/*" element={<LocalizedRoutes locale="es" />} />
-                <Route path="/*" element={<LocalizedRoutes locale="en" />} />
-            </Routes>
-        </HashRouter>
+        // reducedMotion="user" strips transform animations for visitors who ask
+        // for less motion; entrances and CSS motion are gated separately.
+        <MotionConfig reducedMotion="user">
+            <HashRouter>
+                <ScrollManager />
+                <Routes>
+                    <Route path="/es/*" element={<LocalizedRoutes locale="es" />} />
+                    <Route path="/*" element={<LocalizedRoutes locale="en" />} />
+                </Routes>
+            </HashRouter>
+        </MotionConfig>
     )
 }
