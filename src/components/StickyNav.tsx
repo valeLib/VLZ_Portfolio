@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react"
-import { scrollToElement } from "../lib/scroll"
+import { useCallback, useEffect, useRef, useState } from "react"
+import { scrollToElement, scrollToTop } from "../lib/scroll"
 import { LOCALES, useLocale, useSetLocale } from "../lib/i18n"
 
 /**
@@ -228,6 +228,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     const lastY = useRef(0)
     const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     const localeRef = useRef<HTMLDivElement>(null)
+    const navRef = useRef<HTMLDivElement>(null)
 
     const activeLocale = useLocale()
     const setLocale = useSetLocale()
@@ -261,23 +262,44 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     const items: any[] = links ?? []
     const hoverSuffix = HOVER_CLASS[linkHover] ?? "color"
 
+    // Both the active state and the click targets read the sections through
+    // this one resolver, in document order, so the highlight can never point
+    // somewhere the links do not go.
+    const anchors = items.map((l) => (l.anchor || "").replace(/^#/, "")).filter(Boolean)
+    const anchorKey = anchors.join("|")
+    const sectionElements = useCallback((): HTMLElement[] => {
+        return anchors
+            .map((id) => document.getElementById(id))
+            .filter((el): el is HTMLElement => Boolean(el))
+            .sort((a, b) =>
+                a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+            )
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [anchorKey])
+
     useEffect(() => {
         const onScroll = () => {
             setScrolled(window.scrollY > 24)
-            let current = ""
-            for (const l of items) {
-                const id = (l.anchor || "").replace(/^#/, "")
-                if (!id) continue
-                const el = document.getElementById(id)
-                if (el && el.getBoundingClientRect().top <= 120) current = id
-            }
-            setActive(current)
+            // Sticky sections all report a rect top of 0 once scrolled past, so
+            // several match at a time. The one visually occupying the viewport
+            // is the last match in document order — which is not the order the
+            // links happen to be declared in. The bar's own height is the cutoff
+            // so a section counts as current once it clears the bar.
+            const line = (navRef.current?.getBoundingClientRect().bottom ?? 0) + 8
+            const reached = sectionElements().filter(
+                (el) => el.getBoundingClientRect().top <= line
+            )
+            setActive(reached.length ? reached[reached.length - 1].id : "")
         }
         onScroll()
         window.addEventListener("scroll", onScroll, { passive: true })
-        return () => window.removeEventListener("scroll", onScroll)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [JSON.stringify(items)])
+        // Section positions are viewport-relative, so a resize moves them.
+        window.addEventListener("resize", onScroll)
+        return () => {
+            window.removeEventListener("scroll", onScroll)
+            window.removeEventListener("resize", onScroll)
+        }
+    }, [sectionElements])
 
     // Auto-hide: above the offset the bar is always visible; scrolling down
     // retracts it; scrolling up reveals it and arms a timer that retracts it
@@ -327,10 +349,23 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
 
     const goTo = (anchor: string) => (e: React.MouseEvent) => {
         const id = (anchor || "").replace(/^#/, "")
-        const el = document.getElementById(id)
+        if (!id || id === "/") {
+            // Bare "#" would be handled by the hash router as a route change,
+            // dropping the locale prefix along with the scroll position.
+            e.preventDefault()
+            scrollToTop()
+            setMenuOpen(false)
+            return
+        }
+        const el = sectionElements().find((s) => s.id === id)
         if (el) {
             e.preventDefault()
-            scrollToElement(el)
+            // A pinned section fills the viewport under the floating bar by
+            // design, so it wants no offset. A section in normal flow — the
+            // phone layout — would otherwise start underneath the bar.
+            const pinned = getComputedStyle(el).position === "sticky"
+            const offset = pinned ? 0 : (navRef.current?.getBoundingClientRect().height ?? 0) + 8
+            scrollToElement(el, offset)
             setMenuOpen(false)
         }
     }
@@ -484,7 +519,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
 
     return (
         <nav className={navClass} style={positionerStyle}>
-            <div className={`sticky-nav-bar${menuOpen ? " is-open" : ""}`} style={barStyle}>
+            <div ref={navRef} className={`sticky-nav-bar${menuOpen ? " is-open" : ""}`} style={barStyle}>
                 <div
                     style={{
                         maxWidth,

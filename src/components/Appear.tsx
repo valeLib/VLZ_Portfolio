@@ -36,6 +36,7 @@ export default function Appear({
     transition,
     trigger = "mount",
     threshold = 0.5,
+    once = false,
     style,
     className,
 }: {
@@ -43,6 +44,8 @@ export default function Appear({
     transition: string
     trigger?: "mount" | "inView" | "scroll"
     threshold?: number
+    /** Keep the element visible once revealed, instead of fading it back out. */
+    once?: boolean
     style?: React.CSSProperties
     className?: string
 }) {
@@ -62,14 +65,17 @@ export default function Appear({
         )
     }
 
-    // once: false so the fade replays on every entry and reverses on exit.
+    // By default the fade replays on every entry and reverses on exit. `once`
+    // pins it open, for content that must not blink out while it is still on
+    // screen — a block taller than the threshold allows can otherwise sit at
+    // zero opacity for the whole time it is being read.
     return (
         <motion.div
             className={className}
             style={style}
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
-            viewport={{ amount: threshold, once: false }}
+            viewport={{ amount: threshold, once }}
             transition={t}
         >
             {children}

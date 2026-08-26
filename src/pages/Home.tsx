@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom"
+import { useLayoutEffect, useRef, useState } from "react"
 import { motion } from "framer-motion"
 import StickyNav from "../components/StickyNav"
 import SmoothScroll from "../components/SmoothScroll"
@@ -142,11 +143,13 @@ const checkerStrip = (
 function SectionHead({
     title,
     titleColor,
+    dotColor,
     header,
     headerColor,
 }: {
     title: string
     titleColor: string
+    dotColor?: string
     header: string
     headerColor: string
 }) {
@@ -158,7 +161,7 @@ function SectionHead({
                     layout="inline"
                     showDot
                     dotStyle="shadow"
-                    dotColor={titleColor}
+                    dotColor={dotColor ?? titleColor}
                     dotBorderColor={colors.gunmetalBlack}
                     dotBorderWidth={2}
                     dotShadowColor={colors.gunmetalBlack}
@@ -280,6 +283,47 @@ export default function Home() {
     const bp = useBreakpoint()
     const phone = bp === "phone"
     const tablet = bp === "tablet"
+
+    // The footer band rises over the last pinned section, so that section has to
+    // reserve the height the band actually occupies. Measured rather than
+    // guessed: the band reflows with the breakpoint and the locale's text.
+    const footerRef = useRef<HTMLDivElement>(null)
+    const [footerHeight, setFooterHeight] = useState(0)
+    // Read once before the first paint, then keep it in step. The observer alone
+    // would leave the reservation at zero until it first delivers, which is long
+    // enough to show the footer sitting on top of the contact card.
+    useLayoutEffect(() => {
+        const el = footerRef.current
+        if (!el) return
+        setFooterHeight(el.offsetHeight)
+        const observer = new ResizeObserver(([entry]) => {
+            setFooterHeight(entry.borderBoxSize?.[0]?.blockSize ?? entry.contentRect.height)
+        })
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [])
+
+    // Contact may run taller than the viewport (see its CSS). While pinned, that
+    // excess is scrolled through before the footer can show, so the tail hands
+    // it back — otherwise short laptop viewports get a longer dead stretch than
+    // tall ones. The footer height feeds Contact's padding, so the section is
+    // re-measured once that reservation has been laid out rather than waiting
+    // on the observer to notice.
+    const contactRef = useRef<HTMLElement>(null)
+    const [contactExcess, setContactExcess] = useState(0)
+    useLayoutEffect(() => {
+        const el = contactRef.current
+        if (!el) return
+        const update = () => setContactExcess(Math.max(0, el.offsetHeight - window.innerHeight))
+        update()
+        const observer = new ResizeObserver(update)
+        observer.observe(el)
+        window.addEventListener("resize", update)
+        return () => {
+            observer.disconnect()
+            window.removeEventListener("resize", update)
+        }
+    }, [footerHeight])
     const locale = useLocale()
     const t = useT()
     const lp = useLocalePath()
@@ -368,7 +412,15 @@ export default function Home() {
     })
 
     return (
-        <div className="home-root" style={{ width: "100%", background: colors.background }}>
+        <div
+            className="home-root"
+            style={{
+                width: "100%",
+                background: colors.background,
+                ["--footer-h" as string]: `${footerHeight}px`,
+                ["--contact-excess" as string]: `${contactExcess}px`,
+            }}
+        >
             <SmoothScroll />
             <StickyNav {...navProps} />
 
@@ -390,80 +442,89 @@ export default function Home() {
                             />
                         </div>
 
-                        <div className="hs-hero-title">
-                            <div className="hs-title-box">
-                                <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s">
-                                    <div className="hs-tags">
-                                        <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
-                                            <RetroButton variant="primary" label={t("statUnityDev")} bgColor={colors.teal} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
-                                        </span>
-                                        <span style={{ transform: "rotate(1deg)", display: "inline-flex" }}>
-                                            <RetroButton variant="primary" label={t("statCreativeFrontend")} bgColor={colors.lilac} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
-                                        </span>
-                                        <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
-                                            <RetroButton variant="primary" label="Chile 🌍" bgColor={colors.tangerine} textColor={colors.surface} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
-                                        </span>
+                        {/* Reading column. The scroll cue lives here rather than
+                            with the decorations because the phone layout places it
+                            in flow between the copy and the cat. */}
+                        <div className="hs-hero-inner">
+                            <div className="hs-hero-title">
+                                <div className="hs-title-box">
+                                    <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s">
+                                        <div className="hs-tags">
+                                            <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
+                                                <RetroButton variant="primary" label={t("statUnityDev")} bgColor={colors.teal} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
+                                            </span>
+                                            <span style={{ transform: "rotate(1deg)", display: "inline-flex" }}>
+                                                <RetroButton variant="primary" label={t("statCreativeFrontend")} bgColor={colors.lilac} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
+                                            </span>
+                                            <span style={{ transform: "rotate(-1deg)", display: "inline-flex" }}>
+                                                <RetroButton variant="primary" label="Chile 🌍" bgColor={colors.tangerine} textColor={colors.surface} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={2} shadowY={2} borderRadius={52} fontFamily="caveat" fontSize={14} fontWeight={600} paddingH={badgePadH} paddingV={badgePadV} />
+                                            </span>
+                                        </div>
+                                    </Appear>
+
+                                    {/* "My" overlaps the top-left of "Portfolio". */}
+                                    <h1 className="hs-wordmark">
+                                        <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s" className="hs-portfolio-wrap">
+                                            <span className="hs-portfolio">{t("heroPortfolio")}</span>
+                                        </Appear>
+                                        <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s" className="hs-my-wrap">
+                                            <span className="hs-my">{t("heroMy")}</span>
+                                        </Appear>
+                                    </h1>
+                                </div>
+
+                                <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.6s">
+                                    <div className="hs-intro-row">
+                                        <p className="hs-intro">{t("heroTagline")}</p>
                                     </div>
                                 </Appear>
 
-                                {/* "My" overlaps the top-left of "Portfolio". */}
-                                <h1 className="hs-wordmark">
-                                    <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s" className="hs-portfolio-wrap">
-                                        <span className="hs-portfolio">{t("heroPortfolio")}</span>
-                                    </Appear>
-                                    <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.2s" className="hs-my-wrap">
-                                        <span className="hs-my">{t("heroMy")}</span>
-                                    </Appear>
-                                </h1>
+                                <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.8s">
+                                    <div className="hs-cta-block">
+                                        <div className="hs-btn-row">
+                                            <RetroButton variant="primary" label={t("heroSeeWork")} href="#projects" bgColor={colors.lilac} textColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
+                                            <RetroButton variant="primary" label={t("heroGetInTouch")} href="#projects" bgColor={colors.linen} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
+                                        </div>
+                                        <div className="hs-stat-row">
+                                            <motion.div {...statHover(2)}>
+                                                <RetroButton variant="stat" statValue="7+" statLabel={t("statYearsXP")} statValueSize={statSize} bgColor={colors.babyPink} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
+                                            </motion.div>
+                                            <motion.div {...statHover(-2)}>
+                                                <RetroButton variant="stat" statValue="4+" statLabel={t("statFields")} statValueSize={statSize} bgColor={colors.lilac} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
+                                            </motion.div>
+                                            <motion.div {...statHover(-2)}>
+                                                <RetroButton variant="stat" statValue="20+" statLabel={t("statSkills")} statValueSize={statSize} bgColor={colors.liberty} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
+                                            </motion.div>
+                                        </div>
+                                    </div>
+                                </Appear>
                             </div>
 
-                            <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.6s">
-                                <div className="hs-intro-row">
-                                    <p className="hs-intro">{t("heroTagline")}</p>
-                                </div>
-                            </Appear>
+                            <div className="hs-hero-cat">
+                                {/* The top strip renders immediately; only the spacer
+                                    below it carries the appear delay. */}
+                                <div className="hs-strip">{checkerStrip}</div>
+                                <div className="hs-shelf" aria-hidden />
+                                <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.4s" className="hs-glb-row">
+                                    <div className="hs-glb">
+                                        <GLBModelViewer model={asset("cat.glb")} enableInteraction disableZoom camH={15} camV={85} camRadius={90} enableAnimation />
+                                    </div>
+                                </Appear>
+                                <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.6s" className="hs-strip-row">
+                                    {checkerStrip}
+                                </Appear>
+                            </div>
 
-                            <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1s 0.8s">
-                                <div className="hs-cta-block">
-                                    <div className="hs-btn-row">
-                                        <RetroButton variant="primary" label={t("heroSeeWork")} href="#projects" bgColor={colors.lilac} textColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
-                                        <RetroButton variant="primary" label={t("heroGetInTouch")} href="#projects" bgColor={colors.linen} textColor={colors.primaryTxt} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" fontSize={btnFontSize} fontWeight={700} paddingH={btnPadH} paddingV={btnPadV} />
-                                    </div>
-                                    <div className="hs-stat-row">
-                                        <motion.div {...statHover(2)}>
-                                            <RetroButton variant="stat" statValue="7+" statLabel={t("statYearsXP")} statValueSize={statSize} bgColor={colors.babyPink} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
-                                        </motion.div>
-                                        <motion.div {...statHover(-2)}>
-                                            <RetroButton variant="stat" statValue="4+" statLabel={t("statFields")} statValueSize={statSize} bgColor={colors.lilac} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
-                                        </motion.div>
-                                        <motion.div {...statHover(-2)}>
-                                            <RetroButton variant="stat" statValue="20+" statLabel={t("statSkills")} statValueSize={statSize} bgColor={colors.liberty} textColor={colors.gunmetalBlack} statLabelColor={colors.gunmetalBlack} borderColor={colors.gunmetalBlack} shadowColor={colors.gunmetalBlack} shadowX={3} shadowY={3} borderRadius={8} fontFamily="mono" paddingH={statPadH} paddingV={statPadV} />
-                                        </motion.div>
-                                    </div>
-                                </div>
-                            </Appear>
+                            <ScrollIndicator targetId="about" className="hs-scroll-ind" />
                         </div>
 
-                        <div className="hs-hero-cat">
-                            {/* The top strip renders immediately; only the spacer
-                                below it carries the appear delay. */}
-                            <div className="hs-strip">{checkerStrip}</div>
-                            <div className="hs-shelf" aria-hidden />
-                            <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.4s" className="hs-glb-row">
-                                <div className="hs-glb">
-                                    <GLBModelViewer model={asset("cat.glb")} enableInteraction disableZoom camH={15} camV={85} camRadius={90} enableAnimation />
-                                </div>
-                            </Appear>
-                            <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.6s" className="hs-strip-row">
-                                {checkerStrip}
-                            </Appear>
+                        {/* Decorations sit in their own layer, placed against the
+                            same column as the content so they keep their relation
+                            to it however wide the sheet runs. */}
+                        <div className="hs-hero-deco">
+                            <Sticker className="hs-sticker-drag" image={asset("sticker.png")} tilt={0.4} elevation={0.2} draggable />
+                            <Sticker className="hs-sticker-peel" image={asset("sticker.png")} peel />
                         </div>
-
-                        {/* Decorative stickers, absolutely placed over the section. */}
-                        <Sticker className="hs-sticker-drag" image={asset("sticker.png")} tilt={0.4} elevation={0.2} draggable />
-                        <Sticker className="hs-sticker-peel" image={asset("sticker.png")} peel />
-
-                        <ScrollIndicator targetId="about" className="hs-scroll-ind" />
                     </section>
 
                     {/* ── ABOUT — stage 1: text on the left ────────────────── */}
@@ -471,7 +532,7 @@ export default function Home() {
                         <div className="hs-bg hs-about-bg">
                             <NotebookBackground paperColor={colors.liberty} gridType="grid" gridColor={colors.lilac} gridOpacity={0.05} gridSize={28} gridWeight={4} />
                         </div>
-                        <CheckerDivider color1="rgb(114, 121, 191)" color2={colors.lilac} cellSize={12} rows={2} />
+                        <div className="hs-divider"><CheckerDivider color1="rgb(114, 121, 191)" color2={colors.lilac} cellSize={12} rows={2} /></div>
                         <div className="hs-about-inner">
                             <div className="hs-about-row">
                                 <div className="hs-about-text">
@@ -522,7 +583,7 @@ export default function Home() {
                         <div className="hs-bg">
                             <NotebookBackground paperColor={colors.background} gridType="grid" gridColor={colors.liberty} gridOpacity={0.15} gridSize={34} gridWeight={2.6} />
                         </div>
-                        <CheckerDivider color1={colors.tangerine} color2={tablet ? colors.libertyHover : colors.linen} cellSize={12} rows={2} />
+                        <div className="hs-divider"><CheckerDivider color1={colors.tangerine} color2={tablet ? colors.libertyHover : colors.linen} cellSize={12} rows={2} /></div>
                         <div className="hs-proj-inner">
                             <SectionHead title={t("projectsEyebrow")} titleColor={colors.liberty} header={t("projectsTitle")} headerColor={colors.gunmetalBlack} />
                             <div className="hs-project-grid">
@@ -563,10 +624,10 @@ export default function Home() {
                             <NotebookBackground paperColor="rgb(100, 108, 185)" gridType="dot" gridColor={colors.liberty} gridOpacity={1} gridSize={34} gridWeight={2.6} />
                         </div>
                         <div className="hs-work-divider">
-                            <PatternDivider pattern="Scallop" tile={30} color={colors.linen} background="rgba(0,0,0,0)" flip />
+                            <PatternDivider pattern="Scallop" tile={phone ? 26 : 30} color={colors.linen} background="rgba(0,0,0,0)" flip />
                         </div>
                         <div className="hs-work-content">
-                            <SectionHead title={t("workEyebrow")} titleColor={colors.liberty} header={t("workTitle")} headerColor={colors.primaryTxt} />
+                            <SectionHead title={t("workEyebrow")} titleColor={colors.countryWhite} dotColor={colors.tangerine} header={t("workTitle")} headerColor={colors.primaryTxt} />
                             <div className="hs-work-grid">
                                 {workCards.map((w) => (
                                     <Appear key={w.title.en} trigger="scroll" transition="spring-duration 1s 0.2 0.2s">
@@ -621,7 +682,7 @@ export default function Home() {
                         <div className="hs-bg">
                             <NotebookBackground paperColor={colors.background} gridType="ruled" gridColor={colors.liberty} gridOpacity={0.15} gridSize={34} gridWeight={2.6} />
                         </div>
-                        <CheckerDivider color1={colors.liberty} color2={colors.linen} cellSize={12} rows={2} />
+                        <div className="hs-divider"><CheckerDivider color1={colors.liberty} color2={colors.linen} cellSize={12} rows={2} /></div>
                         <div className="hs-skills-body">
                             <SectionHead title={t("skillsEyebrow")} titleColor={colors.tangerine} header={t("skillsTitle")} headerColor={colors.gunmetalBlack} />
                             {/* Desktop staggers the three cards diagonally with
@@ -670,11 +731,11 @@ export default function Home() {
                     </section>
 
                     {/* ── CONTACT ──────────────────────────────────────────── */}
-                    <section id="contact" className="hs hs-contact" style={{ zIndex: 10 }}>
+                    <section id="contact" ref={contactRef} className="hs hs-contact" style={{ zIndex: 10 }}>
                         <div className="hs-bg">
                             <NotebookBackground paperColor={colors.background} gridType="dot" gridColor={colors.liberty} gridOpacity={0.15} gridSize={36} gridWeight={2.4} />
                         </div>
-                        <CheckerDivider color1={colors.tangerine} color2={colors.linen} cellSize={12} rows={2} />
+                        <div className="hs-divider"><CheckerDivider color1={colors.tangerine} color2={colors.linen} cellSize={12} rows={2} /></div>
                         <div className="hs-contact-body">
                             <div className="hs-contact-inner">
                                 <ContactPage
@@ -700,8 +761,8 @@ export default function Home() {
                         </div>
                     </section>
 
-                    {/* Extra scroll room while Contact stays pinned, before the
-                        footer rises from the bottom of the document. */}
+                    {/* Scroll room while Contact stays pinned: the footer's own
+                        height plus a short lead before it starts to rise. */}
                     <div className="hs-tail" aria-hidden />
                 </main>
 
@@ -709,10 +770,10 @@ export default function Home() {
                     <BackToTop fixed={false} alwaysShow fill={colors.liberty} hoverFill={colors.tangerine} />
                 </div>
 
-                {/* Above the section stack, so it slides over pinned Contact.
-                    The band's transparent padding floats the bar off the page
-                    bottom, letting the pinned Contact background show through. */}
+                {/* Above the section stack, so it rises over pinned Contact from
+                    the end of the document. */}
                 <div className="hs-footer">
+                    <div className="hs-footer-bar" ref={footerRef}>
                     <Footer
                         wordmark="Valentina Liberona"
                         showTagline={false}
@@ -732,6 +793,7 @@ export default function Home() {
                         padding={phone ? 21 : 48}
                         gap={phone ? 16 : 40}
                     />
+                    </div>
                 </div>
             </div>
 
@@ -754,18 +816,30 @@ export default function Home() {
                     flex-direction: column;
                 }
                 .hs-bg { position: absolute; inset: 0; z-index: 0; }
+                /* The sheet is an absolutely positioned layer, so it would paint
+                   over an in-flow divider; the dividers get their own layer. */
+                .hs-divider { position: relative; z-index: 1; width: 100%; flex-shrink: 0; }
                 .hs-spacer, .hs-about2 { background: transparent; }
                 .hs-spacer { pointer-events: none; }
-                .hs-tail { height: 1925px; pointer-events: none; }
-
-                /* Above 1200px the section column stays fixed at 1200px, centered
-                   over the cream page background. */
-                @media (min-width: 1200.02px) {
-                    .hs-stack { width: 1200px; margin: 0 auto; }
+                /* The footer bar rises from the document's end, so the bar's own
+                   height is exactly the scroll it takes to reveal; the rest is
+                   the lead between Contact settling and the reveal beginning.
+                   Anything more is dead scroll that reads as the page having
+                   ended. */
+                .hs-tail {
+                    height: max(0px, calc(var(--footer-h, 0px) + 160px - var(--contact-excess, 0px)));
+                    pointer-events: none;
                 }
 
                 /* Hero — two columns: title (1fr) + cat (38.42%) */
-                .hs-hero { flex-direction: row; gap: 40px; padding: 0 40px 0 80px; }
+                .hs-hero-inner {
+                    position: relative; z-index: 1;
+                    flex: 1 1 auto; min-height: 0; width: 100%;
+                    display: flex; flex-direction: row; gap: 40px;
+                    padding: 0 40px 0 80px; box-sizing: border-box;
+                }
+                .hs-hero-deco { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+                .hs-hero-deco > * { pointer-events: auto; }
                 .hs-hero-bg { inset: 0 0 -24px 0; }
                 .hs-hero-title {
                     position: relative; z-index: 1;
@@ -806,8 +880,8 @@ export default function Home() {
                 .hs-glb { width: 348px; max-width: 100%; height: 348px; }
                 .hs-strip-row { width: 100%; height: 85px; display: flex; justify-content: flex-end; align-items: center; padding: 16px 12px 0 0; box-sizing: border-box; }
                 .hs-scroll-ind { position: absolute; bottom: 30px; left: 54.58%; transform: translateX(-50%); z-index: 8; }
-                .hs-sticker-drag { position: absolute; top: 156px; left: 756px; width: 129px; height: 79px; z-index: 4; }
-                .hs-sticker-peel { position: absolute; bottom: 81px; left: 976px; width: 150px; height: 166px; transform: rotate(-1deg); }
+                .hs-sticker-drag { position: absolute; top: 156px; left: 63%; width: 129px; height: 79px; z-index: 4; }
+                .hs-sticker-peel { position: absolute; bottom: 81px; left: 81.333%; width: 150px; height: 166px; transform: rotate(-1deg); }
 
                 /* About stage 1 — text in the left 36.25%, right side empty */
                 .hs-about-inner { position: relative; z-index: 1; margin-top: 40px; padding: 20px 80px 0; }
@@ -864,26 +938,68 @@ export default function Home() {
                     padding: 100px 80px 0; box-sizing: border-box;
                     display: flex; flex-direction: column; gap: 10px;
                 }
+                /* Desktop anchors the three cards on a diagonal, so the stage
+                   needs a fixed height. Every other layout stacks them and must
+                   size to content, or the later cards get flattened to nothing. */
                 .hs-skill-stage { position: relative; flex: 0 0 auto; height: 332px; }
                 .hs-skill-card { position: absolute; width: 31.5%; transform: translateY(-50%); }
                 .hs-skill-a { left: 1.44%; top: 30.1%; }
                 .hs-skill-b { left: 34.23%; top: 50%; }
                 .hs-skill-c { left: 67.12%; top: 69.37%; }
 
-                /* Contact */
+                /* Contact. The last pinned section reserves the footer's height
+                   below its content, so on a short viewport the two together can
+                   exceed 100vh; it is allowed to grow so the card is never cut
+                   by the section box or covered by the bar. As the last sticky
+                   section it simply slides up by the excess before the end. */
+                .hs-contact { height: auto; min-height: 100vh; }
                 .hs-contact-body {
                     position: relative; z-index: 1; flex: 1; min-height: 0;
-                    padding: 80px 80px 0; box-sizing: border-box;
+                    /* Contact is the section the footer rises over, so it reserves
+                       the bar's measured height plus a little air above it. */
+                    padding: 80px 80px calc(var(--footer-h, 0px) + 24px); box-sizing: border-box;
                     display: flex; flex-direction: column; justify-content: center;
                 }
                 .hs-contact-inner { padding-top: 20px; }
 
-                .hs-backtotop { position: absolute; right: 24px; bottom: 355px; z-index: 9; }
-                .hs-footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; padding: 56px 0; }
+                /* Placed off the measured footer bar, not the document end, so it
+                   keeps its distance from the bar whatever height the bar takes. */
+                .hs-backtotop { position: absolute; right: 24px; bottom: calc(var(--footer-h, 0px) + 72px); z-index: 9; }
+                .hs-footer { position: absolute; left: 0; right: 0; bottom: 0; z-index: 9; }
+                .hs-footer-bar { width: 100%; }
+
+                /* ── Large desktop (>1200) ─────────────────────────────────────
+                   Three widths, from the outside in: the section — and with it
+                   the paper and the checker dividers — runs edge to edge, so
+                   there are no solid gutters for the sheet to end against; the
+                   decoration layer and the reading column are centred containers
+                   inside it. The column starts at the 1200px the layout was
+                   composed for and widens by a fifth of the extra room, to a
+                   ceiling of 1320px, so the composition breathes on a large
+                   display without drifting apart.
+                   This block must stay below the base rules: it overrides them at
+                   equal specificity, so it wins only by coming later. */
+                @media (min-width: 1200.02px) {
+                    .hs { --content-w: min(1320px, calc(1200px + (100% - 1200px) * 0.2)); }
+                    .hs-hero-inner,
+                    .hs-hero-deco,
+                    .hs-about-inner,
+                    .hs-about2-inner,
+                    .hs-work-content,
+                    .hs-skills-body,
+                    .hs-contact-body {
+                        width: 100%;
+                        max-width: var(--content-w);
+                        margin-left: auto;
+                        margin-right: auto;
+                    }
+                    /* The same 80px insets as the other sections. */
+                    .hs-proj-inner { width: 100%; max-width: calc(var(--content-w) - 160px); }
+                }
 
                 /* ── Tablet (810–1199) ─────────────────────────────────────── */
                 @media (max-width: 1199.98px) {
-                    .hs-hero { padding: 0 52px; }
+                    .hs-hero-inner { padding: 0 52px; }
                     .hs-hero-title { flex-basis: 67.2%; padding-top: 80px; }
                     .hs-title-box { width: 100%; height: 260px; padding: 0 0 20px; }
                     .hs-portfolio { font-size: 96px; }
@@ -912,16 +1028,13 @@ export default function Home() {
                     }
                     .hs-work-grid > * { width: auto; }
 
-                    .hs-skill-stage { display: flex; flex-wrap: wrap; gap: 36px 18px; padding: 28px 0; min-height: 0; align-items: flex-start; }
+                    .hs-skill-stage { display: flex; flex-wrap: wrap; gap: 36px 18px; padding: 28px 0; height: auto; min-height: 0; align-items: flex-start; }
                     .hs-skill-card { position: static; width: 80%; transform: none; }
 
                     .hs-contact-body { justify-content: flex-start; }
                     .hs-contact-inner { padding-top: 0; }
 
-                    .hs-backtotop { right: 47px; bottom: 228px; }
-                    .hs-footer { padding: 428px 0; }
-
-                    .hs-tail { height: 849px; }
+                    .hs-backtotop { right: 47px; bottom: calc(var(--footer-h, 0px) + 40px); }
                 }
 
                 /* ── Phone (≤809) ──────────────────────────────────────────────
@@ -935,10 +1048,14 @@ export default function Home() {
                     }
                     .hs-desktop-only, .hs-tail { display: none; }
 
-                    .hs-hero { flex-direction: column; align-items: center; gap: 0; padding: 20px 16px 0; min-height: 110vh; }
+                    .hs-hero { min-height: 100vh; }
+                    .hs-hero-inner { flex-direction: column; align-items: center; gap: 0; padding: 20px 16px 0; }
+                    .hs-hero-deco { display: none; }
                     .hs-hero-bg { inset: 0 0 -20px 0; }
-                    .hs-hero-title { flex: none; width: 100%; padding: 70px 0 0; min-height: 68vh; align-items: center; }
-                    .hs-title-box { width: 99.4%; height: 238px; padding: 50px 0 0; display: flex; flex-direction: column; align-items: center; }
+                    /* Sized by its content: a viewport-height floor here left
+                       slack that the scroll cue had to be positioned around. */
+                    .hs-hero-title { flex: none; width: 100%; padding: 70px 0 0; min-height: 0; align-items: center; }
+                    .hs-title-box { width: 99.4%; height: 206px; padding: 10px 0 0; display: flex; flex-direction: column; align-items: center; }
                     .hs-tags { width: 96%; min-width: 0; justify-content: center; }
                     .hs-portfolio { font-size: 86px; }
                     .hs-my { font-size: 42px; }
@@ -946,15 +1063,26 @@ export default function Home() {
                     .hs-portfolio-wrap { bottom: 27px; }
                     .hs-intro-row { padding: 0 0 0 18px; width: 340px; }
                     .hs-cta-block { align-items: center; }
-                    .hs-btn-row, .hs-stat-row { height: auto; justify-content: center; padding: 8px 6px 0; }
+                    .hs-btn-row, .hs-stat-row { height: auto; justify-content: center; padding: 6px 6px 0; }
                     .hs-hero-cat { flex: none; flex-direction: row; justify-content: center; width: 73%; height: 30vh; padding-top: 0; gap: 0; }
                     .hs-strip, .hs-strip-row, .hs-shelf { display: none; }
                     .hs-glb { width: 197px; height: 197px; }
                     .hs-sticker-drag, .hs-sticker-peel { display: none; }
-                    .hs-scroll-ind { left: 50%; bottom: 334px; }
+                    /* In flow between the stat boxes and the cat, so the cue owns
+                       a band of its own instead of floating over the copy. The
+                       markup order puts it last, hence the explicit order values. */
+                    .hs-hero-title { order: 1; }
+                    .hs-scroll-ind {
+                        order: 2; position: static; left: auto; bottom: auto;
+                        transform: none; flex: 0 0 auto; margin: 10px 0 14px;
+                    }
+                    .hs-hero-cat { order: 3; }
 
-                    .hs-about { min-height: 111vh; background: rgb(245, 238, 230); }
-                    .hs-about-bg { top: 20px; bottom: auto; height: 824px; }
+                    /* The sheet covers the whole section: a fixed height here
+                       stopped short of the content and left a pale band before
+                       the next transition. Content sizes the section. */
+                    .hs-about { min-height: 0; background: rgb(245, 238, 230); }
+                    .hs-about-bg { inset: 0; height: auto; }
                     .hs-about-inner { padding: 40px 42px 0; margin-top: 0; }
                     .hs-about-row { flex-direction: column; }
                     .hs-about-text { width: 100%; gap: 4px; }
@@ -971,21 +1099,35 @@ export default function Home() {
                     .hs-proj-cell { width: 100%; max-width: 283px; margin: 0 auto; }
                     .hs-projects { min-height: 0; }
 
-                    .hs-work { min-height: 176vh; }
+                    .hs-work { min-height: 0; }
+                    /* A percentage height made the scallops grow with the section
+                       and turned them into spikes; pin the band instead. */
+                    .hs-work-divider { height: 20px; min-height: 0; }
                     .hs-work-content { padding: 40px 0 0; align-items: center; }
                     .hs-work-grid { display: grid; grid-template-columns: 1fr; gap: 18px 0; padding: 6px; width: 315px; max-width: 100%; }
                     .hs-work-grid > * { width: auto; }
 
-                    .hs-skills { min-height: 124.88vh; }
-                    .hs-skills-body { padding: 40px 40px 222px; align-items: center; }
-                    .hs-skill-stage { display: flex; flex-direction: column; gap: 40px; padding: 40px 8px 20px; min-height: 0; width: 100%; }
+                    .hs-skills-body { padding: 40px 40px 60px; align-items: center; }
+                    .hs-skill-stage { display: flex; flex-direction: column; gap: 40px; padding: 40px 8px 20px; height: auto; min-height: 0; width: 100%; }
                     .hs-skill-card { position: static; width: 100%; transform: none; }
 
-                    .hs-contact { min-height: 160vh; }
-                    .hs-contact-body { padding: 40px 20px 0; justify-content: center; }
+                    /* The end of the page reads form → button → footer. The
+                       section is content-sized and reserves the button's zone in
+                       its own padding, so the button can never land on the form
+                       however tall the form gets on a narrow screen. The footer
+                       overlays the section's last --footer-h pixels. */
+                    .hs-wrap { --btt-size: 56px; --btt-gap-form: 40px; --btt-gap-footer: 32px; }
+                    .hs-contact { min-height: 0; }
+                    .hs-contact-body {
+                        padding: 40px 20px
+                            calc(var(--footer-h, 0px) + var(--btt-gap-footer) + var(--btt-size) + var(--btt-gap-form));
+                        justify-content: flex-start;
+                    }
 
-                    .hs-backtotop { right: auto; left: 50%; transform: translateX(-50%); bottom: 250px; }
-                    .hs-footer { padding: 22px 0; }
+                    .hs-backtotop {
+                        right: auto; left: 50%; transform: translateX(-50%);
+                        bottom: calc(var(--footer-h, 0px) + var(--btt-gap-footer));
+                    }
                 }
 
                 /* Reduced motion: Lenis and appear effects are disabled elsewhere;

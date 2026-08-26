@@ -6,6 +6,7 @@ import { getProject, getPublicProject, publicProjects } from "../data/projects"
 import { projectSections } from "../data/projectSections"
 import type { ProjectSection, ProjectSectionsMap, SectionItem, SubSection } from "../data/projectSections"
 import { colors } from "../tokens"
+import { scrollToElement } from "../lib/scroll"
 import { useBreakpoint } from "../hooks/useBreakpoint"
 import { pick, useLocale, useLocalePath, useT } from "../lib/i18n"
 import type { L10n } from "../lib/i18n"
@@ -139,45 +140,70 @@ function LiftCard({ rotate = 0, children }: { rotate?: number; children: React.R
     )
 }
 
+// How far a section lifts as it leaves, on top of the scroll itself. Enough to
+// clear the viewport ahead of the section below it, small enough that the gap it
+// opens reads as more of the page underneath.
+const SECTION_LIFT = -160
+
 /**
- * Scroll-linked exit: as the target section's top travels from the viewport
- * bottom to the viewport top, the wrapped element eases to {y, opacity}.
+ * Scroll-linked exit for a whole project section.
+ *
+ * Progress tracks the section leaving through the top of the viewport: 0 while
+ * its bottom edge is still at or below the viewport bottom, 1 once that edge has
+ * passed the viewport top. Anchoring on the section's own exit — rather than on
+ * its arrival — is what keeps a heading at full strength for as long as it is on
+ * screen, and what stops one section's content from drifting into the band of
+ * the next.
  */
-function useExitMotion(
-    target: React.RefObject<HTMLElement | null>,
-    y: number,
-    fadeOut = true
-): { y: MotionValue<number>; opacity: MotionValue<number> } {
+function useSectionExit(target: React.RefObject<HTMLElement | null>): {
+    y: MotionValue<number>
+    opacity: MotionValue<number>
+} {
     const { scrollYProgress } = useScroll({
         target: target as React.RefObject<HTMLElement>,
-        offset: ["start end", "start start"],
+        offset: ["end end", "end start"],
     })
     const smooth = useSpring(scrollYProgress, { stiffness: 500, damping: 60 })
-    const yv = useTransform(smooth, [0, 1], [0, y])
-    const ov = useTransform(smooth, [0, 1], [1, fadeOut ? 0 : 1])
-    return { y: yv, opacity: ov }
+    const y = useTransform(smooth, [0, 1], [0, SECTION_LIFT])
+    // Held at full opacity through the first part of the exit so the fade reads
+    // as the section leaving rather than as it dimming in place.
+    const opacity = useTransform(smooth, [0.35, 1], [1, 0])
+    return { y, opacity }
 }
 
-function ExitFx({
-    target,
-    y,
-    fadeOut = true,
-    className,
-    style,
+/**
+ * One project section. Everything the section owns — its checker divider
+ * included — sits in a single transformed layer, so the section enters, moves
+ * and leaves as one piece instead of each block animating on its own clock.
+ */
+function ProjectSection({
+    id,
+    variant,
+    showDivider = true,
     children,
 }: {
-    target: React.RefObject<HTMLElement | null>
-    y: number
-    fadeOut?: boolean
-    className?: string
-    style?: React.CSSProperties
+    id: string
+    variant: string
+    showDivider?: boolean
     children: React.ReactNode
 }) {
-    const m = useExitMotion(target, y, fadeOut)
+    const ref = useRef<HTMLElement | null>(null)
+    const { y, opacity } = useSectionExit(ref)
     return (
-        <motion.div className={className} style={{ ...style, y: m.y, opacity: m.opacity }}>
-            {children}
-        </motion.div>
+        <section id={id} ref={ref} className={`pd-section ${variant}`}>
+            <motion.div className="pd-section-inner" style={{ y, opacity }}>
+                {showDivider && (
+                    // Painted directly rather than behind a viewport reveal: the
+                    // divider marks where the section begins, so it has to be
+                    // there whenever the section is, and it already travels with
+                    // the section through this wrapper.
+                    <div className="pd-divider">
+                        <CheckerDivider color1={colors.lilac} color2={colors.tangerine} cellSize={13} rows={2} />
+                    </div>
+                )}
+                {children}
+            </motion.div>
+        </section>
     )
 }
 
@@ -197,13 +223,6 @@ export default function ProjectDetail() {
     const sections: ProjectSectionsMap = (slug && projectSections[slug]) || {}
     const { brief, snapshot, gameDesign, development, vfx, ui } = sections
     const hasSections = Boolean(brief || snapshot || gameDesign || development || vfx || ui)
-
-    // Section refs drive the scroll-linked exit effects.
-    const aboutRef = useRef<HTMLElement | null>(null)
-    const gdRef = useRef<HTMLElement | null>(null)
-    const devRef = useRef<HTMLElement | null>(null)
-    const vfxRef = useRef<HTMLElement | null>(null)
-    const uiRef = useRef<HTMLElement | null>(null)
 
     // The hero is sticky underneath the sections, which are transparent, so it
     // fades / translates out (and the banner+tags scale down) as the first
@@ -232,7 +251,14 @@ export default function ProjectDetail() {
 
     const goToHomeProjects = () => {
         navigate(lp("/"))
-        window.setTimeout(() => document.getElementById("projects")?.scrollIntoView(), 60)
+        // The home page has to mount and lay out before its sections can be
+        // measured; two frames is the first point at which that is true.
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => {
+                const el = document.getElementById("projects")
+                if (el) scrollToElement(el)
+            })
+        )
     }
 
     const briefItems = (brief?.items ?? []).slice(0, 2)
@@ -349,7 +375,7 @@ export default function ProjectDetail() {
 
                     {/* ── Brief ────────────────────────────────────────────── */}
                     {brief && (
-                        <section id="section-brief" className="pd-section pd-brief">
+                        <ProjectSection id="section-brief" variant="pd-brief" showDivider={false}>
                             {brief.displayTitle && (
                                 <SectionTitle {...tangerineTitle} title={L(brief.displayTitle)} />
                             )}
@@ -393,7 +419,17 @@ export default function ProjectDetail() {
                                 </Appear>
                             )}
                             {brief.video && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-brief-video">
+                                // The clip is the tallest block on the page, so it
+                                // reveals as soon as any of it is on screen and
+                                // then stays put — the default half-visible
+                                // threshold leaves it blank for most of its scroll.
+                                <Appear
+                                    trigger="inView"
+                                    once
+                                    threshold={0.05}
+                                    transition="spring-duration 0.4s 0.2 0s"
+                                    className="pd-brief-video"
+                                >
                                     <MediaFrame video={brief.video} style={{ width: phone ? "96%" : "70%" }} />
                                 </Appear>
                             )}
@@ -412,16 +448,13 @@ export default function ProjectDetail() {
                                 </Appear>
                             )}
                             <div className="pd-space-29 pd-not-phone" />
-                        </section>
+                        </ProjectSection>
                     )}
 
                     {/* ── Snapshot / About ─────────────────────────────────── */}
                     {snapshot && (
-                        <section id="section-about" ref={aboutRef} className="pd-section pd-about">
-                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" style={{ width: "100%" }}>
-                                <CheckerDivider color1={colors.lilac} color2={colors.tangerine} cellSize={13} rows={2} />
-                            </Appear>
-                            <ExitFx target={aboutRef} y={-300} style={{ width: "100%" }}>
+                        <ProjectSection id="section-about" variant="pd-about">
+                            <div style={{ width: "100%" }}>
                                 <SectionTitle
                                     {...sectionTitleBase}
                                     title={t("aboutTheGame")}
@@ -429,8 +462,8 @@ export default function ProjectDetail() {
                                     lineColor={colors.liberty}
                                     lineColor2="rgba(79, 88, 175, 0.3)"
                                 />
-                            </ExitFx>
-                            <ExitFx target={aboutRef} y={-300} fadeOut={false} className="pd-card-col">
+                            </div>
+                            <div className="pd-card-col">
                                 {snapItems[0] && (
                                     <LiftCard>
                                         <PastelCardItem locale={locale} item={snapItems[0]} background="rgba(238, 151, 142, 0.88)" />
@@ -441,8 +474,8 @@ export default function ProjectDetail() {
                                         <PastelCardItem locale={locale} item={snapItems[1]} background="rgba(139, 217, 195, 0.88)" />
                                     </LiftCard>
                                 )}
-                            </ExitFx>
-                            <ExitFx target={aboutRef} y={-300} style={{ width: "100%" }}>
+                            </div>
+                            <div style={{ width: "100%" }}>
                                 <SectionTitle
                                     {...sectionTitleBase}
                                     title={t("aboutMyWork")}
@@ -450,8 +483,8 @@ export default function ProjectDetail() {
                                     lineColor={colors.liberty}
                                     lineColor2="rgba(79, 88, 175, 0.3)"
                                 />
-                            </ExitFx>
-                            <ExitFx target={aboutRef} y={-300} fadeOut={false} className="pd-card-col">
+                            </div>
+                            <div className="pd-card-col">
                                 {snapItems[2] && (
                                     <LiftCard rotate={-3}>
                                         <PastelCardItem locale={locale} item={snapItems[2]} background="rgb(114, 121, 191)" />
@@ -462,20 +495,17 @@ export default function ProjectDetail() {
                                         <PastelCardItem locale={locale} item={snapItems[3]} background="rgba(238, 151, 142, 0.89)" />
                                     </LiftCard>
                                 )}
-                            </ExitFx>
-                        </section>
+                            </div>
+                        </ProjectSection>
                     )}
 
                     {/* ── Game Design ──────────────────────────────────────── */}
                     {gameDesign && (
-                        <section id="section-game-design" ref={gdRef} className="pd-section pd-gamedesign">
-                            <ExitFx target={gdRef} y={-100} style={{ width: "100%" }}>
-                                <CheckerDivider color1={colors.lilac} color2={colors.tangerine} cellSize={13} rows={2} />
-                            </ExitFx>
+                        <ProjectSection id="section-game-design" variant="pd-gamedesign">
                             {gameDesign.displayTitle && (
-                                <ExitFx target={gdRef} y={-100} style={{ width: "100%" }}>
+                                <div style={{ width: "100%" }}>
                                     <SectionTitle {...tangerineTitle} title={L(gameDesign.displayTitle)} />
-                                </ExitFx>
+                                </div>
                             )}
                             {gameDesign.bodyHtml && (
                                 <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
@@ -553,23 +583,20 @@ export default function ProjectDetail() {
                                 </div>
                             )}
                             {gameDesign.tags && (
-                                <ExitFx target={gdRef} y={-2550}>
+                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s">
                                     <TagCloud tagsString={L(gameDesign.tags)} />
-                                </ExitFx>
+                                </Appear>
                             )}
-                        </section>
+                        </ProjectSection>
                     )}
 
                     {/* ── Development ──────────────────────────────────────── */}
                     {development && (
-                        <section id="section-development" ref={devRef} className="pd-section pd-development">
-                            <ExitFx target={devRef} y={-100} style={{ width: "100%" }}>
-                                <CheckerDivider color1={colors.lilac} color2={colors.tangerine} cellSize={13} rows={2} />
-                            </ExitFx>
+                        <ProjectSection id="section-development" variant="pd-development">
                             {development.displayTitle && (
-                                <ExitFx target={devRef} y={-100} style={{ width: "100%" }}>
+                                <div style={{ width: "100%" }}>
                                     <SectionTitle {...tangerineTitle} title={L(development.displayTitle)} />
-                                </ExitFx>
+                                </div>
                             )}
                             {development.bodyHtml && (
                                 <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
@@ -595,25 +622,21 @@ export default function ProjectDetail() {
                                     )}
                                 </div>
                             )}
-                        </section>
+                        </ProjectSection>
                     )}
 
                     {/* ── VFX ──────────────────────────────────────────────── */}
                     {vfx && (
-                        <section id="section-vfx" ref={vfxRef} className="pd-section pd-vfx">
-                            <div className="pd-space-4" />
-                            <ExitFx target={vfxRef} y={-100} style={{ width: "100%" }}>
-                                <CheckerDivider color1={colors.lilac} color2={colors.tangerine} cellSize={13} rows={2} />
-                            </ExitFx>
+                        <ProjectSection id="section-vfx" variant="pd-vfx">
                             {vfx.displayTitle && (
-                                <ExitFx target={vfxRef} y={-200} style={{ width: "100%" }}>
+                                <div style={{ width: "100%" }}>
                                     <SectionTitle {...tangerineTitle} title={L(vfx.displayTitle)} />
-                                </ExitFx>
+                                </div>
                             )}
                             {vfx.bodyHtml && (
-                                <ExitFx target={vfxRef} y={-200} className="pd-vfx-body">
+                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-vfx-body">
                                     <RichText html={L(vfx.bodyHtml)} />
-                                </ExitFx>
+                                </Appear>
                             )}
                             {vfxFeatureItems.some(Boolean) && (
                                 <div className="pd-feature-col">
@@ -640,22 +663,18 @@ export default function ProjectDetail() {
                                     )}
                                 </div>
                             )}
-                        </section>
+                        </ProjectSection>
                     )}
 
                     {/* ── UI ───────────────────────────────────────────────── */}
                     {ui && (
-                        <section id="section-ui" ref={uiRef} className="pd-section pd-ui">
-                            <div className="pd-space-41" />
-                            <ExitFx target={uiRef} y={-100} style={{ width: "100%" }}>
-                                <CheckerDivider color1={colors.lilac} color2={colors.tangerine} cellSize={13} rows={2} />
-                            </ExitFx>
+                        <ProjectSection id="section-ui" variant="pd-ui">
                             {/* This heading reads the section's `title`, not its
                                 `displayTitle` like the other sections. */}
                             {ui.title && (
-                                <ExitFx target={uiRef} y={-200} style={{ width: "100%" }}>
+                                <div style={{ width: "100%" }}>
                                     <SectionTitle {...tangerineTitle} title={L(ui.title)} />
-                                </ExitFx>
+                                </div>
                             )}
                             {ui.bodyHtml && (
                                 <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-ui-body">
@@ -753,7 +772,7 @@ export default function ProjectDetail() {
                                     </div>
                                 </div>
                             )}
-                        </section>
+                        </ProjectSection>
                     )}
                 </div>
             </div>
@@ -869,27 +888,36 @@ export default function ProjectDetail() {
 
                 .pd-spacer-invisible { width: 100%; height: 23vh; position: relative; z-index: 6; }
 
+                /* The outer element holds the section's place in the flow; the
+                   inner one is the single layer that moves and fades on exit, so
+                   the divider and the content can never separate. */
                 .pd-section {
                     position: relative;
+                    width: 100%;
+                    padding: 20px 0;
+                    box-sizing: border-box;
+                    z-index: 6;
+                }
+                .pd-section-inner {
                     width: 100%;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                     gap: 24px;
-                    padding: 20px 0;
-                    box-sizing: border-box;
-                    z-index: 6;
                 }
-                .pd-brief { align-items: flex-start; z-index: 6; }
+                /* Decorative layer: above the paper, below the content. */
+                .pd-divider { position: relative; z-index: 1; width: 100%; flex-shrink: 0; }
+                .pd-brief { z-index: 6; }
+                .pd-brief .pd-section-inner { align-items: flex-start; }
                 .pd-about { padding: 20px 0 40px; z-index: 5; }
                 .pd-gamedesign { padding: 40px 0; z-index: 1; }
                 .pd-development { padding: 40px 0; z-index: 1; }
-                .pd-vfx { gap: 40px; padding: 0; z-index: 6; }
-                .pd-ui { gap: 40px; padding: 20px 0; z-index: 5; }
+                .pd-vfx { padding: 44px 0 0; z-index: 6; }
+                .pd-vfx .pd-section-inner { gap: 40px; }
+                .pd-ui { padding: 101px 0 20px; z-index: 5; }
+                .pd-ui .pd-section-inner { gap: 40px; }
 
-                .pd-space-4 { width: 100%; height: 4px; }
                 .pd-space-29 { width: 100%; height: 29px; }
-                .pd-space-41 { width: 100%; height: 41px; }
 
                 /* Brief */
                 .pd-brief-body { width: 100%; padding: 10px 88px 0 20px; box-sizing: border-box; }
