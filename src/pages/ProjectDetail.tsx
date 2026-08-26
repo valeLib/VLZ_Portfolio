@@ -665,7 +665,7 @@ export default function ProjectDetail() {
                                                 eyebrow=""
                                                 title={L(item.displayTitle)}
                                                 body={L(item.bodyHtml)}
-                                                textPadding={phone ? 18 : 10}
+                                                textPadding={phone ? 4 : 10}
                                                 textRadius={phone ? 16 : 22}
                                             />
                                         ) : null
@@ -708,7 +708,7 @@ export default function ProjectDetail() {
                                                 eyebrow=""
                                                 title={L(item.displayTitle)}
                                                 body={L(item.bodyHtml)}
-                                                textPadding={phone ? 18 : 10}
+                                                textPadding={phone ? 4 : 10}
                                                 textRadius={phone ? 16 : 22}
                                             />
                                         ) : null
@@ -1067,7 +1067,21 @@ export default function ProjectDetail() {
                 @media (max-width: 809.98px) {
                     .pd-not-phone { display: none !important; }
                     .pd-only-phone { display: block; }
-                    .pd-sections { padding: 60px 0 0; }
+                    /* Phones trade the desktop reading column for a near
+                       full-width grid: one small gutter on the page and none
+                       repeated inside the blocks, so media, diagrams and text
+                       share the same edges. */
+                    .pd-scroll { width: 100%; }
+                    .pd-sections { width: 100%; padding: 60px 16px 0; }
+                    .pd-backlink { padding: 21px 16px 0; }
+                    .pd-subsection { padding: 16px 0; }
+                    .pd-sub-features { padding: 8px 0; }
+                    .pd-features { padding: 16px 0 0; }
+                    .pd-feature-col { padding: 8px 0; }
+                    .pd-table { padding: 8px 0; }
+                    .pd-card-col { padding: 0; }
+                    .pd-brief-cta { padding: 6px 0; }
+                    .pd-brief-tags { padding: 2px 0 4px; }
                     .pd-hero { overflow: clip; padding: 20px 0; box-sizing: border-box; }
                     .pd-banner { width: 174%; max-width: none; height: 90px; }
                     .pd-spacer-invisible { height: 8vh; }
@@ -1075,10 +1089,10 @@ export default function ProjectDetail() {
                     .pd-about { padding: 20px 0; }
                     .pd-gamedesign { padding: 20px 0; }
                     .pd-development { padding: 20px 0; }
-                    .pd-brief-body { padding: 0 8px 0 16px; }
-                    .pd-brief-grid { padding: 0 0 0 10px; }
+                    .pd-brief-body { padding: 0; }
+                    .pd-brief-grid { padding: 0; }
                     .pd-brief-item { width: 98%; }
-                    .pd-gd-body { padding: 0 0 0 16px; }
+                    .pd-gd-body { padding: 0; }
                     .pd-coreloop-row { flex-direction: column; align-items: center; gap: 21px; padding: 8px; width: 98%; }
                     .pd-flow-frame { width: 191px; }
                     .pd-loop-frame { padding: 8px 8px 0; }
@@ -1309,9 +1323,9 @@ function ImpactTable({ locale, phone, dsl, leftHeader, rightHeader }: {
  *
  * A diagram documents the first item, so it renders directly after it: a
  * subsection with one item reads item → diagram, one with several reads
- * item 1 → diagram → items 2…. Plain step lists flow left to right; steps that
- * carry sublabels need the width and stack instead, as does everything on a
- * phone.
+ * item 1 → diagram → items 2…. Plain step lists flow left to right; a longer
+ * list whose steps carry sublabels needs the width and stacks instead, as
+ * does everything on a phone.
  */
 function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tableRightHeader }: {
     locale: "en" | "es"
@@ -1327,7 +1341,7 @@ function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tab
     const items = sub.items ?? []
     const rest = items.slice(1)
     const diagram = sub.diagram1 ? L(sub.diagram1) : ""
-    const vertical = phone || diagram.includes("|")
+    const vertical = phone || (diagram.includes("|") && diagram.split("->").length > 3)
 
     const feature = (item: SectionItem, i: number) => (
         <FeatureModuleGrid
@@ -1340,11 +1354,12 @@ function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tab
             stackedMediaAlign={phone ? "center" : "left"}
             stackedTextScale={phone ? 0.85 : 0.9}
             mediaRadius={tablet ? 15 : 16}
+            mediaAspectRatio="auto"
             image={item.icon ?? ""}
             eyebrow=""
             title={L(item.displayTitle)}
             body={L(item.bodyHtml)}
-            textPadding={phone ? 18 : 10}
+            textPadding={phone ? 4 : 10}
             textRadius={phone ? 16 : 22}
         />
     )
