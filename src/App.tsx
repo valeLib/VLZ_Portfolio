@@ -4,7 +4,7 @@ import Home from "./pages/Home"
 import Projects from "./pages/Projects"
 import ProjectDetail from "./pages/ProjectDetail"
 import { LocaleContext, STRINGS, pick, stripLocale, type Locale } from "./lib/i18n"
-import { jumpTo } from "./lib/scroll"
+import { flowOffsetTop, jumpTo, takePendingAnchor } from "./lib/scroll"
 import { MotionConfig } from "framer-motion"
 
 /**
@@ -52,8 +52,22 @@ function ScrollManager() {
         if (previous.current === route) return
         if (previous.current !== null) positions.current.set(previous.current, lastY.current)
         previous.current = route
-        const restored = navigationType === "POP" ? positions.current.get(route) : undefined
-        const target = restored ?? 0
+        // Back / forward returns to where the visitor left a page — except a
+        // project page, which always opens at its hero so it reads the same
+        // however it was reached.
+        const isProject = /^\/projects\/[^/]+$/.test(route)
+        const restored = navigationType === "POP" && !isProject ? positions.current.get(route) : undefined
+        let target = restored ?? 0
+        // A nav link from another page asked for a section: land on it now,
+        // while the new page has laid out but not yet painted.
+        const anchor = takePendingAnchor()
+        const el = anchor ? document.getElementById(anchor) : null
+        if (el) {
+            const pinned = getComputedStyle(el).position === "sticky"
+            const bar = document.querySelector(".sticky-nav-bar")
+            const offset = pinned ? 0 : (bar?.getBoundingClientRect().height ?? 0) + 8
+            target = Math.max(0, flowOffsetTop(el) - offset)
+        }
         lastY.current = target
         jumpTo(target)
     }, [route, navigationType])

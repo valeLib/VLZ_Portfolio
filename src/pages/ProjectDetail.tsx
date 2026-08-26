@@ -1,12 +1,12 @@
 import { useRef } from "react"
-import { Link, useNavigate, useParams } from "react-router-dom"
+import { Link, useParams } from "react-router-dom"
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion"
 import type { MotionValue } from "framer-motion"
 import { getProject, getPublicProject, publicProjects } from "../data/projects"
+import type { Project } from "../data/projects"
 import { projectSections } from "../data/projectSections"
 import type { ProjectSection, ProjectSectionsMap, SectionItem, SubSection } from "../data/projectSections"
 import { colors } from "../tokens"
-import { scrollToElement } from "../lib/scroll"
 import { useBreakpoint } from "../hooks/useBreakpoint"
 import { pick, useLocale, useLocalePath, useT } from "../lib/i18n"
 import type { L10n } from "../lib/i18n"
@@ -27,6 +27,8 @@ import DecisionImpactTable from "../components/DecisionImpactTable"
 import FeatureModuleGrid from "../components/FeatureModuleGrid"
 import ExternalLink from "../components/ExternalLink"
 import PageEnter from "../components/PageEnter"
+import SiteNav from "../components/SiteNav"
+import ProjectSwitcher from "../components/ProjectSwitcher"
 
 /**
  * One layout for every public project detail page: sticky hero, then Brief /
@@ -211,29 +213,11 @@ function ProjectSection({
 
 export default function ProjectDetail() {
     const { slug } = useParams()
-    const navigate = useNavigate()
-    const bp = useBreakpoint()
-    const phone = bp === "phone"
-    const tablet = bp === "tablet"
-    const locale = useLocale()
     const t = useT()
     const lp = useLocalePath()
-    const L = (v?: L10n) => pick(locale, v)
 
     const project = getPublicProject(slug)
     const knownButDraft = !project && Boolean(getProject(slug))
-    const sections: ProjectSectionsMap = (slug && projectSections[slug]) || {}
-    const { brief, snapshot, gameDesign, development, vfx, ui } = sections
-    const hasSections = Boolean(brief || snapshot || gameDesign || development || vfx || ui)
-
-    // The hero is sticky underneath the sections, which are transparent, so it
-    // fades / translates out (and the banner+tags scale down) as the first
-    // section scrolls over it.
-    const { scrollY } = useScroll()
-    const fadeRange = typeof window !== "undefined" ? window.innerHeight * 0.85 : 800
-    const heroOpacity = useTransform(scrollY, [0, fadeRange], [1, hasSections ? 0 : 1])
-    const heroY = useTransform(scrollY, [0, fadeRange], [0, hasSections ? (phone ? -100 : -414) : 0])
-    const heroScale = useTransform(scrollY, [0, fadeRange], [1, hasSections && !phone ? 0.6 : 1])
 
     if (!project) {
         // Draft projects and unknown slugs share the same public dead end.
@@ -246,557 +230,14 @@ export default function ProjectDetail() {
         )
     }
 
-    // Prev / next follow the CMS collection order, drafts excluded.
-    const idx = publicProjects.findIndex((p) => p.slug === project.slug)
-    const prev = idx > 0 ? publicProjects[idx - 1] : undefined
-    const next = idx >= 0 && idx < publicProjects.length - 1 ? publicProjects[idx + 1] : undefined
-
-    const goToHomeProjects = () => {
-        navigate(lp("/"))
-        // The home page has to mount and lay out before its sections can be
-        // measured; two frames is the first point at which that is true.
-        requestAnimationFrame(() =>
-            requestAnimationFrame(() => {
-                const el = document.getElementById("projects")
-                if (el) scrollToElement(el)
-            })
-        )
-    }
-
-    const briefItems = (brief?.items ?? []).slice(0, 2)
-    const snapItems = snapshot?.items ?? []
-    const galleryItems = (ui?.galleryItems ?? []).slice(0, 5)
-    const uiFeatureItems = (ui?.subsections?.[0]?.items ?? []).slice(0, 4)
-    const vfxFeatureItems = (vfx?.subsections?.[0]?.items ?? []).slice(0, 3)
-    const gdFeatureItem = gameDesign?.items?.[0]
-
     return (
         <div className="pd-page">
-            <PageEnter className="pd-scroll">
-                <div className="pd-paper">
-                    <NotebookBackground
-                        paperColor={colors.background}
-                        gridType="ruled"
-                        gridColor={colors.mutedTxt}
-                        gridOpacity={0.25}
-                        gridSize={24}
-                        gridWeight={1.2}
-                    />
-                </div>
-
-                {/* Sticky back link to the home Featured Work section */}
-                <div className="pd-backlink">
-                    <a
-                        href={`#${lp("/")}`}
-                        onClick={(e) => { e.preventDefault(); goToHomeProjects() }}
-                        className="pd-code-link"
-                    >
-                        {t("backLink")}
-                    </a>
-                </div>
-
-                <div className="pd-sections">
-                    {/* ── Hero (sticky, 100vh) ─────────────────────────────── */}
-                    <section className="pd-hero">
-                        <motion.div className="pd-hero-inner" style={{ opacity: heroOpacity, y: heroY }}>
-                            <Appear transition="spring-duration 0.4s 0.2 0s" style={{ width: "100%" }}>
-                                <CheckerDivider color1={colors.lilac} color2="rgb(114, 121, 191)" cellSize={13} rows={2} />
-                            </Appear>
-                            <Appear transition="tween 0.44,0,0.56,1 0.6s 0.1s" style={{ width: "100%" }}>
-                                <HeroSection
-                                    title={L(project.title)}
-                                    year={L(project.year)}
-                                    tracks={L(project.tracks)}
-                                    tagline={L(project.tagline)}
-                                    stack={L(project.stack)}
-                                    context={L(project.context)}
-                                    role={L(project.role)}
-                                    animation="wordByWord"
-                                    animationTrigger="once"
-                                    animationDuration={0.6}
-                                    elementStagger={0.1}
-                                    staggerDelay={0.04}
-                                    showBackLink={false}
-                                    yearPosition="inline-right"
-                                    stackLabel={t("toolsLabel")}
-                                    contextLabel={t("contextLabel")}
-                                    roleLabel={t("roleLabel")}
-                                    dividerStyle="wavy"
-                                    dividerThickness={3}
-                                    dividerColor={colors.babyPink}
-                                    dividerMarginTop={24}
-                                    accentColor={project.color}
-                                    inkColor="rgb(54, 49, 59)"
-                                    mutedColor={colors.secondaryTxt}
-                                    paddingTop={phone ? 28 : 60}
-                                    paddingBottom={phone ? 8 : 24}
-                                    paddingX={phone ? 16 : 24}
-                                    maxWidth={760}
-                                    titleFont="Jua"
-                                    titleWeight="700"
-                                    titleSize={phone ? 66 : 88}
-                                    titleColor="rgb(54, 49, 59)"
-                                    titleLineHeight={1.1}
-                                    trackFont="IBM Plex Mono"
-                                    trackSize={11}
-                                    yearFont="IBM Plex Mono"
-                                    yearWeight="700"
-                                    yearSize={14}
-                                    yearTextColor={colors.gunmetalBlack}
-                                    yearPaddingH={14}
-                                    yearPaddingV={4}
-                                    yearBorderRadius={5}
-                                    yearBorderWidth={1.5}
-                                    yearShadowOffset={2}
-                                    taglineFont="Anonymous Pro"
-                                    taglineSize={16}
-                                    taglineColor={colors.liberty}
-                                    metaFont="IBM Plex Mono"
-                                    metaSize={12}
-                                />
-                            </Appear>
-                            {project.tags && (
-                                <motion.div style={{ scale: heroScale }} className="pd-hero-tags">
-                                    <Appear transition="tween 0.44,0,0.56,1 0.5s 0.55s">
-                                        <TagCloud tagsString={L(project.tags)} />
-                                    </Appear>
-                                </motion.div>
-                            )}
-                            {project.cover && (
-                                <motion.div style={{ scale: heroScale, width: "100%", display: "flex", justifyContent: "center" }}>
-                                    <Appear transition="tween 0.44,0,0.56,1 0.5s 0.5s" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                                        <div className="pd-banner" style={{ backgroundImage: `url(${project.cover})` }} />
-                                    </Appear>
-                                </motion.div>
-                            )}
-                        </motion.div>
-                    </section>
-
-                    {/* Empty spacer that gives the hero room to fade out before Brief. */}
-                    {snapshot && <div id="section-invisible" className="pd-spacer-invisible" />}
-
-                    {/* ── Brief ────────────────────────────────────────────── */}
-                    {brief && (
-                        <ProjectSection id="section-brief" variant="pd-brief" showDivider={false}>
-                            {brief.displayTitle && (
-                                <SectionTitle {...tangerineTitle} title={L(brief.displayTitle)} />
-                            )}
-                            {brief.bodyHtml && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-brief-body">
-                                    <BodyText locale={locale} html={brief.bodyHtml} mobileHtml={brief.bodyMobileHtml} />
-                                </Appear>
-                            )}
-                            <div className="pd-brief-cta">
-                                <ExternalLink
-                                    label={t("playPrototype")}
-                                    href="https://valelizu.itch.io/goblin-td"
-                                    newTab
-                                    bracketStyle="None"
-                                    leadStyle="Play"
-                                    trailStyle="Arrow up-right"
-                                    glyphGap={8}
-                                    font="IBM Plex Mono"
-                                    fontSize={14}
-                                    fontWeight={700}
-                                    letterSpacing={0.02}
-                                    textColor={colors.border}
-                                    fill="rgb(114, 121, 191)"
-                                    radius={999}
-                                    paddingX={18}
-                                    paddingY={8}
-                                    borderWidth={2}
-                                    borderStyle="solid"
-                                    borderColor={colors.libertyHover}
-                                    shadowOn
-                                    shadowX={3}
-                                    shadowY={3}
-                                    shadowColor="#1C1B22"
-                                    hoverEffect="Nudge arrow"
-                                    hoverArrowShift={2}
-                                />
-                            </div>
-                            {brief.tags && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-brief-tags">
-                                    <TagCloud tagsString={L(brief.tags)} />
-                                </Appear>
-                            )}
-                            {brief.video && (
-                                // The clip is the tallest block on the page, so it
-                                // reveals as soon as any of it is on screen and
-                                // then stays put — the default half-visible
-                                // threshold leaves it blank for most of its scroll.
-                                <Appear
-                                    trigger="inView"
-                                    once
-                                    threshold={0.05}
-                                    transition="spring-duration 0.4s 0.2 0s"
-                                    className="pd-brief-video"
-                                >
-                                    <MediaFrame video={brief.video} style={{ width: phone ? "96%" : "70%" }} />
-                                </Appear>
-                            )}
-                            {briefItems[0] && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" style={{ width: "100%" }}>
-                                    <div className="pd-brief-grid">
-                                        {briefItems.map((item, i) =>
-                                            item ? (
-                                                <div key={i} className="pd-brief-item">
-                                                    {item.displayTitle && <div className="pd-kicker">{L(item.displayTitle)}</div>}
-                                                    {item.bodyHtml && <RichText html={L(item.bodyHtml)} />}
-                                                </div>
-                                            ) : null
-                                        )}
-                                    </div>
-                                </Appear>
-                            )}
-                            <div className="pd-space-29 pd-not-phone" />
-                        </ProjectSection>
-                    )}
-
-                    {/* ── Snapshot / About ─────────────────────────────────── */}
-                    {snapshot && (
-                        <ProjectSection id="section-about" variant="pd-about">
-                            <div style={{ width: "100%" }}>
-                                <SectionTitle
-                                    {...sectionTitleBase}
-                                    title={t("aboutTheGame")}
-                                    dotColor={colors.liberty}
-                                    lineColor={colors.liberty}
-                                    lineColor2="rgba(79, 88, 175, 0.3)"
-                                />
-                            </div>
-                            <div className="pd-card-col">
-                                {snapItems[0] && (
-                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0s" style={{ width: "100%" }}>
-                                        <LiftCard>
-                                            <PastelCardItem locale={locale} item={snapItems[0]} background="rgba(238, 151, 142, 0.88)" />
-                                        </LiftCard>
-                                    </Appear>
-                                )}
-                                {snapItems[1] && (
-                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0.1s" style={{ width: "100%" }}>
-                                        <LiftCard rotate={3}>
-                                            <PastelCardItem locale={locale} item={snapItems[1]} background="rgba(139, 217, 195, 0.88)" />
-                                        </LiftCard>
-                                    </Appear>
-                                )}
-                            </div>
-                            <div style={{ width: "100%" }}>
-                                <SectionTitle
-                                    {...sectionTitleBase}
-                                    title={t("aboutMyWork")}
-                                    dotColor={colors.teal}
-                                    lineColor={colors.liberty}
-                                    lineColor2="rgba(79, 88, 175, 0.3)"
-                                />
-                            </div>
-                            <div className="pd-card-col">
-                                {snapItems[2] && (
-                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0s" style={{ width: "100%" }}>
-                                        <LiftCard rotate={-3}>
-                                            <PastelCardItem locale={locale} item={snapItems[2]} background="rgb(114, 121, 191)" />
-                                        </LiftCard>
-                                    </Appear>
-                                )}
-                                {snapItems[3] && (
-                                    <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0.1s" style={{ width: "100%" }}>
-                                        <LiftCard>
-                                            <PastelCardItem locale={locale} item={snapItems[3]} background="rgba(238, 151, 142, 0.89)" />
-                                        </LiftCard>
-                                    </Appear>
-                                )}
-                            </div>
-                        </ProjectSection>
-                    )}
-
-                    {/* ── Game Design ──────────────────────────────────────── */}
-                    {gameDesign && (
-                        <ProjectSection id="section-game-design" variant="pd-gamedesign">
-                            {gameDesign.displayTitle && (
-                                <div style={{ width: "100%" }}>
-                                    <SectionTitle {...tangerineTitle} title={L(gameDesign.displayTitle)} />
-                                </div>
-                            )}
-                            {gameDesign.bodyHtml && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
-                                    <BodyText locale={locale} html={gameDesign.bodyHtml} mobileHtml={gameDesign.bodyMobileHtml} />
-                                </Appear>
-                            )}
-                            {(gameDesign.diagram1 || gameDesign.diagram2 || gameDesign.diagram3) && (
-                                <div className="pd-coreloop-row">
-                                    {/* Window order flips on phone: CORELOOP first. */}
-                                    {gameDesign.diagram1 && !phone && (
-                                        <FlowWindow locale={locale} diagram={gameDesign.diagram1} phone={false} bodyPadding={tablet ? 10 : 8} />
-                                    )}
-                                    {gameDesign.diagram2 && (
-                                        <LoopWindow
-                                            locale={locale}
-                                            diagram={gameDesign.diagram2}
-                                            phone={phone}
-                                            bodyPadding={phone ? 6 : tablet ? 4 : 18}
-                                            title="CORELOOP.EXE"
-                                            centerText={t("coreLoopCenter")}
-                                            curve={phone ? 12 : 18}
-                                        />
-                                    )}
-                                    {gameDesign.diagram1 && phone && (
-                                        <FlowWindow locale={locale} diagram={gameDesign.diagram1} phone bodyPadding={20} />
-                                    )}
-                                    {gameDesign.diagram3 && (
-                                        <LoopWindow
-                                            locale={locale}
-                                            diagram={gameDesign.diagram3}
-                                            phone={phone}
-                                            bodyPadding={18}
-                                            title={t("metaLoopWindow")}
-                                            centerText={t("metaLoopCenter")}
-                                            curve={phone ? 4 : 6}
-                                            arrowHeadSize={phone ? 7 : 10}
-                                            arrowGap={phone ? 3 : 6}
-                                            radiusOverride={phone ? 80 : 125}
-                                        />
-                                    )}
-                                </div>
-                            )}
-                            {gdFeatureItem && (
-                                <div className="pd-features">
-                                    <FeatureModuleGrid
-                                        {...featureBase}
-                                        mediaPosition="left"
-                                        mediaColumnWidth={50}
-                                        colGap={32}
-                                        rowGap={28}
-                                        verticalAlign="center"
-                                        stackedMediaWidth={65}
-                                        stackedMediaAlign="left"
-                                        stackedTextScale={0.9}
-                                        mediaFit="contain"
-                                        mediaRadius={tablet ? 15 : 16}
-                                        image={gdFeatureItem.icon ?? ""}
-                                        showMediaBadge
-                                        badgeText={L(gdFeatureItem.badge)}
-                                        badgeTextColor="#1a1520"
-                                        eyebrow={L(gdFeatureItem.subtitle)}
-                                        title={L(gdFeatureItem.displayTitle)}
-                                        body={L(gdFeatureItem.bodyHtml)}
-                                        panelScope="text"
-                                        textPadding={0}
-                                        textRadius={0}
-                                        titleSize={28}
-                                    />
-                                </div>
-                            )}
-                            {gameDesign.table && (
-                                <div className="pd-table">
-                                    <ImpactTable locale={locale} phone={phone} dsl={gameDesign.table}
-                                        leftHeader={t("tableLeftHeader")} rightHeader={t("tableRightHeader")} />
-                                </div>
-                            )}
-                            {gameDesign.tags && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s">
-                                    <TagCloud tagsString={L(gameDesign.tags)} />
-                                </Appear>
-                            )}
-                        </ProjectSection>
-                    )}
-
-                    {/* ── Development ──────────────────────────────────────── */}
-                    {development && (
-                        <ProjectSection id="section-development" variant="pd-development">
-                            {development.displayTitle && (
-                                <div style={{ width: "100%" }}>
-                                    <SectionTitle {...tangerineTitle} title={L(development.displayTitle)} />
-                                </div>
-                            )}
-                            {development.bodyHtml && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
-                                    <RichText html={L(development.bodyHtml)} />
-                                </Appear>
-                            )}
-                            {development.subsections?.[0] && (
-                                <div className="pd-subsections">
-                                    {development.subsections.map((sub, i) =>
-                                        sub ? (
-                                            <DevSubsection
-                                                key={sub.id}
-                                                locale={locale}
-                                                sub={sub}
-                                                index={i}
-                                                phone={phone}
-                                                tablet={tablet}
-                                                tableLeftHeader={t("tableLeftHeader")}
-                                                tableRightHeader={t("tableRightHeader")}
-                                            />
-                                        ) : null
-                                    )}
-                                </div>
-                            )}
-                        </ProjectSection>
-                    )}
-
-                    {/* ── VFX ──────────────────────────────────────────────── */}
-                    {vfx && (
-                        <ProjectSection id="section-vfx" variant="pd-vfx">
-                            {vfx.displayTitle && (
-                                <div style={{ width: "100%" }}>
-                                    <SectionTitle {...tangerineTitle} title={L(vfx.displayTitle)} />
-                                </div>
-                            )}
-                            {vfx.bodyHtml && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-vfx-body">
-                                    <RichText html={L(vfx.bodyHtml)} />
-                                </Appear>
-                            )}
-                            {vfxFeatureItems.some(Boolean) && (
-                                <div className="pd-feature-col">
-                                    {vfxFeatureItems.map((item, i) =>
-                                        item ? (
-                                            <FeatureModuleGrid
-                                                key={item.id}
-                                                {...featureBase}
-                                                mediaPosition={i % 2 === 0 ? "left" : "right"}
-                                                mediaColumnWidth={50}
-                                                verticalAlign="center"
-                                                stackedMediaWidth={phone ? 100 : tablet ? 60 : 40}
-                                                stackedMediaAlign={phone ? "center" : "left"}
-                                                stackedTextScale={phone ? 0.85 : 0.9}
-                                                mediaRadius={tablet ? 15 : 16}
-                                                image={item.icon ?? ""}
-                                                eyebrow=""
-                                                title={L(item.displayTitle)}
-                                                body={L(item.bodyHtml)}
-                                                textPadding={phone ? 4 : 10}
-                                                textRadius={phone ? 16 : 22}
-                                            />
-                                        ) : null
-                                    )}
-                                </div>
-                            )}
-                        </ProjectSection>
-                    )}
-
-                    {/* ── UI ───────────────────────────────────────────────── */}
-                    {ui && (
-                        <ProjectSection id="section-ui" variant="pd-ui">
-                            {/* This heading reads the section's `title`, not its
-                                `displayTitle` like the other sections. */}
-                            {ui.title && (
-                                <div style={{ width: "100%" }}>
-                                    <SectionTitle {...tangerineTitle} title={L(ui.title)} />
-                                </div>
-                            )}
-                            {ui.bodyHtml && (
-                                <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-ui-body">
-                                    <BodyText locale={locale} html={ui.bodyHtml} mobileHtml={ui.bodyMobileHtml} />
-                                </Appear>
-                            )}
-                            {uiFeatureItems.some(Boolean) && (
-                                <div className="pd-feature-col pd-ui-features">
-                                    {uiFeatureItems.map((item, i) =>
-                                        item ? (
-                                            <FeatureModuleGrid
-                                                key={item.id}
-                                                {...featureBase}
-                                                mediaPosition={i % 2 === 0 ? "right" : "left"}
-                                                mediaColumnWidth={tablet ? 70 : 35}
-                                                verticalAlign="center"
-                                                stackedMediaWidth={phone ? 100 : tablet ? 60 : 20}
-                                                stackedMediaAlign={phone ? "center" : "left"}
-                                                stackedTextScale={phone ? 0.85 : 0.9}
-                                                mediaRadius={tablet ? 15 : 16}
-                                                image={item.icon ?? ""}
-                                                eyebrow=""
-                                                title={L(item.displayTitle)}
-                                                body={L(item.bodyHtml)}
-                                                textPadding={phone ? 4 : 10}
-                                                textRadius={phone ? 16 : 22}
-                                            />
-                                        ) : null
-                                    )}
-                                </div>
-                            )}
-                            {galleryItems.length > 0 && (
-                                <div className="pd-gallery-stage">
-                                    <div className="pd-gallery">
-                                        <Gallery
-                                            itemCount={galleryItems.length}
-                                            item1Image={galleryItems[0]?.image ?? ""}
-                                            item1Title={L(galleryItems[0]?.title)}
-                                            item2Image={galleryItems[1]?.image ?? ""}
-                                            item2Title={L(galleryItems[1]?.title)}
-                                            item3Image={galleryItems[2]?.image ?? ""}
-                                            item3Title={L(galleryItems[2]?.title)}
-                                            item4Image={galleryItems[3]?.image ?? ""}
-                                            item4Title={L(galleryItems[3]?.title)}
-                                            item5Image={galleryItems[4]?.image ?? ""}
-                                            item5Title={L(galleryItems[4]?.title)}
-                                            mode="stack"
-                                            loop
-                                            autoplay={false}
-                                            enableDrag
-                                            dragThreshold={80}
-                                            imageAspectRatio="9:16"
-                                            imageFit="contain"
-                                            imageBgColor="rgba(232, 229, 223, 0)"
-                                            cardRadius={16}
-                                            cardBorderWidth={0}
-                                            containerHeight={480}
-                                            containerBg="rgba(242, 239, 233, 0)"
-                                            showTitle
-                                            titlePosition="above"
-                                            titleFont="Doppio One"
-                                            titleWeight="700"
-                                            titleSize={18}
-                                            titleColor={colors.liberty}
-                                            titleBgColor="rgba(26, 21, 32, 0)"
-                                            titlePadding={14}
-                                            titleGapAbove={16}
-                                            titleGap={16}
-                                            showCounter
-                                            counterFormat="{i} / {n}"
-                                            counterPosition="bottom-right"
-                                            counterFont="IBM Plex Mono"
-                                            counterSize={11}
-                                            counterColor="#fffdf8"
-                                            counterBgColor="rgba(79, 89, 176, 0.8)"
-                                            counterPadding="5px 10px"
-                                            counterMarginTop={16}
-                                            showArrows
-                                            arrowPlacement="auto"
-                                            arrowStyle="circle"
-                                            arrowSize={40}
-                                            arrowOffset={-72}
-                                            arrowBg={colors.background}
-                                            arrowBorderColor="rgba(79, 89, 176, 0.32)"
-                                            arrowIconColor={colors.liberty}
-                                            showDots
-                                            dotActiveColor={colors.tangerine}
-                                            dotInactiveColor="#c8c2d6"
-                                            dotSize={8}
-                                            navGap={16}
-                                            stackPeek={32}
-                                            stackRotation={4}
-                                            stackOpacity={0.8}
-                                        />
-                                    </div>
-                                </div>
-                            )}
-                        </ProjectSection>
-                    )}
-                </div>
-            </PageEnter>
-
-            {/* Sticky prev / next footer bar (public projects, CMS order) */}
-            <div className="pd-footer">
-                {prev ? (
-                    <Link to={lp(`/projects/${prev.slug}`)} className="pd-code-link">{t("prevProject")}</Link>
-                ) : (
-                    <span />
-                )}
-                {next && (
-                    <Link to={lp(`/projects/${next.slug}`)} className="pd-code-link pd-next">{t("nextProject")}</Link>
-                )}
-            </div>
+            <SiteNav autoHide="all" />
+            {/* Keyed by slug: a project-to-project change remounts every hook
+                and scroll tracker below, so the destination hero measures from
+                its own elements at the top of the page instead of inheriting
+                the previous project's exit state. */}
+            <ProjectPage key={project.slug} project={project} />
 
             <style>{`
                 .pd-page {
@@ -806,14 +247,13 @@ export default function ProjectDetail() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 160px;
                     overflow-x: clip;
                 }
                 .pd-scroll {
                     position: relative;
                     width: 90%;
                     max-width: 1200px;
-                    padding: 20px 0;
+                    padding: 0 0 48px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -831,15 +271,6 @@ export default function ProjectDetail() {
                     pointer-events: none;
                 }
 
-                .pd-backlink {
-                    position: sticky;
-                    top: 4px;
-                    z-index: 20;
-                    width: 100%;
-                    padding: 21px 0 0;
-                    display: flex;
-                    justify-content: flex-start;
-                }
                 .pd-code-link {
                     font-family: "IBM Plex Mono", monospace;
                     font-size: 12px;
@@ -849,12 +280,12 @@ export default function ProjectDetail() {
                     text-decoration: none;
                 }
                 .pd-code-link:hover { text-decoration: underline; }
-                .pd-next { font-weight: 500; font-size: 10.5px; }
 
+                /* Top padding clears the floating nav bar (27px down, 52px tall). */
                 .pd-sections {
                     position: relative;
                     width: 80%;
-                    padding: 60px 0 0 10px;
+                    padding: 96px 0 0 10px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -880,11 +311,13 @@ export default function ProjectDetail() {
                     align-items: center;
                     gap: 10px;
                 }
+                /* Chips are rotated and carry a shadow, so the row keeps a little
+                   vertical room for them instead of clipping. */
                 .pd-hero-tags {
                     width: 100%;
                     display: flex;
                     justify-content: center;
-                    overflow: clip;
+                    padding: 6px 0;
                 }
                 .pd-banner {
                     width: 97.2%;
@@ -895,6 +328,7 @@ export default function ProjectDetail() {
                     z-index: 5;
                 }
 
+                .pd-flow { width: 100%; display: flex; flex-direction: column; align-items: center; }
                 .pd-spacer-invisible { width: 100%; height: 23vh; position: relative; z-index: 6; }
 
                 /* The outer element holds the section's place in the flow; the
@@ -931,7 +365,7 @@ export default function ProjectDetail() {
                 /* Brief */
                 .pd-brief-body { width: 100%; padding: 10px 88px 0 20px; box-sizing: border-box; }
                 .pd-brief-cta { width: 100%; padding: 6px 6px 6px 20px; box-sizing: border-box; display: flex; justify-content: flex-start; }
-                .pd-brief-tags { width: 100%; padding: 2px 0 4px 20px; box-sizing: border-box; display: flex; justify-content: center; }
+                .pd-brief-tags { width: 100%; padding: 6px 0 6px 20px; box-sizing: border-box; display: flex; justify-content: center; }
                 .pd-brief-video { width: 100%; padding: 40px 0 4px; display: flex; justify-content: center; overflow: hidden; }
                 .pd-brief-grid {
                     width: 100%;
@@ -1041,20 +475,6 @@ export default function ProjectDetail() {
                 }
                 .pd-gallery { width: 46%; }
 
-                /* Sticky prev/next bar */
-                .pd-footer {
-                    position: sticky;
-                    bottom: 25px;
-                    z-index: 30;
-                    width: 94%;
-                    max-width: 1200px;
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: center;
-                    gap: 44px;
-                    padding: 0 0 10px;
-                    box-sizing: border-box;
-                }
 
                 .pd-only-phone { display: none; }
 
@@ -1071,9 +491,9 @@ export default function ProjectDetail() {
                        full-width grid: one small gutter on the page and none
                        repeated inside the blocks, so media, diagrams and text
                        share the same edges. */
-                    .pd-scroll { width: 100%; }
-                    .pd-sections { width: 100%; padding: 60px 16px 0; }
-                    .pd-backlink { padding: 21px 16px 0; }
+                    .pd-scroll { width: 100%; padding: 0 0 40px; }
+                    /* Clears the phone bar (12px down, 48px tall) with a little air. */
+                    .pd-sections { width: 100%; padding: 84px 16px 0; }
                     .pd-subsection { padding: 16px 0; }
                     .pd-sub-features { padding: 8px 0; }
                     .pd-features { padding: 16px 0 0; }
@@ -1082,9 +502,19 @@ export default function ProjectDetail() {
                     .pd-card-col { padding: 0; }
                     .pd-brief-cta { padding: 6px 0; }
                     .pd-brief-tags { padding: 2px 0 4px; }
-                    .pd-hero { overflow: clip; padding: 20px 0; box-sizing: border-box; }
-                    .pd-banner { width: 174%; max-width: none; height: 90px; }
-                    .pd-spacer-invisible { height: 8vh; }
+                    /* The hero is ordinary flowing content on a phone: nothing is
+                       pinned or clipped, so all of it can be read by scrolling
+                       and the first viewport shows as much as fits. */
+                    .pd-hero { position: relative; height: auto; overflow: visible; padding: 0; }
+                    .pd-hero-inner { gap: 6px; }
+                    .pd-banner { width: 100%; height: 150px; border-radius: 16px; }
+                    .pd-spacer-invisible { display: none; }
+                    /* Brief copy gets a wider margin than the card grids that
+                       follow it: one inset on the section, not per block. */
+                    .pd-brief .pd-section-inner { padding: 0 12px; }
+                    .pd-kicker { font-size: 16px; line-height: 1.5; }
+                    .pd-brief-item .rich-text { font-size: 13.5px; line-height: 1.7; }
+                    .pd-brief-item .rich-text p { margin-bottom: 10px; }
                     .pd-section { padding: 20px 0; }
                     .pd-about { padding: 20px 0; }
                     .pd-gamedesign { padding: 20px 0; }
@@ -1098,10 +528,573 @@ export default function ProjectDetail() {
                     .pd-loop-frame { padding: 8px 8px 0; }
                     .pd-gallery { width: 76%; }
                     .pd-gallery-stage { overflow: visible; }
-                    .pd-footer { flex-direction: column; gap: 8px; }
+                }
+
+                /* Narrow phones: the two Brief kickers stack instead of sharing a
+                   column each a few words wide. */
+                @media (max-width: 479.98px) {
+                    .pd-brief-grid { grid-template-columns: 1fr; gap: 16px; }
+                    .pd-brief-item { width: 100%; }
                 }
             `}</style>
         </div>
+    )
+}
+
+function ProjectPage({ project }: { project: Project }) {
+    const slug = project.slug
+    const bp = useBreakpoint()
+    const phone = bp === "phone"
+    const tablet = bp === "tablet"
+    const locale = useLocale()
+    const t = useT()
+    const L = (v?: L10n) => pick(locale, v)
+
+    const sections: ProjectSectionsMap = projectSections[slug] || {}
+    const { brief, snapshot, gameDesign, development, vfx, ui } = sections
+    const hasSections = Boolean(brief || snapshot || gameDesign || development || vfx || ui)
+
+    // On desktop and tablet the hero is sticky underneath the sections, which
+    // are transparent, so it has to retreat as the first section arrives: it
+    // lifts, the banner and tags scale down, and it fades — timed to the
+    // section's real travel up the viewport rather than to raw scroll, so the
+    // hero stays intact until something is actually covering it. Phones drop
+    // the pinning altogether and let the hero scroll away as normal content.
+    const flowRef = useRef<HTMLDivElement | null>(null)
+    const { scrollYProgress: flowProgress } = useScroll({
+        target: flowRef as React.RefObject<HTMLElement>,
+        offset: ["start end", "start start"],
+    })
+    const exits = hasSections && !phone
+    // Progress 0: the first section's top reaches the viewport bottom; 1: it
+    // reaches the viewport top. The hero starts retreating as soon as the
+    // section is in, holds full opacity until it is a little way up, and is
+    // gone once the section covers most of the viewport.
+    const heroOpacity = useTransform(flowProgress, [0.12, 0.85], exits ? [1, 0] : [1, 1])
+    const heroY = useTransform(flowProgress, [0, 0.9], exits ? [0, -414] : [0, 0])
+    const heroScale = useTransform(flowProgress, [0, 0.9], exits ? [1, 0.6] : [1, 1])
+
+
+    // Prev / next follow the CMS collection order, drafts excluded.
+    const idx = publicProjects.findIndex((p) => p.slug === project.slug)
+    const prev = idx > 0 ? publicProjects[idx - 1] : undefined
+    const next = idx >= 0 && idx < publicProjects.length - 1 ? publicProjects[idx + 1] : undefined
+
+    const briefItems = (brief?.items ?? []).slice(0, 2)
+    const snapItems = snapshot?.items ?? []
+    const galleryItems = (ui?.galleryItems ?? []).slice(0, 5)
+    const uiFeatureItems = (ui?.subsections?.[0]?.items ?? []).slice(0, 4)
+    const vfxFeatureItems = (vfx?.subsections?.[0]?.items ?? []).slice(0, 3)
+    const gdFeatureItem = gameDesign?.items?.[0]
+
+    return (
+        <PageEnter className="pd-scroll">
+            <div className="pd-paper">
+                <NotebookBackground
+                    paperColor={colors.background}
+                    gridType="ruled"
+                    gridColor={colors.mutedTxt}
+                    gridOpacity={0.25}
+                    gridSize={24}
+                    gridWeight={1.2}
+                />
+            </div>
+
+            <div className="pd-sections">
+                {/* ── Hero (sticky, 100vh) ─────────────────────────────── */}
+                <section className="pd-hero">
+                    <motion.div className="pd-hero-inner" style={{ opacity: heroOpacity, y: heroY }}>
+                        <Appear transition="spring-duration 0.4s 0.2 0s" style={{ width: "100%" }}>
+                            <CheckerDivider color1={colors.lilac} color2="rgb(114, 121, 191)" cellSize={13} rows={2} />
+                        </Appear>
+                        <Appear transition="tween 0.44,0,0.56,1 0.6s 0.1s" style={{ width: "100%" }}>
+                            <HeroSection
+                                title={L(project.title)}
+                                year={L(project.year)}
+                                tracks={L(project.tracks)}
+                                tagline={L(project.tagline)}
+                                stack={L(project.stack)}
+                                context={L(project.context)}
+                                role={L(project.role)}
+                                animation="wordByWord"
+                                animationTrigger="once"
+                                animationDuration={0.6}
+                                elementStagger={0.1}
+                                staggerDelay={0.04}
+                                showBackLink={false}
+                                yearPosition="inline-right"
+                                stackLabel={t("toolsLabel")}
+                                contextLabel={t("contextLabel")}
+                                roleLabel={t("roleLabel")}
+                                dividerStyle="wavy"
+                                dividerThickness={3}
+                                dividerColor={colors.babyPink}
+                                dividerMarginTop={phone ? 12 : 24}
+                                accentColor={project.color}
+                                inkColor="rgb(54, 49, 59)"
+                                mutedColor={colors.secondaryTxt}
+                                paddingTop={phone ? 12 : 60}
+                                paddingBottom={phone ? 4 : 24}
+                                paddingX={phone ? 16 : 24}
+                                maxWidth={760}
+                                titleFont="Jua"
+                                titleWeight="700"
+                                titleSize={phone ? 66 : 88}
+                                titleColor="rgb(54, 49, 59)"
+                                titleLineHeight={1.1}
+                                trackFont="IBM Plex Mono"
+                                trackSize={11}
+                                yearFont="IBM Plex Mono"
+                                yearWeight="700"
+                                yearSize={14}
+                                yearTextColor={colors.gunmetalBlack}
+                                yearPaddingH={14}
+                                yearPaddingV={4}
+                                yearBorderRadius={5}
+                                yearBorderWidth={1.5}
+                                yearShadowOffset={2}
+                                taglineFont="Anonymous Pro"
+                                taglineSize={16}
+                                taglineColor={colors.liberty}
+                                metaFont="IBM Plex Mono"
+                                metaSize={12}
+                            />
+                        </Appear>
+                        {project.tags && (
+                            <motion.div style={{ scale: heroScale }} className="pd-hero-tags">
+                                <Appear transition="tween 0.44,0,0.56,1 0.5s 0.55s">
+                                    <TagCloud tagsString={L(project.tags)} />
+                                </Appear>
+                            </motion.div>
+                        )}
+                        {project.cover && (
+                            <motion.div style={{ scale: heroScale, width: "100%", display: "flex", justifyContent: "center" }}>
+                                <Appear transition="tween 0.44,0,0.56,1 0.5s 0.5s" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                                    <div className="pd-banner" style={{ backgroundImage: `url(${project.cover})` }} />
+                                </Appear>
+                            </motion.div>
+                        )}
+                    </motion.div>
+                </section>
+
+                {/* Empty spacer: a beat with the hero intact before Brief arrives. */}
+                {snapshot && <div id="section-invisible" className="pd-spacer-invisible" />}
+
+                <div className="pd-flow" ref={flowRef}>
+
+                {/* ── Brief ────────────────────────────────────────────── */}
+                {brief && (
+                    <ProjectSection id="section-brief" variant="pd-brief" showDivider={false}>
+                        {brief.displayTitle && (
+                            <SectionTitle {...tangerineTitle} title={L(brief.displayTitle)} />
+                        )}
+                        {brief.bodyHtml && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-brief-body">
+                                <BodyText locale={locale} html={brief.bodyHtml} mobileHtml={brief.bodyMobileHtml} />
+                            </Appear>
+                        )}
+                        <div className="pd-brief-cta">
+                            <ExternalLink
+                                label={t("playPrototype")}
+                                href="https://valelizu.itch.io/goblin-td"
+                                newTab
+                                bracketStyle="None"
+                                leadStyle="Play"
+                                trailStyle="Arrow up-right"
+                                glyphGap={8}
+                                font="IBM Plex Mono"
+                                fontSize={14}
+                                fontWeight={700}
+                                letterSpacing={0.02}
+                                textColor={colors.border}
+                                fill="rgb(114, 121, 191)"
+                                radius={999}
+                                paddingX={18}
+                                paddingY={8}
+                                borderWidth={2}
+                                borderStyle="solid"
+                                borderColor={colors.libertyHover}
+                                shadowOn
+                                shadowX={3}
+                                shadowY={3}
+                                shadowColor="#1C1B22"
+                                hoverEffect="Nudge arrow"
+                                hoverArrowShift={2}
+                            />
+                        </div>
+                        {brief.tags && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-brief-tags">
+                                <TagCloud tagsString={L(brief.tags)} />
+                            </Appear>
+                        )}
+                        {brief.video && (
+                            // The clip is the tallest block on the page, so it
+                            // reveals as soon as any of it is on screen and
+                            // then stays put — the default half-visible
+                            // threshold leaves it blank for most of its scroll.
+                            <Appear
+                                trigger="inView"
+                                once
+                                threshold={0.05}
+                                transition="spring-duration 0.4s 0.2 0s"
+                                className="pd-brief-video"
+                            >
+                                <MediaFrame video={brief.video} style={{ width: phone ? "96%" : "70%" }} />
+                            </Appear>
+                        )}
+                        {briefItems[0] && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" style={{ width: "100%" }}>
+                                <div className="pd-brief-grid">
+                                    {briefItems.map((item, i) =>
+                                        item ? (
+                                            <div key={i} className="pd-brief-item">
+                                                {item.displayTitle && <div className="pd-kicker">{L(item.displayTitle)}</div>}
+                                                {item.bodyHtml && <RichText html={L(item.bodyHtml)} />}
+                                            </div>
+                                        ) : null
+                                    )}
+                                </div>
+                            </Appear>
+                        )}
+                        <div className="pd-space-29 pd-not-phone" />
+                    </ProjectSection>
+                )}
+
+                {/* ── Snapshot / About ─────────────────────────────────── */}
+                {snapshot && (
+                    <ProjectSection id="section-about" variant="pd-about">
+                        <div style={{ width: "100%" }}>
+                            <SectionTitle
+                                {...sectionTitleBase}
+                                title={t("aboutTheGame")}
+                                dotColor={colors.liberty}
+                                lineColor={colors.liberty}
+                                lineColor2="rgba(79, 88, 175, 0.3)"
+                            />
+                        </div>
+                        <div className="pd-card-col">
+                            {snapItems[0] && (
+                                <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0s" style={{ width: "100%" }}>
+                                    <LiftCard>
+                                        <PastelCardItem locale={locale} item={snapItems[0]} background="rgba(238, 151, 142, 0.88)" />
+                                    </LiftCard>
+                                </Appear>
+                            )}
+                            {snapItems[1] && (
+                                <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0.1s" style={{ width: "100%" }}>
+                                    <LiftCard rotate={3}>
+                                        <PastelCardItem locale={locale} item={snapItems[1]} background="rgba(139, 217, 195, 0.88)" />
+                                    </LiftCard>
+                                </Appear>
+                            )}
+                        </div>
+                        <div style={{ width: "100%" }}>
+                            <SectionTitle
+                                {...sectionTitleBase}
+                                title={t("aboutMyWork")}
+                                dotColor={colors.teal}
+                                lineColor={colors.liberty}
+                                lineColor2="rgba(79, 88, 175, 0.3)"
+                            />
+                        </div>
+                        <div className="pd-card-col">
+                            {snapItems[2] && (
+                                <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0s" style={{ width: "100%" }}>
+                                    <LiftCard rotate={-3}>
+                                        <PastelCardItem locale={locale} item={snapItems[2]} background="rgb(114, 121, 191)" />
+                                    </LiftCard>
+                                </Appear>
+                            )}
+                            {snapItems[3] && (
+                                <Appear trigger="inView" threshold={0.2} transition="spring-duration 0.6s 0.2 0.1s" style={{ width: "100%" }}>
+                                    <LiftCard>
+                                        <PastelCardItem locale={locale} item={snapItems[3]} background="rgba(238, 151, 142, 0.89)" />
+                                    </LiftCard>
+                                </Appear>
+                            )}
+                        </div>
+                    </ProjectSection>
+                )}
+
+                {/* ── Game Design ──────────────────────────────────────── */}
+                {gameDesign && (
+                    <ProjectSection id="section-game-design" variant="pd-gamedesign">
+                        {gameDesign.displayTitle && (
+                            <div style={{ width: "100%" }}>
+                                <SectionTitle {...tangerineTitle} title={L(gameDesign.displayTitle)} />
+                            </div>
+                        )}
+                        {gameDesign.bodyHtml && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
+                                <BodyText locale={locale} html={gameDesign.bodyHtml} mobileHtml={gameDesign.bodyMobileHtml} />
+                            </Appear>
+                        )}
+                        {(gameDesign.diagram1 || gameDesign.diagram2 || gameDesign.diagram3) && (
+                            <div className="pd-coreloop-row">
+                                {/* Window order flips on phone: CORELOOP first. */}
+                                {gameDesign.diagram1 && !phone && (
+                                    <FlowWindow locale={locale} diagram={gameDesign.diagram1} phone={false} bodyPadding={tablet ? 10 : 8} />
+                                )}
+                                {gameDesign.diagram2 && (
+                                    <LoopWindow
+                                        locale={locale}
+                                        diagram={gameDesign.diagram2}
+                                        phone={phone}
+                                        bodyPadding={phone ? 6 : tablet ? 4 : 18}
+                                        title="CORELOOP.EXE"
+                                        centerText={t("coreLoopCenter")}
+                                        curve={phone ? 12 : 18}
+                                    />
+                                )}
+                                {gameDesign.diagram1 && phone && (
+                                    <FlowWindow locale={locale} diagram={gameDesign.diagram1} phone bodyPadding={20} />
+                                )}
+                                {gameDesign.diagram3 && (
+                                    <LoopWindow
+                                        locale={locale}
+                                        diagram={gameDesign.diagram3}
+                                        phone={phone}
+                                        bodyPadding={18}
+                                        title={t("metaLoopWindow")}
+                                        centerText={t("metaLoopCenter")}
+                                        curve={phone ? 4 : 6}
+                                        arrowHeadSize={phone ? 7 : 10}
+                                        arrowGap={phone ? 3 : 6}
+                                        radiusOverride={phone ? 80 : 125}
+                                    />
+                                )}
+                            </div>
+                        )}
+                        {gdFeatureItem && (
+                            <div className="pd-features">
+                                <FeatureModuleGrid
+                                    {...featureBase}
+                                    mediaPosition="left"
+                                    mediaColumnWidth={50}
+                                    colGap={32}
+                                    rowGap={28}
+                                    verticalAlign="center"
+                                    stackedMediaWidth={65}
+                                    stackedMediaAlign="left"
+                                    stackedTextScale={0.9}
+                                    mediaFit="contain"
+                                    mediaRadius={tablet ? 15 : 16}
+                                    image={gdFeatureItem.icon ?? ""}
+                                    showMediaBadge
+                                    badgeText={L(gdFeatureItem.badge)}
+                                    badgeTextColor="#1a1520"
+                                    eyebrow={L(gdFeatureItem.subtitle)}
+                                    title={L(gdFeatureItem.displayTitle)}
+                                    body={L(gdFeatureItem.bodyHtml)}
+                                    panelScope="text"
+                                    textPadding={0}
+                                    textRadius={0}
+                                    titleSize={28}
+                                />
+                            </div>
+                        )}
+                        {gameDesign.table && (
+                            <div className="pd-table">
+                                <ImpactTable locale={locale} phone={phone} dsl={gameDesign.table}
+                                    leftHeader={t("tableLeftHeader")} rightHeader={t("tableRightHeader")} />
+                            </div>
+                        )}
+                        {gameDesign.tags && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s">
+                                <TagCloud tagsString={L(gameDesign.tags)} />
+                            </Appear>
+                        )}
+                    </ProjectSection>
+                )}
+
+                {/* ── Development ──────────────────────────────────────── */}
+                {development && (
+                    <ProjectSection id="section-development" variant="pd-development">
+                        {development.displayTitle && (
+                            <div style={{ width: "100%" }}>
+                                <SectionTitle {...tangerineTitle} title={L(development.displayTitle)} />
+                            </div>
+                        )}
+                        {development.bodyHtml && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-gd-body">
+                                <RichText html={L(development.bodyHtml)} />
+                            </Appear>
+                        )}
+                        {development.subsections?.[0] && (
+                            <div className="pd-subsections">
+                                {development.subsections.map((sub, i) =>
+                                    sub ? (
+                                        <DevSubsection
+                                            key={sub.id}
+                                            locale={locale}
+                                            sub={sub}
+                                            index={i}
+                                            phone={phone}
+                                            tablet={tablet}
+                                            tableLeftHeader={t("tableLeftHeader")}
+                                            tableRightHeader={t("tableRightHeader")}
+                                        />
+                                    ) : null
+                                )}
+                            </div>
+                        )}
+                    </ProjectSection>
+                )}
+
+                {/* ── VFX ──────────────────────────────────────────────── */}
+                {vfx && (
+                    <ProjectSection id="section-vfx" variant="pd-vfx">
+                        {vfx.displayTitle && (
+                            <div style={{ width: "100%" }}>
+                                <SectionTitle {...tangerineTitle} title={L(vfx.displayTitle)} />
+                            </div>
+                        )}
+                        {vfx.bodyHtml && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-vfx-body">
+                                <RichText html={L(vfx.bodyHtml)} />
+                            </Appear>
+                        )}
+                        {vfxFeatureItems.some(Boolean) && (
+                            <div className="pd-feature-col">
+                                {vfxFeatureItems.map((item, i) =>
+                                    item ? (
+                                        <FeatureModuleGrid
+                                            key={item.id}
+                                            {...featureBase}
+                                            mediaPosition={i % 2 === 0 ? "left" : "right"}
+                                            mediaColumnWidth={50}
+                                            verticalAlign="center"
+                                            stackedMediaWidth={phone ? 100 : tablet ? 60 : 40}
+                                            stackedMediaAlign={phone ? "center" : "left"}
+                                            stackedTextScale={phone ? 0.85 : 0.9}
+                                            mediaRadius={tablet ? 15 : 16}
+                                            image={item.icon ?? ""}
+                                            eyebrow=""
+                                            title={L(item.displayTitle)}
+                                            body={L(item.bodyHtml)}
+                                            textPadding={phone ? 4 : 10}
+                                            textRadius={phone ? 16 : 22}
+                                        />
+                                    ) : null
+                                )}
+                            </div>
+                        )}
+                    </ProjectSection>
+                )}
+
+                {/* ── UI ───────────────────────────────────────────────── */}
+                {ui && (
+                    <ProjectSection id="section-ui" variant="pd-ui">
+                        {/* This heading reads the section's `title`, not its
+                            `displayTitle` like the other sections. */}
+                        {ui.title && (
+                            <div style={{ width: "100%" }}>
+                                <SectionTitle {...tangerineTitle} title={L(ui.title)} />
+                            </div>
+                        )}
+                        {ui.bodyHtml && (
+                            <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-ui-body">
+                                <BodyText locale={locale} html={ui.bodyHtml} mobileHtml={ui.bodyMobileHtml} />
+                            </Appear>
+                        )}
+                        {uiFeatureItems.some(Boolean) && (
+                            <div className="pd-feature-col pd-ui-features">
+                                {uiFeatureItems.map((item, i) =>
+                                    item ? (
+                                        <FeatureModuleGrid
+                                            key={item.id}
+                                            {...featureBase}
+                                            mediaPosition={i % 2 === 0 ? "right" : "left"}
+                                            mediaColumnWidth={tablet ? 70 : 35}
+                                            verticalAlign="center"
+                                            stackedMediaWidth={phone ? 100 : tablet ? 60 : 20}
+                                            stackedMediaAlign={phone ? "center" : "left"}
+                                            stackedTextScale={phone ? 0.85 : 0.9}
+                                            mediaRadius={tablet ? 15 : 16}
+                                            image={item.icon ?? ""}
+                                            eyebrow=""
+                                            title={L(item.displayTitle)}
+                                            body={L(item.bodyHtml)}
+                                            textPadding={phone ? 4 : 10}
+                                            textRadius={phone ? 16 : 22}
+                                        />
+                                    ) : null
+                                )}
+                            </div>
+                        )}
+                        {galleryItems.length > 0 && (
+                            <div className="pd-gallery-stage">
+                                <div className="pd-gallery">
+                                    <Gallery
+                                        itemCount={galleryItems.length}
+                                        item1Image={galleryItems[0]?.image ?? ""}
+                                        item1Title={L(galleryItems[0]?.title)}
+                                        item2Image={galleryItems[1]?.image ?? ""}
+                                        item2Title={L(galleryItems[1]?.title)}
+                                        item3Image={galleryItems[2]?.image ?? ""}
+                                        item3Title={L(galleryItems[2]?.title)}
+                                        item4Image={galleryItems[3]?.image ?? ""}
+                                        item4Title={L(galleryItems[3]?.title)}
+                                        item5Image={galleryItems[4]?.image ?? ""}
+                                        item5Title={L(galleryItems[4]?.title)}
+                                        mode="stack"
+                                        loop
+                                        autoplay={false}
+                                        enableDrag
+                                        dragThreshold={80}
+                                        imageAspectRatio="9:16"
+                                        imageFit="contain"
+                                        imageBgColor="rgba(232, 229, 223, 0)"
+                                        cardRadius={16}
+                                        cardBorderWidth={0}
+                                        containerHeight={480}
+                                        containerBg="rgba(242, 239, 233, 0)"
+                                        showTitle
+                                        titlePosition="above"
+                                        titleFont="Doppio One"
+                                        titleWeight="700"
+                                        titleSize={18}
+                                        titleColor={colors.liberty}
+                                        titleBgColor="rgba(26, 21, 32, 0)"
+                                        titlePadding={14}
+                                        titleGapAbove={16}
+                                        titleGap={16}
+                                        showCounter
+                                        counterFormat="{i} / {n}"
+                                        counterPosition="bottom-right"
+                                        counterFont="IBM Plex Mono"
+                                        counterSize={11}
+                                        counterColor="#fffdf8"
+                                        counterBgColor="rgba(79, 89, 176, 0.8)"
+                                        counterPadding="5px 10px"
+                                        counterMarginTop={16}
+                                        showArrows
+                                        arrowPlacement="auto"
+                                        arrowStyle="circle"
+                                        arrowSize={40}
+                                        arrowOffset={-72}
+                                        arrowBg={colors.background}
+                                        arrowBorderColor="rgba(79, 89, 176, 0.32)"
+                                        arrowIconColor={colors.liberty}
+                                        showDots
+                                        dotActiveColor={colors.tangerine}
+                                        dotInactiveColor="#c8c2d6"
+                                        dotSize={8}
+                                        navGap={16}
+                                        stackPeek={32}
+                                        stackRotation={4}
+                                        stackOpacity={0.8}
+                                    />
+                                </div>
+                            </div>
+                        )}
+                    </ProjectSection>
+                )}
+                </div>
+
+                <ProjectSwitcher prev={prev} next={next} />
+            </div>
+        </PageEnter>
     )
 }
 

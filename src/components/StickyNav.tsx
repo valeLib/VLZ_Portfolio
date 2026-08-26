@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import { scrollToElement, scrollToTop } from "../lib/scroll"
-import { LOCALES, useLocale, useSetLocale } from "../lib/i18n"
+import { motion } from "framer-motion"
+import { useNavVisibility } from "../hooks/useNavVisibility"
+import { useLocation, useNavigate } from "react-router-dom"
+import { scrollToElement, scrollToTop, setPendingAnchor } from "../lib/scroll"
+import { LOCALES, stripLocale, useLocale, useLocalePath, useSetLocale } from "../lib/i18n"
 
 /**
  * Retro / Y2K sticky navigation bar.
@@ -32,9 +35,6 @@ const HOVER_CLASS: Record<string, string> = {
     "Scale up": "scale",
     Wiggle: "wiggle",
 }
-
-// Ignore sub-pixel / momentum jitter when deciding scroll direction.
-const DIR_THRESHOLD = 4
 
 /**
  * Builds the wordmark's text-shadow.
@@ -223,10 +223,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     const [scrolled, setScrolled] = useState(false)
     const [active, setActive] = useState<string>("")
     const [menuOpen, setMenuOpen] = useState(false)
-    const [retracted, setRetracted] = useState(false)
     const [localeOpen, setLocaleOpen] = useState(false)
-    const lastY = useRef(0)
-    const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
     const localeRef = useRef<HTMLDivElement>(null)
     const navRef = useRef<HTMLDivElement>(null)
 
@@ -301,81 +298,57 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         }
     }, [sectionElements])
 
-    // Auto-hide: above the offset the bar is always visible; scrolling down
-    // retracts it; scrolling up reveals it and arms a timer that retracts it
-    // again once the scroll has been idle for autoHideDelay.
-    useEffect(() => {
-        const clearIdle = () => {
-            if (idleTimer.current) {
-                clearTimeout(idleTimer.current)
-                idleTimer.current = null
-            }
-        }
-        // barRetracted already gates on autoHide, so no reset is needed here.
-        if (!autoHide) {
-            clearIdle()
-            return
-        }
-        lastY.current = window.scrollY
-        const onScroll = () => {
-            const y = window.scrollY
-            const dy = y - lastY.current
-            if (Math.abs(dy) < DIR_THRESHOLD) return
-            lastY.current = y
+    // Anyone using the bar holds it open: pointer over it, keyboard focus
+    // inside it, or one of its menus open.
+    const [hover, setHover] = useState(false)
+    const [focusWithin, setFocusWithin] = useState(false)
 
-            if (y <= autoHideOffset) {
-                clearIdle()
-                setRetracted(false)
-                return
-            }
-            if (dy > 0) {
-                clearIdle()
-                setRetracted(true)
-            } else {
-                setRetracted(false)
-                clearIdle()
-                idleTimer.current = setTimeout(
-                    () => setRetracted(true),
-                    Math.max(0, autoHideDelay) * 1000
-                )
-            }
-        }
-        window.addEventListener("scroll", onScroll, { passive: true })
-        return () => {
-            window.removeEventListener("scroll", onScroll)
-            clearIdle()
-        }
-    }, [autoHide, autoHideDelay, autoHideOffset])
+    // The sections the links point at live on the home page. From any other
+    // route a link hands the section over to the route change, which positions
+    // the home page on it before it first paints.
+    const navigate = useNavigate()
+    const location = useLocation()
+    const lp = useLocalePath()
+    const onHome = stripLocale(location.pathname) === "/"
+
+    const visible = useNavVisibility({
+        enabled: autoHide,
+        held: localeOpen || menuOpen || hover || focusWithin,
+        threshold: 12,
+        revealAtTop: autoHideOffset,
+        idleDelay: Math.max(0, autoHideDelay) * 1000,
+        resetKey: location.pathname,
+    })
 
     const goTo = (anchor: string) => (e: React.MouseEvent) => {
+        e.preventDefault()
+        setMenuOpen(false)
         const id = (anchor || "").replace(/^#/, "")
         if (!id || id === "/") {
             // Bare "#" would be handled by the hash router as a route change,
             // dropping the locale prefix along with the scroll position.
-            e.preventDefault()
-            scrollToTop()
-            setMenuOpen(false)
+            if (onHome) scrollToTop()
+            else navigate(lp("/"))
             return
         }
         const el = sectionElements().find((s) => s.id === id)
         if (el) {
-            e.preventDefault()
             // A pinned section fills the viewport under the floating bar by
             // design, so it wants no offset. A section in normal flow — the
             // phone layout — would otherwise start underneath the bar.
             const pinned = getComputedStyle(el).position === "sticky"
             const offset = pinned ? 0 : (navRef.current?.getBoundingClientRect().height ?? 0) + 8
             scrollToElement(el, offset)
-            setMenuOpen(false)
+            return
         }
+        setPendingAnchor(id)
+        navigate(lp("/"))
     }
 
     const height = shrinkOnScroll && scrolled ? shrunkHeight : baseHeight
     // shadowMode "Always" matters in overlay mode, where the bar floats over the
     // page from the first frame with nothing else separating it from the background.
     const showShadow = elevateOnScroll && (shadowMode === "Always" || scrolled)
-    // An open menu always wins: never retract the bar out from under it.
-    const barRetracted = autoHide && retracted && !menuOpen
     const shrunk = shrinkWidthOnScroll && scrolled
     const navWidth = shrunk ? `${shrunkWidth}%` : "100%"
     const navOpacity = fadeOnScroll && scrolled ? scrolledOpacity : 1
@@ -496,7 +469,6 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         maxWidth: overlay ? `${overlayMaxWidth}px` : undefined,
         margin: alignMargin,
         boxSizing: "border-box",
-        opacity: navOpacity,
         background: barBackground,
         backdropFilter: filterCss,
         WebkitBackdropFilter: filterCss,
@@ -505,21 +477,35 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         borderRadius: radius,
         boxShadow: barShadow,
         transition:
-            "width 0.3s ease, margin 0.3s ease, box-shadow 0.25s ease, background 0.25s ease, opacity 0.25s ease, border-color 0.2s ease, backdrop-filter 0.25s ease, border-radius 0.2s ease, transform 0.34s cubic-bezier(0.4, 0, 0.2, 1)",
+            "width 0.3s ease, margin 0.3s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.2s ease, backdrop-filter 0.25s ease, border-radius 0.2s ease",
     } as React.CSSProperties
 
     const navClass = [
         "sticky-nav",
         overlay ? "sn-overlay" : "",
         autoHide ? "sn-autohide" : "",
-        barRetracted ? "is-retracted" : "",
     ]
         .filter(Boolean)
         .join(" ")
 
     return (
         <nav className={navClass} style={positionerStyle}>
-            <div ref={navRef} className={`sticky-nav-bar${menuOpen ? " is-open" : ""}`} style={barStyle}>
+            {/* Visibility is a transform + fade on the bar alone; the fixed
+                positioner never moves, so showing or hiding costs no layout. */}
+            <motion.div
+                ref={navRef}
+                className={`sticky-nav-bar${menuOpen ? " is-open" : ""}`}
+                style={barStyle}
+                data-visible={visible ? "true" : "false"}
+                animate={{ y: visible ? 0 : "-150%", opacity: visible ? navOpacity : 0 }}
+                transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
+                onPointerEnter={() => setHover(true)}
+                onPointerLeave={() => setHover(false)}
+                onFocus={() => setFocusWithin(true)}
+                onBlur={(e) => {
+                    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setFocusWithin(false)
+                }}
+            >
                 <div
                     style={{
                         maxWidth,
@@ -689,7 +675,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                         )}
                     </div>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Scoped styles: responsive switch, hover effects, burger morph, dropdown expand */}
             <style>{`
@@ -891,17 +877,9 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                         box-shadow: none !important;
                     }
 
-                    /* Auto-hide. React only toggles .is-retracted; the translate lives
-                       here so the behaviour is mobile-only without measuring in JS.
-                       Travel = bar height (-100%) + its offset below the top edge
-                       (--nav-top) + 24px of slack for the retro drop shadow. */
-                    nav.sn-autohide.is-retracted .sticky-nav-bar {
-                        transform: translateY(calc(-100% - var(--nav-top, 0px) - 24px));
-                    }
                 }
 
                 @media (prefers-reduced-motion: reduce) {
-                    nav.sn-autohide .sticky-nav-bar { transition-duration: .01ms; }
                     nav .sn-loc-menu { animation: none; }
                 }
             

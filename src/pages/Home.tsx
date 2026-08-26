@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom"
 import { useLayoutEffect, useRef, useState } from "react"
 import { motion, useReducedMotion } from "framer-motion"
-import StickyNav from "../components/StickyNav"
+import SiteNav from "../components/SiteNav"
 import SmoothScroll from "../components/SmoothScroll"
 import Footer from "../components/Footer"
 import RetroButton from "../components/RetroButton"
@@ -348,73 +348,6 @@ export default function Home() {
     const lp = useLocalePath()
     const LT = (v: LTags) => (locale === "es" ? v.es : v.en)
 
-    const navProps = {
-        wordmark: "Valentina LZ",
-        wordmarkSize: phone ? 18 : 26,
-        wordmarkFont: "Fredoka",
-        wordmarkLayer: true,
-        wordmarkLayerMode: "Relief",
-        wordmarkLayerColor: colors.liberty,
-        wordmarkLayerX: 2.5,
-        wordmarkLayerY: 2,
-        wordmarkLayerBlur: 6,
-        linkSize: 16,
-        linkHover: "Underline grow",
-        showCTA: false,
-        ctaLabel: t("navContact"),
-        ctaAnchor: "#contact",
-        ctaColor: colors.saffron,
-        font: "Fredoka",
-        background: phone ? "rgba(255, 253, 247, 0.7)" : "rgba(255, 253, 247, 0.41)",
-        textColor: colors.liberty,
-        wordmarkColor: colors.tangerine,
-        activeColor: colors.tangerine,
-        hoverColor: colors.babyPink,
-        overlay: true,
-        overlayTop: phone ? 12 : 27,
-        overlayInset: phone ? 16 : tablet ? 20 : 30,
-        overlayMaxWidth: tablet ? 760 : 870,
-        baseHeight: phone ? 48 : 52,
-        shrinkOnScroll: true,
-        shrunkHeight: 45,
-        shrinkWidthOnScroll: true,
-        shrunkWidth: phone ? 85 : tablet ? 95 : 64,
-        scrollAlign: "center",
-        fadeOnScroll: true,
-        scrolledOpacity: phone ? 0.96 : 0.98,
-        autoHide: phone,
-        autoHideDelay: 2.5,
-        autoHideOffset: 120,
-        glass: true,
-        blurOnScroll: false,
-        blurAmount: phone ? 30 : 1,
-        bgOpacity: phone ? 0.4 : 0.8,
-        saturate: 100,
-        menuBg: colors.background,
-        menuOpacity: 1,
-        menuBlur: 14,
-        elevateOnScroll: true,
-        shadowMode: "Always",
-        shadowDepth: 6,
-        shadowColor: colors.liberty,
-        shadowRim: true,
-        shadowRimColor: colors.background,
-        shadowRimWidth: 0.5,
-        bottomBorder: true,
-        fullBorder: true,
-        borderColor: colors.border,
-        borderWidth: 0.5,
-        radius: 30,
-        maxWidth: 1085,
-        showLocale: true,
-        localeSize: 13,
-        links: [
-            { label: t("navWork"), anchor: "#work" },
-            { label: t("navAbout"), anchor: "#about" },
-            { label: t("navProjects"), anchor: "#projects" },
-            { label: t("navContact"), anchor: "#contact" },
-        ],
-    }
 
     const statSize = phone ? 26 : tablet ? 28 : 32
     const statPadH = phone ? 10 : tablet ? 12 : 16
@@ -441,7 +374,7 @@ export default function Home() {
             }}
         >
             <SmoothScroll />
-            <StickyNav {...navProps} />
+            <SiteNav />
 
             <PageEnter className="hs-wrap">
                 <main className="hs-stack">

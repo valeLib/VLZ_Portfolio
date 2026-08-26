@@ -76,3 +76,19 @@ export function jumpTo(y: number) {
     // Then bring Lenis's own position along, or it eases back on its next frame.
     lenis?.scrollTo(y, { immediate: true, force: true })
 }
+
+// A section id to land on when the next route mounts. Set by a nav link that
+// points at a section which is not on the current page; consumed by the route
+// scroll reset, so the incoming page is positioned before its first paint
+// instead of rendering at the top and visibly travelling to the section.
+let pendingAnchor: string | null = null
+
+export function setPendingAnchor(id: string) {
+    pendingAnchor = id
+}
+
+export function takePendingAnchor(): string | null {
+    const id = pendingAnchor
+    pendingAnchor = null
+    return id
+}
