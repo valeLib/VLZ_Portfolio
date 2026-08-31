@@ -1,21 +1,77 @@
-import { HashRouter, Routes, Route, useLocation } from "react-router-dom"
-import { useEffect, useRef } from "react"
+import { HashRouter, Routes, Route, useLocation, useNavigationType } from "react-router-dom"
+import { useEffect, useLayoutEffect, useRef } from "react"
 import Home from "./pages/Home"
 import Projects from "./pages/Projects"
 import ProjectDetail from "./pages/ProjectDetail"
 import { LocaleContext, STRINGS, pick, stripLocale, type Locale } from "./lib/i18n"
+import { flowOffsetTop, jumpTo, takePendingAnchor } from "./lib/scroll"
+import { MotionConfig } from "framer-motion"
 
-// Reset scroll position on route (path) change — but not when only the hash
-// changes (in-page anchors) or when only the locale prefix flips: the language
-// selector must keep the visitor where they are.
-function ScrollToTop() {
+/**
+ * Scroll position across route changes.
+ *
+ * The reset runs in a layout effect so the new page is positioned before the
+ * browser paints it — in a passive effect the incoming page renders once at the
+ * outgoing page's scroll position, which reads as a flash followed by a jump to
+ * the top.
+ *
+ * Back / forward returns to where the visitor left that route. The browser's own
+ * restoration is turned off because it fires against the outgoing page's height,
+ * and on a hash router it also races the route swap.
+ */
+function ScrollManager() {
     const { pathname } = useLocation()
-    const bare = stripLocale(pathname)
-    const prev = useRef(bare)
+    const navigationType = useNavigationType()
+    // Locale-only changes are the same page in another language: keep the
+    // visitor where they are.
+    const route = stripLocale(pathname)
+    const previous = useRef<string | null>(null)
+    const positions = useRef(new Map<string, number>())
+    // Sampled by the scroll listener rather than read during the route change:
+    // by then the incoming page's height may already have clamped window.scrollY.
+    const lastY = useRef(0)
+
     useEffect(() => {
-        if (prev.current !== bare) window.scrollTo(0, 0)
-        prev.current = bare
-    }, [bare])
+        if (!("scrollRestoration" in window.history)) return
+        const original = window.history.scrollRestoration
+        window.history.scrollRestoration = "manual"
+        return () => {
+            window.history.scrollRestoration = original
+        }
+    }, [])
+
+    useEffect(() => {
+        const onScroll = () => {
+            lastY.current = window.scrollY
+        }
+        window.addEventListener("scroll", onScroll, { passive: true })
+        return () => window.removeEventListener("scroll", onScroll)
+    }, [])
+
+    useLayoutEffect(() => {
+        if (previous.current === route) return
+        if (previous.current !== null) positions.current.set(previous.current, lastY.current)
+        previous.current = route
+        // Back / forward returns to where the visitor left a page — except a
+        // project page, which always opens at its hero so it reads the same
+        // however it was reached.
+        const isProject = /^\/projects\/[^/]+$/.test(route)
+        const restored = navigationType === "POP" && !isProject ? positions.current.get(route) : undefined
+        let target = restored ?? 0
+        // A nav link from another page asked for a section: land on it now,
+        // while the new page has laid out but not yet painted.
+        const anchor = takePendingAnchor()
+        const el = anchor ? document.getElementById(anchor) : null
+        if (el) {
+            const pinned = getComputedStyle(el).position === "sticky"
+            const bar = document.querySelector(".sticky-nav-bar")
+            const offset = pinned ? 0 : (bar?.getBoundingClientRect().height ?? 0) + 8
+            target = Math.max(0, flowOffsetTop(el) - offset)
+        }
+        lastY.current = target
+        jumpTo(target)
+    }, [route, navigationType])
+
     return null
 }
 
@@ -40,12 +96,16 @@ function LocalizedRoutes({ locale }: { locale: Locale }) {
 // HashRouter chosen for GitHub Pages reliability (zero server config).
 export default function App() {
     return (
-        <HashRouter>
-            <ScrollToTop />
-            <Routes>
-                <Route path="/es/*" element={<LocalizedRoutes locale="es" />} />
-                <Route path="/*" element={<LocalizedRoutes locale="en" />} />
-            </Routes>
-        </HashRouter>
+        // reducedMotion="user" strips transform animations for visitors who ask
+        // for less motion; entrances and CSS motion are gated separately.
+        <MotionConfig reducedMotion="user">
+            <HashRouter>
+                <ScrollManager />
+                <Routes>
+                    <Route path="/es/*" element={<LocalizedRoutes locale="es" />} />
+                    <Route path="/*" element={<LocalizedRoutes locale="en" />} />
+                </Routes>
+            </HashRouter>
+        </MotionConfig>
     )
 }

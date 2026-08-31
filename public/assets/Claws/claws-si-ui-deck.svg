@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Deck management wireframe: card grid plus detail panel with upgrade action -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1A1520"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Screen -->
+  <rect x="78" y="68" width="760" height="472" rx="26" fill="#1A1520"/>
+  <rect x="70" y="60" width="760" height="472" rx="26" fill="#F5EEE6" stroke="#1A1520" stroke-width="6"/>
+
+  <!-- Card grid -->
+  <g>
+    <g transform="translate(112,108)">
+      <rect x="5" y="5" width="104" height="146" rx="12" fill="#1A1520"/>
+      <rect width="104" height="146" rx="12" fill="#EE978E" stroke="#1A1520" stroke-width="4.5"/>
+      <circle cx="52" cy="54" r="22" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+      <rect x="22" y="100" width="60" height="7" rx="3.5" fill="#1A1520" opacity="0.2"/>
+    </g>
+    <g transform="translate(240,108)">
+      <rect x="5" y="5" width="104" height="146" rx="12" fill="#1A1520"/>
+      <rect width="104" height="146" rx="12" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+      <circle cx="52" cy="54" r="22" fill="#F5EEE6" stroke="#1A1520" stroke-width="3"/>
+      <rect x="22" y="100" width="60" height="7" rx="3.5" fill="#1A1520" opacity="0.2"/>
+    </g>
+    <g transform="translate(368,108)">
+      <rect x="5" y="5" width="104" height="146" rx="12" fill="#1A1520"/>
+      <rect width="104" height="146" rx="12" fill="#8BD9C3" stroke="#1A1520" stroke-width="4.5"/>
+      <circle cx="52" cy="54" r="22" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+      <rect x="22" y="100" width="60" height="7" rx="3.5" fill="#1A1520" opacity="0.2"/>
+    </g>
+    <g transform="translate(112,288)">
+      <rect x="5" y="5" width="104" height="146" rx="12" fill="#1A1520"/>
+      <rect width="104" height="146" rx="12" fill="#CCCCFF" stroke="#1A1520" stroke-width="4.5"/>
+      <circle cx="52" cy="54" r="22" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+      <rect x="22" y="100" width="60" height="7" rx="3.5" fill="#1A1520" opacity="0.2"/>
+    </g>
+    <!-- Selected card -->
+    <g transform="translate(240,288)">
+      <rect x="-9" y="-9" width="122" height="164" rx="16" fill="none" stroke="#1A1520" stroke-width="3" stroke-dasharray="9 8" opacity="0.6"/>
+      <rect x="5" y="5" width="104" height="146" rx="12" fill="#1A1520"/>
+      <rect width="104" height="146" rx="12" fill="#D4DF68" stroke="#1A1520" stroke-width="5"/>
+      <circle cx="52" cy="54" r="22" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+      <path d="M52,40 L57,50 L68,51 L60,58 L62,69 L52,64 L42,69 L44,58 L36,51 L47,50 Z" fill="#FABA32" stroke="#1A1520" stroke-width="2.5" stroke-linejoin="round"/>
+      <rect x="22" y="100" width="60" height="7" rx="3.5" fill="#1A1520" opacity="0.3"/>
+      <rect x="22" y="116" width="42" height="7" rx="3.5" fill="#1A1520" opacity="0.3"/>
+    </g>
+    <g transform="translate(368,288)">
+      <rect x="5" y="5" width="104" height="146" rx="12" fill="#1A1520"/>
+      <rect width="104" height="146" rx="12" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+      <circle cx="52" cy="54" r="22" fill="#F5EEE6" stroke="#1A1520" stroke-width="3"/>
+      <rect x="22" y="100" width="60" height="7" rx="3.5" fill="#1A1520" opacity="0.2"/>
+    </g>
+  </g>
+
+  <!-- Selection line to the detail panel -->
+  <line x1="356" y1="360" x2="516" y2="330" stroke="#1A1520" stroke-width="4" stroke-dasharray="9 8" opacity="0.6" marker-end="url(#ah)"/>
+
+  <!-- Detail panel -->
+  <g transform="translate(530,108)">
+    <rect x="7" y="7" width="272" height="380" rx="18" fill="#1A1520"/>
+    <rect width="272" height="380" rx="18" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+    <g transform="translate(26,26)">
+      <rect x="4" y="4" width="76" height="106" rx="10" fill="#1A1520"/>
+      <rect width="76" height="106" rx="10" fill="#D4DF68" stroke="#1A1520" stroke-width="4"/>
+      <circle cx="38" cy="40" r="16" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+    </g>
+    <rect x="126" y="36" width="120" height="10" rx="5" fill="#1A1520" opacity="0.35"/>
+    <rect x="126" y="60" width="96" height="9" rx="4.5" fill="#1A1520" opacity="0.18"/>
+    <rect x="126" y="82" width="110" height="9" rx="4.5" fill="#1A1520" opacity="0.18"/>
+    <rect x="126" y="104" width="82" height="9" rx="4.5" fill="#1A1520" opacity="0.18"/>
+    <rect x="26" y="160" width="220" height="9" rx="4.5" fill="#1A1520" opacity="0.15"/>
+    <rect x="26" y="182" width="196" height="9" rx="4.5" fill="#1A1520" opacity="0.15"/>
+    <rect x="26" y="204" width="220" height="9" rx="4.5" fill="#1A1520" opacity="0.15"/>
+    <rect x="26" y="226" width="150" height="9" rx="4.5" fill="#1A1520" opacity="0.15"/>
+    <!-- Passive slots -->
+    <g>
+      <circle cx="46" cy="282" r="17" fill="#8BD9C3" stroke="#1A1520" stroke-width="3.5"/>
+      <circle cx="92" cy="282" r="17" fill="#EE978E" stroke="#1A1520" stroke-width="3.5"/>
+      <circle cx="138" cy="282" r="17" fill="none" stroke="#1A1520" stroke-width="3" stroke-dasharray="6 5" opacity="0.5"/>
+    </g>
+    <g transform="translate(26,320)">
+      <rect x="5" y="5" width="220" height="46" rx="23" fill="#1A1520"/>
+      <rect width="220" height="46" rx="23" fill="#FABA32" stroke="#1A1520" stroke-width="4"/>
+      <text x="110" y="31" font-family="'Courier New', monospace" font-weight="bold" font-size="22" fill="#1A1520" text-anchor="middle">UPGRADE</text>
+    </g>
+  </g>
+</svg>

@@ -74,6 +74,9 @@ type FeatureModuleGridProps = {
     badgeTextColor?: string
     badgeBorderColor?: string
 
+    /** Subtle lift/zoom of the media frame on hover (pointer devices). */
+    mediaHoverEffect?: boolean
+
     // Text content
     eyebrow?: string
     title?: string
@@ -175,6 +178,8 @@ const DEFAULTS: Required<FeatureModuleGridProps> = {
     badgeTextColor: "#1a1520",
     badgeBorderColor: "",
 
+    mediaHoverEffect: false,
+
     eyebrow: "MODULE 01",
     title: "Grid Placement",
     body: "<p>Players place towers on a grid with hover and snap feedback. The system enforces buildable surfaces and gives instant visual confirmation.</p>",
@@ -242,6 +247,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         showMediaShadow, mediaShadowX, mediaShadowY, mediaShadowColor,
 
         showMediaBadge, badgeText, badgeBg, badgeTextColor, badgeBorderColor,
+        mediaHoverEffect,
 
         eyebrow, title, body, bullets,
 
@@ -302,6 +308,10 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
     useEffect(() => {
         if (!rootRef.current || typeof ResizeObserver === "undefined") return
         const el = rootRef.current
+        // Decide the first layout from a direct measurement; waiting for the
+        // observer's first delivery paints one frame of the row layout on a
+        // phone before it collapses.
+        setStacked(el.getBoundingClientRect().width < breakpointBelow)
         const ro = new ResizeObserver(entries => {
             for (const entry of entries) {
                 const w = entry.contentRect.width
@@ -327,7 +337,11 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
 
     // ── Aspect ratio parsing ──────────────────────────────────────────────
     const activeRatio = isColumn && stackedAspectRatio !== "inherit" ? stackedAspectRatio : mediaAspectRatio
-    const [arW, arH] = (activeRatio as string).split(":").map(Number)
+    // "auto" sizes the frame to the image itself, so a capture is shown whole
+    // instead of centre-cropped to a fixed box. Video and iframes still need
+    // a box and fall back to 16:9.
+    const autoRatio = activeRatio === "auto"
+    const [arW, arH] = (autoRatio ? "16:9" : (activeRatio as string)).split(":").map(Number)
     const aspectPct = (arW && arH) ? `${(arH / arW) * 100}%` : "75%"
 
     // ── Panel style (text block or whole module, never both) ──────────────
@@ -386,7 +400,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                     src={imageSrc}
                     alt={imageAlt || title || ""}
                     style={{
-                        width: "100%", height: "100%",
+                        width: "100%", height: autoRatio ? "auto" : "100%",
                         objectFit: mediaFit, display: "block",
                     }}
                 />
@@ -450,11 +464,23 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
     }
 
     // ── Media block ───────────────────────────────────────────────────────
+    const hasRealMedia =
+        (mediaType === "image" && !!imageSrc) ||
+        (mediaType === "video" && !!(videoSource === "file" ? videoFile : videoUrl)) ||
+        (mediaType === "iframe" && !!iframeUrl)
     const mediaBlock = (
-        <div style={{
+        <motion.div
+            whileHover={mediaHoverEffect && hasRealMedia ? { scale: 1.02, y: -4 } : undefined}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            style={{
             position: "relative",
             width: "100%",
-            paddingBottom: aspectPct,
+            paddingBottom: autoRatio && imageSrc ? 0 : aspectPct,
+            // A self-sized frame must not be stretched to the text's height by
+            // the row grid; it follows the card's vertical alignment instead.
+            alignSelf: autoRatio && imageSrc
+                ? (verticalAlign === "center" ? "center" : verticalAlign === "bottom" ? "end" : "start")
+                : undefined,
             background: mediaBgColor,
             borderRadius: mediaRadius,
             border: mediaBorderWidth > 0 ? `${mediaBorderWidth}px solid ${mediaBorderColor}` : "none",
@@ -464,7 +490,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
             overflow: "hidden",
             boxSizing: "border-box" as const,
         }}>
-            <div style={{ position: "absolute", inset: 0 }}>
+            <div style={autoRatio && imageSrc ? undefined : { position: "absolute", inset: 0 }}>
                 {renderMedia()}
             </div>
             {showMediaBadge && badgeText && (
@@ -487,7 +513,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                     lineHeight: 1,
                 }}>{badgeText}</div>
             )}
-        </div>
+        </motion.div>
     )
 
     // ── Text block ────────────────────────────────────────────────────────

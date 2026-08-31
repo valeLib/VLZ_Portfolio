@@ -1,5 +1,36 @@
 /* Global reset + base typography. */
 
+/* ── Shared layout system ───────────────────────────────────────────────────
+   One definition of the site's content column, read by the page sections and
+   by the navigation bar, so the two cannot drift apart.
+
+   The composition was laid out at 1200px. Above that the column takes a fifth
+   of the extra room, to a 1320px ceiling, so a large display breathes without
+   the layout pulling apart; below it the column stops shrinking and each
+   section falls back on its own gutters.
+
+   `--content-col` is where section content actually starts and ends: the
+   column less the 80px gutter every composed section insets by. Anchored to
+   100vw rather than a percentage, because a percentage inside a custom
+   property resolves against whichever element ends up using it — which is how
+   the bar and the sections would come apart. */
+:root {
+  --content-w: min(1320px, max(1200px, calc(1200px + (100vw - 1200px) * 0.2)));
+  --content-inset: 80px;
+  --content-col: min(
+    calc(var(--content-w) - var(--content-inset) * 2),
+    calc(100vw - var(--content-inset) * 2)
+  );
+}
+
+/* Below the composed width the column is simply the viewport less the gutters,
+   and phones run on a much tighter gutter than the composed layout. */
+@media (max-width: 809.98px) {
+  :root {
+    --content-inset: 16px;
+  }
+}
+
 *,
 *::before,
 *::after {
@@ -54,4 +85,26 @@ h5,
 h6,
 p {
   margin: 0;
+}
+
+/* Keyboard focus is always visible; pointer focus keeps each component's own
+   hover and pressed feedback. */
+:focus-visible {
+  outline: 3px solid rgb(79, 88, 175);
+  outline-offset: 3px;
+}
+
+/* Reduced motion: keep every state change, drop the choreography. Component
+   entrances are gated in Appear; this catches CSS-driven motion. */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

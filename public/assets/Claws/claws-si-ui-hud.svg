@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Run HUD wireframe: score, table progression, lives, active effects, shots left -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Screen -->
+  <rect x="78" y="68" width="760" height="472" rx="26" fill="#1A1520"/>
+  <rect x="70" y="60" width="760" height="472" rx="26" fill="#F5EEE6" stroke="#1A1520" stroke-width="6"/>
+
+  <!-- Score pill -->
+  <g transform="translate(102,92)">
+    <rect x="5" y="5" width="230" height="56" rx="28" fill="#1A1520"/>
+    <rect width="230" height="56" rx="28" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+    <text x="115" y="37" font-family="'Courier New', monospace" font-weight="bold" font-size="24" fill="#1A1520" text-anchor="middle">SCORE 1250</text>
+  </g>
+
+  <!-- Table progression dots -->
+  <g transform="translate(0,120)">
+    <circle cx="400" cy="0" r="11" fill="#D4DF68" stroke="#1A1520" stroke-width="3.5"/>
+    <circle cx="440" cy="0" r="11" fill="#D4DF68" stroke="#1A1520" stroke-width="3.5"/>
+    <circle cx="480" cy="0" r="11" fill="#FFFDF8" stroke="#1A1520" stroke-width="3.5"/>
+    <circle cx="520" cy="0" r="11" fill="#FFFDF8" stroke="#1A1520" stroke-width="3.5"/>
+    <circle cx="560" cy="0" r="11" fill="#FFFDF8" stroke="#1A1520" stroke-width="3.5"/>
+  </g>
+
+  <!-- Lives -->
+  <g transform="translate(650,100)">
+    <path d="M0,10 C0,-6 -24,-6 -24,10 C-24,24 -4,32 0,41 C4,32 24,24 24,10 C24,-6 0,-6 0,10 Z" fill="#EE978E" stroke="#1A1520" stroke-width="4" stroke-linejoin="round"/>
+    <g transform="translate(60,0)">
+      <path d="M0,10 C0,-6 -24,-6 -24,10 C-24,24 -4,32 0,41 C4,32 24,24 24,10 C24,-6 0,-6 0,10 Z" fill="#EE978E" stroke="#1A1520" stroke-width="4" stroke-linejoin="round"/>
+    </g>
+    <g transform="translate(120,0)" opacity="0.5">
+      <path d="M0,10 C0,-6 -24,-6 -24,10 C-24,24 -4,32 0,41 C4,32 24,24 24,10 C24,-6 0,-6 0,10 Z" fill="none" stroke="#1A1520" stroke-width="4" stroke-dasharray="6 5" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- Faint table in play area -->
+  <g opacity="0.55">
+    <rect x="262" y="212" width="376" height="196" rx="18" fill="#8BD9C3" stroke="#1A1520" stroke-width="3.5"/>
+    <circle cx="356" cy="296" r="13" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+    <circle cx="474" cy="262" r="13" fill="#EE978E" stroke="#1A1520" stroke-width="3"/>
+    <circle cx="548" cy="330" r="13" fill="#CCCCFF" stroke="#1A1520" stroke-width="3"/>
+  </g>
+
+  <!-- Active effect chips -->
+  <g transform="translate(146,470)">
+    <circle cx="4" cy="4" r="32" fill="#1A1520"/>
+    <circle r="32" fill="#EE978E" stroke="#1A1520" stroke-width="4.5"/>
+    <path d="M0,18 C-12,13 -15,3 -8,-5 C-6,-1 -2,0 -2,-3 C0,-9 -4,-11 2,-18 C4,-10 10,-9 12,0 C13,8 8,16 0,18 Z" fill="#FFFDF8" stroke="#1A1520" stroke-width="2.5" stroke-linejoin="round"/>
+    <line x1="-26" y1="44" x2="26" y2="44" stroke="#1A1520" stroke-width="4" stroke-dasharray="7 6" opacity="0.5"/>
+  </g>
+  <g transform="translate(232,470)">
+    <circle cx="4" cy="4" r="32" fill="#1A1520"/>
+    <circle r="32" fill="#8BD9C3" stroke="#1A1520" stroke-width="4.5"/>
+    <g stroke="#1A1520" stroke-width="3.5" stroke-linecap="round">
+      <line x1="0" y1="-17" x2="0" y2="17"/>
+      <line x1="-15" y1="-8" x2="15" y2="8"/>
+      <line x1="-15" y1="8" x2="15" y2="-8"/>
+    </g>
+    <line x1="-26" y1="44" x2="10" y2="44" stroke="#1A1520" stroke-width="4" stroke-dasharray="7 6" opacity="0.5"/>
+  </g>
+
+  <!-- Shots left -->
+  <g transform="translate(600,442)">
+    <rect x="5" y="5" width="200" height="56" rx="28" fill="#1A1520"/>
+    <rect width="200" height="56" rx="28" fill="#D4DF68" stroke="#1A1520" stroke-width="4.5"/>
+    <text x="100" y="37" font-family="'Courier New', monospace" font-weight="bold" font-size="24" fill="#1A1520" text-anchor="middle">SHOTS 3</text>
+  </g>
+</svg>

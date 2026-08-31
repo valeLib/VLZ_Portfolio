@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Shot and aiming schematic: trajectory, ghost ball, target marker, power gauge -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1A1520"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Table -->
+  <g>
+    <rect x="88" y="78" width="648" height="468" rx="36" fill="#1A1520"/>
+    <rect x="80" y="70" width="648" height="468" rx="36" fill="#D4DF68" stroke="#1A1520" stroke-width="6"/>
+    <rect x="112" y="102" width="584" height="404" rx="20" fill="#8BD9C3" stroke="#1A1520" stroke-width="5"/>
+    <g fill="#1A1520">
+      <circle cx="122" cy="112" r="16"/>
+      <circle cx="404" cy="98" r="14"/>
+      <circle cx="686" cy="112" r="16"/>
+      <circle cx="122" cy="496" r="16"/>
+      <circle cx="404" cy="510" r="14"/>
+      <circle cx="686" cy="496" r="16"/>
+    </g>
+  </g>
+
+  <!-- Cue stick -->
+  <g stroke-linecap="round">
+    <line x1="128" y1="562" x2="248" y2="452" stroke="#1A1520" stroke-width="16"/>
+    <line x1="136" y1="554" x2="240" y2="459" stroke="#FABA32" stroke-width="7"/>
+  </g>
+
+  <!-- Cue ball -->
+  <circle cx="272" cy="430" r="26" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+
+  <!-- Trajectory to ghost ball -->
+  <line x1="292" y1="412" x2="520" y2="228" stroke="#1A1520" stroke-width="5" stroke-dasharray="14 11"/>
+  <circle cx="540" cy="212" r="26" fill="none" stroke="#1A1520" stroke-width="4.5" stroke-dasharray="9 7"/>
+
+  <!-- Object ball + target marker -->
+  <circle cx="592" cy="184" r="26" fill="#EE978E" stroke="#1A1520" stroke-width="5"/>
+  <circle cx="592" cy="184" r="42" fill="none" stroke="#4F58AF" stroke-width="4" stroke-dasharray="10 8"/>
+  <g stroke="#4F58AF" stroke-width="4" stroke-linecap="round">
+    <line x1="592" y1="130" x2="592" y2="148"/>
+    <line x1="592" y1="220" x2="592" y2="238"/>
+    <line x1="538" y1="184" x2="556" y2="184"/>
+    <line x1="628" y1="184" x2="646" y2="184"/>
+  </g>
+  <!-- Into the pocket -->
+  <line x1="616" y1="164" x2="664" y2="130" stroke="#1A1520" stroke-width="5" marker-end="url(#ah)"/>
+
+  <!-- Power gauge -->
+  <g>
+    <rect x="788" y="128" width="40" height="360" rx="20" fill="#1A1520" transform="translate(6,6)"/>
+    <rect x="788" y="128" width="40" height="360" rx="20" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+    <rect x="795" y="308" width="26" height="172" rx="13" fill="#EE978E"/>
+    <g stroke="#1A1520" stroke-width="3.5" stroke-linecap="round">
+      <line x1="772" y1="164" x2="784" y2="164"/>
+      <line x1="772" y1="236" x2="784" y2="236"/>
+      <line x1="772" y1="308" x2="784" y2="308"/>
+      <line x1="772" y1="380" x2="784" y2="380"/>
+      <line x1="772" y1="452" x2="784" y2="452"/>
+    </g>
+    <path d="M776,308 L760,298 L760,318 Z" fill="#1A1520"/>
+  </g>
+</svg>

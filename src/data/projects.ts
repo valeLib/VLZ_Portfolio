@@ -3,8 +3,9 @@
 // publicProjects / isPublicProject, never the raw array, for anything rendered.
 
 import type { L10n } from "../lib/i18n"
+import { publicUrl } from "../lib/paths"
 
-export const asset = (file: string) => `${import.meta.env.BASE_URL}assets/${file}`
+export const asset = (file: string) => publicUrl(`assets/${file}`)
 
 export type Project = {
   id: string
@@ -20,6 +21,8 @@ export type Project = {
   bodyHtml?: L10n
   role?: L10n
   status?: string
+  /** Public playable build; the Brief CTA renders only when this exists. */
+  playUrl?: string
   featured: boolean
   color: string
   colorName?: string
@@ -36,7 +39,9 @@ export const projects: Project[] = [
     year: { en: "2026", es: "2026" },
     tagline: { en: "A physics-based billiards roguelite where cards reshape every shot.", es: "Un roguelite de billar basado en la física donde las cartas transforman cada tiro." },
     context: { en: "Playable game prototype developed in Unreal Engine 5.", es: "Prototipo de juego jugable desarrollado en Unreal Engine 5." },
+    stack: { en: "Unreal Engine 5, Niagara VFX, Game Design, UI/UX", es: "Unreal Engine 5, Niagara VFX, Diseño de videojuegos, UI/UX" },
     tags: { en: "PC Game, Billiards, Roguelite, Card-Based, Physics, Stylized 3D", es: "Juego de PC, Billar, Roguelite, Basado en cartas, Física, 3D estilizado" },
+    role: { en: "Gameplay, UI & VFX Developer", es: "Desarrollador de gameplay, UI y VFX" },
     status: "Academic project",
     featured: true,
     color: "rgb(212, 223, 104)",
@@ -56,6 +61,7 @@ export const projects: Project[] = [
     bodyHtml: { en: "<p dir=\"auto\">Goblin TD is a tower defense game with a goblin worker management layer. Instead of passive automated towers, the player manages a living village of goblin workers who physically move through the world, construct structures, mine resources, and staff defense positions as stationed archers.</p><p dir=\"auto\">The game alternates between two phases: a <strong>build phase</strong> (construct structures, assign goblins, research technologies) and a <strong>defense phase</strong> (survive enemy waves). Victory requires surviving five waves without losing the central crystal.</p>", es: "<p dir=\"auto\">Goblin TD es un juego de defensa de torres con una capa de gestión de trabajadores goblin. En lugar de torres automatizadas pasivas, el jugador gestiona una aldea viva de trabajadores goblin que se mueven físicamente por el mundo, construyen estructuras, extraen recursos y ocupan posiciones defensivas como arqueros apostados.</p><p dir=\"auto\">El juego alterna entre dos fases: una <strong>fase de construcción</strong> (construir estructuras, asignar goblins, investigar tecnologías) y una <strong>fase de defensa</strong> (sobrevivir a las oleadas enemigas). La victoria requiere sobrevivir a cinco oleadas sin perder el cristal central.</p>" },
     role: { en: "Game Developer, Systems Developer", es: "Desarrollador de videojuegos, desarrollador de sistemas" },
     status: "Playable prototype",
+    playUrl: "https://valelizu.itch.io/goblin-td",
     featured: true,
     color: "rgb(250, 186, 50)",
     colorName: "Saffron",

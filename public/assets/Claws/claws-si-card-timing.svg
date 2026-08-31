@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Card activation timing: immediate, on cue hit, chained -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1A1520"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Timeline -->
+  <line x1="90" y1="410" x2="812" y2="410" stroke="#1A1520" stroke-width="7" marker-end="url(#ah)"/>
+  <g stroke="#1A1520" stroke-width="6" stroke-linecap="round">
+    <line x1="210" y1="392" x2="210" y2="428"/>
+    <line x1="465" y1="392" x2="465" y2="428"/>
+    <line x1="700" y1="392" x2="700" y2="428"/>
+  </g>
+  <g stroke="#1A1520" stroke-width="3" stroke-dasharray="7 8" opacity="0.5">
+    <line x1="210" y1="330" x2="210" y2="388"/>
+    <line x1="465" y1="330" x2="465" y2="388"/>
+    <line x1="700" y1="330" x2="700" y2="388"/>
+  </g>
+
+  <!-- Immediate: card with bolt -->
+  <g transform="translate(210,240)">
+    <circle cx="6" cy="6" r="80" fill="#1A1520"/>
+    <circle r="80" fill="#CCCCFF" stroke="#1A1520" stroke-width="5"/>
+    <rect x="-34" y="-48" width="68" height="96" rx="10" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+    <path d="M6,-34 L-14,4 L0,4 L-6,34 L16,-8 L2,-8 Z" fill="#FABA32" stroke="#1A1520" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Cue hit: stick striking ball -->
+  <g transform="translate(465,240)">
+    <circle cx="6" cy="6" r="80" fill="#1A1520"/>
+    <circle r="80" fill="#F5EEE6" stroke="#1A1520" stroke-width="5"/>
+    <line x1="-58" y1="-46" x2="-14" y2="-6" stroke="#1A1520" stroke-width="11" stroke-linecap="round"/>
+    <line x1="-53" y1="-42" x2="-19" y2="-11" stroke="#FABA32" stroke-width="5" stroke-linecap="round"/>
+    <circle cx="16" cy="18" r="26" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+    <g stroke="#EE978E" stroke-width="4.5" stroke-linecap="round">
+      <line x1="-6" y1="-26" x2="-14" y2="-38"/>
+      <line x1="14" y1="-18" x2="18" y2="-32"/>
+      <line x1="-24" y1="-2" x2="-38" y2="-8"/>
+    </g>
+  </g>
+
+  <!-- Chained: linked rings -->
+  <g transform="translate(700,240)">
+    <circle cx="6" cy="6" r="80" fill="#1A1520"/>
+    <circle r="80" fill="#8BD9C3" stroke="#1A1520" stroke-width="5"/>
+    <ellipse cx="-18" cy="-8" rx="30" ry="19" fill="none" stroke="#1A1520" stroke-width="6" transform="rotate(-28 -18 -8)"/>
+    <ellipse cx="18" cy="12" rx="30" ry="19" fill="none" stroke="#1A1520" stroke-width="6" transform="rotate(-28 18 12)"/>
+  </g>
+
+  <!-- Labels -->
+  <g font-family="'Courier New', monospace" font-weight="bold" font-size="26" fill="#1A1520" text-anchor="middle">
+    <text x="210" y="482">IMMEDIATE</text>
+    <text x="465" y="482">CUE HIT</text>
+    <text x="700" y="482">CHAINED</text>
+  </g>
+</svg>

@@ -1,6 +1,6 @@
 import { useEffect } from "react"
 import Lenis from "lenis"
-import { setLenis } from "../lib/scroll"
+import { clearLenis, setLenis } from "../lib/scroll"
 
 // Inertial smooth scrolling for mouse-wheel input. Lenis animates the native
 // window scroll, so position: sticky keeps working. Disabled when the user
@@ -11,8 +11,6 @@ export default function SmoothScroll() {
 
         const lenis = new Lenis({ lerp: 0.1 })
         setLenis(lenis)
-        // CSS smooth-behavior would ease Lenis's own scroll writes; turn it off.
-        document.documentElement.classList.add("lenis-active")
 
         let raf = requestAnimationFrame(function loop(time) {
             lenis.raf(time)
@@ -21,9 +19,8 @@ export default function SmoothScroll() {
 
         return () => {
             cancelAnimationFrame(raf)
+            clearLenis(lenis)
             lenis.destroy()
-            setLenis(null)
-            document.documentElement.classList.remove("lenis-active")
         }
     }, [])
 

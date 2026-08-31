@@ -151,8 +151,9 @@ export const STRINGS = {
     tableRightHeader: { en: "Gameplay Impact", es: "Impacto en el juego" },
     coreLoopCenter: { en: "CORE\nLOOP", es: "BUCLE\nPRINCIPAL" },
     metaLoopCenter: { en: "META CORE\nLOOP", es: "NÚCLEO META\nBUCLE" },
-    prevProject: { en: "‹ Previous", es: "‹ Anterior" },
-    nextProject: { en: "Next ›", es: "Siguiente ›" },
+    prevProject: { en: "Previous project", es: "Proyecto anterior" },
+    nextProject: { en: "Next project", es: "Proyecto siguiente" },
+    projectNavigation: { en: "Other projects", es: "Otros proyectos" },
     projectNotFound: { en: "Project not found", es: "Proyecto no encontrado" },
     backHome: { en: "← Back home", es: "← Volver al inicio" },
 } as const satisfies Record<string, L10n>

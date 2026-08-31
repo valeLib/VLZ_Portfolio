@@ -38,6 +38,8 @@ export const colors = {
   gunmetalBlack: "rgb(26, 21, 32)",
   babyPink: "rgb(243, 182, 176)",
   lilac: "rgb(204, 204, 255)",
+  // Warm off-white for labels that sit on the darker sheets.
+  countryWhite: "rgb(245, 238, 230)",
 } as const
 
 /** Accent cycle used by Footer headings, etc. */

@@ -191,6 +191,22 @@ export default function RetroButton(props: RetroButtonProps) {
                     e.currentTarget.style.transform = "translate(0,0)"
                     e.currentTarget.style.boxShadow = shadow
                 }}
+                // Press sinks the button into its shadow; release returns to the
+                // hover lift, since the pointer is still over it.
+                onMouseDown={(e) => {
+                    if (!hoverLift) return
+                    e.currentTarget.style.transform = "translate(1px, 1px)"
+                    e.currentTarget.style.boxShadow = showShadow
+                        ? `${Math.max(0, shadowX - 1)}px ${Math.max(0, shadowY - 1)}px 0 ${shadowColor}`
+                        : "none"
+                }}
+                onMouseUp={(e) => {
+                    if (!hoverLift) return
+                    e.currentTarget.style.transform = "translate(-1px, -1px)"
+                    e.currentTarget.style.boxShadow = showShadow
+                        ? `${shadowX + 1}px ${shadowY + 1}px 0 ${shadowColor}`
+                        : "none"
+                }}
             >
                 {content}
             </a>
