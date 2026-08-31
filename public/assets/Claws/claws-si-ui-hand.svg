@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Card hand UI wireframe: fanned hand at the bottom of the screen, one card raised -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1A1520"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Screen -->
+  <rect x="78" y="68" width="760" height="472" rx="26" fill="#1A1520"/>
+  <rect x="70" y="60" width="760" height="472" rx="26" fill="#F5EEE6" stroke="#1A1520" stroke-width="6"/>
+
+  <!-- Faint table in play area -->
+  <g opacity="0.55">
+    <rect x="260" y="105" width="380" height="180" rx="18" fill="#8BD9C3" stroke="#1A1520" stroke-width="3.5"/>
+    <circle cx="360" cy="180" r="13" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+    <circle cx="470" cy="150" r="13" fill="#EE978E" stroke="#1A1520" stroke-width="3"/>
+    <circle cx="540" cy="215" r="13" fill="#CCCCFF" stroke="#1A1520" stroke-width="3"/>
+  </g>
+
+  <!-- Raised-card hint arrow -->
+  <line x1="450" y1="330" x2="450" y2="292" stroke="#1A1520" stroke-width="5" marker-end="url(#ah)"/>
+
+  <!-- Hand -->
+  <g transform="translate(268,450) rotate(-22)">
+    <rect x="6" y="6" width="118" height="164" rx="14" fill="#1A1520"/>
+    <rect width="118" height="164" rx="14" fill="#CCCCFF" stroke="#1A1520" stroke-width="5"/>
+    <circle cx="59" cy="62" r="26" fill="#FFFDF8" stroke="#1A1520" stroke-width="3.5"/>
+    <rect x="26" y="112" width="66" height="8" rx="4" fill="#1A1520" opacity="0.18"/>
+  </g>
+  <g transform="translate(352,420) rotate(-11)">
+    <rect x="6" y="6" width="118" height="164" rx="14" fill="#1A1520"/>
+    <rect width="118" height="164" rx="14" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+    <circle cx="59" cy="62" r="26" fill="#F5EEE6" stroke="#1A1520" stroke-width="3.5"/>
+    <rect x="26" y="112" width="66" height="8" rx="4" fill="#1A1520" opacity="0.18"/>
+  </g>
+  <!-- Selected card -->
+  <g transform="translate(392,352)">
+    <rect x="7" y="7" width="122" height="170" rx="14" fill="#1A1520"/>
+    <rect width="122" height="170" rx="14" fill="#D4DF68" stroke="#1A1520" stroke-width="5.5"/>
+    <rect x="-10" y="-10" width="142" height="190" rx="20" fill="none" stroke="#1A1520" stroke-width="3" stroke-dasharray="9 8" opacity="0.6"/>
+    <circle cx="61" cy="64" r="28" fill="#FFFDF8" stroke="#1A1520" stroke-width="3.5"/>
+    <path d="M61,46 L67,59 L81,60 L71,69 L74,83 L61,76 L48,83 L51,69 L41,60 L55,59 Z" fill="#FABA32" stroke="#1A1520" stroke-width="2.5" stroke-linejoin="round"/>
+    <rect x="28" y="116" width="66" height="8" rx="4" fill="#1A1520" opacity="0.25"/>
+    <rect x="28" y="134" width="46" height="8" rx="4" fill="#1A1520" opacity="0.25"/>
+  </g>
+  <g transform="translate(548,408) rotate(11)">
+    <rect x="6" y="6" width="118" height="164" rx="14" fill="#1A1520"/>
+    <rect width="118" height="164" rx="14" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+    <circle cx="59" cy="62" r="26" fill="#F5EEE6" stroke="#1A1520" stroke-width="3.5"/>
+    <rect x="26" y="112" width="66" height="8" rx="4" fill="#1A1520" opacity="0.18"/>
+  </g>
+  <g transform="translate(636,428) rotate(22)">
+    <rect x="6" y="6" width="118" height="164" rx="14" fill="#1A1520"/>
+    <rect width="118" height="164" rx="14" fill="#CCCCFF" stroke="#1A1520" stroke-width="5"/>
+    <circle cx="59" cy="62" r="26" fill="#FFFDF8" stroke="#1A1520" stroke-width="3.5"/>
+    <rect x="26" y="112" width="66" height="8" rx="4" fill="#1A1520" opacity="0.18"/>
+  </g>
+</svg>

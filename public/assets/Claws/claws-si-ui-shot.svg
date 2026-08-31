@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Shot feedback UI wireframe: trajectory, ghost ball, target marker, power slider -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1A1520"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Screen -->
+  <rect x="78" y="68" width="760" height="472" rx="26" fill="#1A1520"/>
+  <rect x="70" y="60" width="760" height="472" rx="26" fill="#F5EEE6" stroke="#1A1520" stroke-width="6"/>
+
+  <!-- Table -->
+  <rect x="112" y="112" width="580" height="336" rx="20" fill="#8BD9C3" stroke="#1A1520" stroke-width="4.5"/>
+  <g fill="#1A1520">
+    <circle cx="124" cy="124" r="11"/>
+    <circle cx="680" cy="124" r="11"/>
+    <circle cx="124" cy="436" r="11"/>
+    <circle cx="680" cy="436" r="11"/>
+  </g>
+
+  <!-- Cue ball + trajectory with a cushion bounce -->
+  <circle cx="205" cy="400" r="21" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+  <polyline points="222,386 430,238 560,196" fill="none" stroke="#1A1520" stroke-width="4.5" stroke-dasharray="12 10"/>
+  <circle cx="580" cy="190" r="21" fill="none" stroke="#1A1520" stroke-width="4" stroke-dasharray="8 6"/>
+  <circle cx="622" cy="172" r="21" fill="#EE978E" stroke="#1A1520" stroke-width="4.5"/>
+  <circle cx="622" cy="172" r="35" fill="none" stroke="#4F58AF" stroke-width="3.5" stroke-dasharray="9 7"/>
+  <line x1="643" y1="156" x2="672" y2="136" stroke="#1A1520" stroke-width="4.5" marker-end="url(#ah)"/>
+
+  <!-- Power slider -->
+  <g>
+    <rect x="738" y="118" width="34" height="330" rx="17" fill="#1A1520" transform="translate(5,5)"/>
+    <rect x="738" y="118" width="34" height="330" rx="17" fill="#FFFDF8" stroke="#1A1520" stroke-width="4.5"/>
+    <rect x="744" y="300" width="22" height="142" rx="11" fill="#EE978E"/>
+    <circle cx="755" cy="300" r="17" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+  </g>
+
+  <!-- Tucked mini cards -->
+  <g transform="translate(128,452) rotate(-8)">
+    <rect x="4" y="4" width="66" height="94" rx="10" fill="#1A1520"/>
+    <rect width="66" height="94" rx="10" fill="#CCCCFF" stroke="#1A1520" stroke-width="4"/>
+    <circle cx="33" cy="36" r="15" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+  </g>
+  <g transform="translate(196,462) rotate(7)">
+    <rect x="4" y="4" width="66" height="94" rx="10" fill="#1A1520"/>
+    <rect width="66" height="94" rx="10" fill="#D4DF68" stroke="#1A1520" stroke-width="4"/>
+    <circle cx="33" cy="36" r="15" fill="#FFFDF8" stroke="#1A1520" stroke-width="3"/>
+  </g>
+</svg>

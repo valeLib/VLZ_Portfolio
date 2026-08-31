@@ -50,6 +50,8 @@ export type ProjectSection = {
   items?: (SectionItem | undefined)[]
   galleryItems?: (GalleryItem | undefined)[]
   video?: string
+  /** Still image alternative to `video` (Brief media slot). */
+  image?: string
   order?: number
 }
 
@@ -72,7 +74,7 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
       displayTitle: { en: "Project Brief", es: "Resumen del proyecto" },
       bodyHtml: { en: "<p dir=\"auto\"><strong>Claws &amp; Cue Balls</strong> is a physics-based billiards game built around short runs, card abilities, and changing table conditions. Players use cards to modify their shots, alter ball behavior, and create combinations before attempting to clear each table.</p><p dir=\"auto\">Progression introduces new cards, stronger effects, table modifiers, and boss encounters, turning each run into a mix of <strong>precision, strategy, and experimentation</strong>.</p>", es: "<p dir=\"auto\"><strong>Garras y Bolas de Billar</strong> (Claws &amp; Cue Balls) es un juego de billar basado en la física y estructurado en torno a partidas rápidas, habilidades de cartas y condiciones cambiantes en la mesa. Los jugadores utilizan cartas para modificar sus tiros, alterar el comportamiento de las bolas y crear combinaciones antes de intentar despejar cada mesa.</p><p dir=\"auto\">La progresión introduce nuevas cartas, efectos más potentes, modificadores de mesa y enfrentamientos con jefes, convirtiendo cada partida en una mezcla de <strong>precisión, estrategia y experimentación</strong>.</p>" },
       bodyMobileHtml: { en: "<p dir=\"auto\"><strong>Claws &amp; Cue Balls</strong> is a physics-based billiards game built around short runs, card abilities, and changing table conditions. Players use cards to modify their shots, alter ball behavior, and create combinations before attempting to clear each table.</p><p dir=\"auto\">Progression introduces new cards, stronger effects, table modifiers, and boss encounters, turning each run into a mix of <strong>precision, strategy, and experimentation</strong>.</p>", es: "<p dir=\"auto\"><strong>Garras y Bolas de Billar</strong> (Claws &amp; Cue Balls) es un juego de billar basado en la física y estructurado en torno a partidas rápidas, habilidades de cartas y condiciones cambiantes en la mesa. Los jugadores utilizan cartas para modificar sus tiros, alterar el comportamiento de las bolas y crear combinaciones antes de intentar despejar cada mesa.</p><p dir=\"auto\">La progresión introduce nuevas cartas, efectos más potentes, modificadores de mesa y enfrentamientos con jefes, convirtiendo cada partida en una mezcla de <strong>precisión, estrategia y experimentación</strong>.</p>" },
-      tags: { en: "PC Game, Tower Defense, Worker Management, Resource Management, Base Building, Stylized 3D", es: "Juego de PC, Defensa de Torres, Gestión de Trabajadores, Gestión de Recursos, Construcción de Bases, 3D Estilizado" },
+      tags: { en: "PC Game, Billiards, Roguelite, Card-Based, Physics, Stylized 3D", es: "Juego de PC, Billar, Roguelite, Basado en cartas, Físicas, 3D estilizado" },
       items: [
         {
           id: "gZpRBxFor",
@@ -83,11 +85,13 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
         {
           id: "VXZL25tuJ",
           displayTitle: { en: "VISUAL DIRECTION", es: "DIRECCIÓN VISUAL" },
-          bodyHtml: { en: "<p dir=\"auto\">A stylized pool-hall aesthetic with strong silhouettes, readable effects, and colorful visual feedback layered over the physics gameplay..</p>", es: "<p dir=\"auto\">Una estética estilizada de sala de billar con siluetas marcadas, efectos legibles y una colorida respuesta visual superpuesta a la jugabilidad de físicas.</p>" },
+          bodyHtml: { en: "<p dir=\"auto\">A stylized pool-hall aesthetic with strong silhouettes, readable effects, and colorful visual feedback layered over the physics gameplay.</p>", es: "<p dir=\"auto\">Una estética estilizada de sala de billar con siluetas marcadas, efectos legibles y una colorida respuesta visual superpuesta a la jugabilidad de físicas.</p>" },
           order: 0,
         },
       ],
-      video: asset("video-pawtchi-brief.mp4"),
+      // No gameplay capture exists yet, so the Brief leans on the key art:
+      // a pool-hall detail cropped from the cover instead of a borrowed video.
+      image: asset("Claws/claws-detail-hall.png"),
       order: 0,
     },
     snapshot: {
@@ -115,7 +119,7 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
         },
         {
           id: "eF_9UBeI1",
-          displayTitle: { en: "Output", es: "Salida" },
+          displayTitle: { en: "Output", es: "Resultado" },
           bodyHtml: { en: "<p dir=\"auto\">A playable prototype featuring multiple tables, card-based abilities, run progression, boss encounters, scoring systems, deck management, and a modular library of gameplay and visual effects.</p>", es: "<p dir=\"auto\">Un prototipo jugable que cuenta con múltiples mesas, habilidades basadas en cartas, progresión de la partida, enfrentamientos con jefes, sistemas de puntuación, gestión de mazos y una biblioteca modular de jugabilidad y efectos visuales.</p>" },
           order: 0,
         },
@@ -128,9 +132,19 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
       displayTitle: { en: "Game Design", es: "Diseño de videojuegos" },
       bodyHtml: { en: "<p dir=\"auto\">Claws &amp; Cue Balls was designed around a loop that connects <strong>shot planning, card selection, billiards execution, rewards, and progression</strong>. Before taking a shot, players can modify the current situation with cards, then aim and execute the shot while the active effects interact with the table physics.</p><p dir=\"auto\">Successful shots generate score and progression, while rewards expand the player's card options for later tables. As a run continues, stronger cards, modifiers, and boss mechanics create more complex combinations and decisions.</p>", es: "<p dir=\"auto\">Claws &amp; Cue Balls se diseñó en torno a un bucle que conecta la <strong>planificación de tiros, la selección de cartas, la ejecución del billar, las recompensas y la progresión</strong>. Antes de realizar un tiro, los jugadores pueden modificar la situación actual con cartas, luego apuntar y ejecutar el tiro mientras los efectos activos interactúan con la física de la mesa.</p><p dir=\"auto\">Los tiros exitosos generan puntuación y progresión, mientras que las recompensas amplían las opciones de cartas del jugador para las mesas posteriores. A medida que avanza la partida, cartas más fuertes, modificadores y mecánicas de jefes crean combinaciones y decisiones más complejas.</p>" },
       bodyMobileHtml: { en: "<p dir=\"auto\">Claws &amp; Cue Balls was designed around a loop that connects <strong>shot planning, card selection, billiards execution, rewards, and progression</strong>. Before taking a shot, players can modify the current situation with cards, then aim and execute the shot while the active effects interact with the table physics.</p><p dir=\"auto\">Successful shots generate score and progression, while rewards expand the player's card options for later tables. As a run continues, stronger cards, modifiers, and boss mechanics create more complex combinations and decisions.</p>", es: "<p dir=\"auto\">Claws &amp; Cue Balls se diseñó en torno a un bucle que conecta la <strong>planificación de tiros, la selección de cartas, la ejecución del billar, las recompensas y la progresión</strong>. Antes de realizar un tiro, los jugadores pueden modificar la situación actual con cartas, para luego apuntar y ejecutar el tiro mientras los efectos activos interactúan con la física de la mesa.</p><p dir=\"auto\">Los tiros acertados generan puntuación y progresión, mientras que las recompensas amplían las opciones de cartas del jugador para mesas posteriores. A medida que avanza la partida, cartas más fuertes, modificadores y mecánicas de jefes crean combinaciones y decisiones más complejas.</p>" },
-      diagram1: { en: "Start | Enter a new run -> Table | Review the current table and objective -> Prepare | Manage your hand and choose card effects -> Aim | Set trajectory and shot power -> Shoot | Execute the shot -> Resolve | Process collisions, abilities, pockets, and score -> Reward | Gain currency, score, and card choices -> Upgrade | Improve the deck and prepare for the next challenge -> Continue | Advance to the next table or boss encounter", es: "Inicio | Comenzar una nueva partida -> Mesa | Revisar la mesa actual y el objetivo -> Preparación | Administrar la mano y elegir efectos de cartas -> Apuntar | Ajustar la trayectoria y la potencia del tiro -> Disparar | Ejecutar el tiro -> Resolución | Procesar colisiones, habilidades, troneras y puntuación -> Recompensa | Obtener dinero, puntuación y opciones de cartas -> Mejora | Mejorar el mazo y prepararse para el próximo desafío -> Continuar | Avanzar a la siguiente mesa o enfrentamiento contra un jefe" },
-      diagram2: { en: "Action | Plan the shot, play cards, aim, and shoot -> Reward | Pocket balls, gain score, and trigger card effects -> Progression | Improve your build and move on to the next table", es: "Acción | Planifica el tiro, juega cartas, apunta y dispara -> Recompensa | Embolsa bolas, suma puntos y activa efectos de cartas -> Progresión | Mejora tu combinación y avanza a la siguiente mesa" },
+      diagram1: { en: "Start Run | Enter the first table -> Prepare Shot | Read the table and manage the current hand -> Play Cards | Activate abilities and combine effects -> Aim & Shoot | Set trajectory and power -> Resolve | Process collisions, abilities, pockets, and scoring -> Reward | Gain score, currency, and card choices -> Progress | Move to the next table and improve the deck -> Boss / Final Table | Adapt to unique mechanics and table conditions", es: "Iniciar partida | Entra a la primera mesa -> Preparar el tiro | Lee la mesa y gestiona la mano actual -> Jugar cartas | Activa habilidades y combina efectos -> Apuntar y disparar | Ajusta la trayectoria y la potencia -> Resolver | Procesa colisiones, habilidades, troneras y puntuación -> Recompensa | Obtén puntos, dinero y opciones de cartas -> Progresar | Avanza a la siguiente mesa y mejora el mazo -> Jefe / Mesa final | Adáptate a mecánicas y condiciones únicas de la mesa" },
+      diagram2: { en: "Plan | Read the table and choose a strategy -> Action | Activate cards, aim, and take the shot -> Result | Resolve physics, abilities, pockets, and score -> Progression | Gain cards and prepare for harder tables", es: "Planear | Lee la mesa y elige una estrategia -> Acción | Activa cartas, apunta y ejecuta el tiro -> Resultado | Resuelve físicas, habilidades, troneras y puntuación -> Progresión | Gana cartas y prepárate para mesas más difíciles" },
       diagram3: { en: "Play Runs | Complete tables and experiment with card combinations -> Earn Progress | Gain rewards, unlocks, and progression resources -> Expand Options | Unlock and upgrade cards, decks, or persistent progression -> Return | Start new runs with more strategic options", es: "Jugar partidas | Completa tablas y experimenta con combinaciones de cartas -> Progresar | Obtén recompensas, desbloqueos y recursos de progresión -> Ampliar opciones | Desbloquea y mejora cartas, barajas o progresión persistente -> Volver | Inicia nuevas partidas con más opciones estratégicas" },
+      items: [
+        {
+          id: "claws-core-loop",
+          displayTitle: { en: "Core Loop", es: "Bucle central" },
+          bodyHtml: { en: "<p dir=\"auto\"><strong>Plan → Play Cards → Aim &amp; Shoot → Resolve Effects → Earn Rewards → Upgrade</strong></p><p dir=\"auto\">Before each shot, cards reshape the situation; the shot then resolves through the table physics and feeds score, rewards, and deck growth for the next table.</p>", es: "<p dir=\"auto\"><strong>Planear → Jugar cartas → Apuntar y disparar → Resolver efectos → Ganar recompensas → Mejorar</strong></p><p dir=\"auto\">Antes de cada tiro, las cartas transforman la situación; después el tiro se resuelve con la física de la mesa y alimenta la puntuación, las recompensas y el crecimiento del mazo para la siguiente mesa.</p>" },
+          badge: { en: "LOOP", es: "BUCLE" },
+          icon: asset("Claws/claws-detail-cards.png"),
+          order: 0,
+        },
+      ],
       order: 2,
     },
     development: {
@@ -146,13 +160,14 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
           items: [
             {
               id: "Yqnx9zdUc",
-              displayTitle: { en: "Ability Flow", es: "Flujo de Capacidad" },
+              displayTitle: { en: "Ability Flow", es: "Flujo de la habilidad" },
               bodyHtml: { en: "<p dir=\"auto\">The card system connects player input with ball modifiers, physics events, and visual feedback through a shared gameplay flow.</p><p dir=\"auto\">Cards can trigger at different stages of the turn, allowing effects to activate immediately, when the cue ball is struck, or as part of chained interactions.</p>", es: "<p dir=\"auto\">El sistema de cartas conecta la entrada del jugador con los modificadores de la bola, los eventos de física y la retroalimentación visual a través de un flujo de juego compartido.</p><p dir=\"auto\">Las cartas pueden activarse en diferentes etapas del turno, lo que permite que los efectos se activen de inmediato, cuando se golpea la bola blanca, o como parte de interacciones encadenadas.</p>" },
               badge: { en: "01", es: "01" },
+              icon: asset("Claws/claws-si-ability-flow.svg"),
               order: 1,
             },
           ],
-          diagram1: { en: "Draw | Draw or receive a card into the hand -> Activate | Select and play the card -> Apply | Attach the ability or modifier to its target -> Shoot | Take the shot with the active effect -> Resolve | Trigger the ability during the shot or on its activation condition -> Cleanup | Remove temporary effects and reset the card state", es: "Robar | Robar o recibir una carta en la mano -> Activar | Seleccionar y jugar la carta -> Aplicar | Adjuntar la habilidad o modificador a su objetivo -> Tirar | Realizar el tiro con el efecto activo -> Resolver | Activar la habilidad durante el tiro o en su condición de activación -> Limpieza | Eliminar los efectos temporales y restablecer el estado de la carta" },
+          diagram1: { en: "Draw Card | Draw or receive a card into the hand -> Activate Card | Select and play the card -> Apply Ability | Attach the ability or modifier to its target -> Take Shot | Take the shot with the active effect -> Resolve Effect | Trigger the ability on its activation condition -> Cleanup | Remove temporary effects and reset the card state", es: "Robar carta | Roba o recibe una carta en la mano -> Activar carta | Selecciona y juega la carta -> Aplicar habilidad | Vincula la habilidad o el modificador a su objetivo -> Ejecutar tiro | Realiza el tiro con el efecto activo -> Resolver efecto | Activa la habilidad según su condición de activación -> Limpieza | Elimina los efectos temporales y restablece el estado de la carta" },
         },
         {
           id: "OUoOAqaPP",
@@ -160,35 +175,35 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
           items: [
             {
               id: "O4DKyD11Q",
-              displayTitle: { en: "01 · Ball Ability Framework", es: "01 · Marco de Habilidades de Balón" },
+              displayTitle: { en: "01 · Ball Ability Framework", es: "01 · Sistema de habilidades de bola" },
               bodyHtml: { en: "<p dir=\"auto\">Card effects modify properties and behavior such as <strong>size, power, collisions, rebounds, explosions, elemental states, and movement</strong>.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Reusable ability logic, effect lifetimes, simultaneous modifiers, activation rules, and cleanup.</p>", es: "<p dir=\"auto\">Los efectos de las cartas modifican propiedades y comportamientos como el <strong>tamaño, la potencia, las colisiones, los rebotes, las explosiones, los estados elementales y el movimiento</strong>.</p><p dir=\"auto\"><strong>Enfoque de implementación</strong><br>Lógica de habilidades reutilizable, duración de los efectos, modificadores simultáneos, reglas de activación y limpieza.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
+              badge: { en: "01", es: "01" },
+              icon: asset("Claws/claws-si-ball-framework.svg"),
               order: 1,
             },
             {
               id: "Wah9xKDDo",
-              displayTitle: { en: "02 · Shot & Aiming System", es: "02 · Sistema de Disparo y Apuntado" },
+              displayTitle: { en: "02 · Shot & Aiming System", es: "02 · Sistema de tiro y apuntado" },
               bodyHtml: { en: "<p dir=\"auto\">The shot system handles the transition between planning and execution, including trajectory visualization, target information, cue power, and camera behavior.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Pre-shot and post-shot states, trajectory beams, ghost-ball prediction, target markers, power control, and camera transitions.</p>", es: "<p dir=\"auto\">El sistema de tiro maneja la transición entre la planificación y la ejecución, incluyendo la visualización de la trayectoria, la información del objetivo, la potencia del taco y el comportamiento de la cámara.</p><p dir=\"auto\"><strong>Enfoque de la implementación</strong><br>Estados previos y posteriores al tiro, haces de trayectoria, predicción de la bola fantasma, marcadores de objetivo, control de potencia y transiciones de cámara.</p>" },
               badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              icon: asset("Claws/claws-si-shot-aiming.svg"),
+              order: 2,
             },
             {
               id: "zqYNggNiR",
-              displayTitle: { en: "03 · Card Activation & Timing", es: "03 · Activación y Plazos de la Tarjeta" },
+              displayTitle: { en: "03 · Card Activation & Timing", es: "03 · Activación y tiempos de las cartas" },
               bodyHtml: { en: "<p dir=\"auto\">Cards can affect different moments of a shot, from preparation to collision-driven effects. Activation rules keep these behaviors predictable while supporting combinations.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Immediate, cue-hit, and chained activation, card state, effect sequencing, and interaction between active abilities.</p>", es: "<p dir=\"auto\">Las cartas pueden afectar a diferentes momentos de un golpe, desde la preparación hasta los efectos provocados por la colisión. Las reglas de activación mantienen estos comportamientos de forma predecible al tiempo que admiten combinaciones.</p><p dir=\"auto\"><strong>Enfoque de la implementación</strong><br>Activación inmediata, al golpear la señal y encadenada, estado de la carta, secuenciación de efectos e interacción entre habilidades activas.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              badge: { en: "03", es: "03" },
+              icon: asset("Claws/claws-si-card-timing.svg"),
+              order: 3,
             },
             {
               id: "iSixWPPSF",
-              displayTitle: { en: "04 · Scoring & Run Progression", es: "04 · Puntuación y progresión de carreras" },
+              displayTitle: { en: "04 · Scoring & Run Progression", es: "04 · Puntuación y progresión de la partida" },
               bodyHtml: { en: "<p dir=\"auto\">The scoring system rewards successful pockets, multi-ball plays, streaks, and efficient shots. Table targets and limited attempts create pressure as the player advances through a run.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Score calculation, streaks, table goals, lives, shot tracking, rewards, and run progression.</p>", es: "<p dir=\"auto\">El sistema de puntuación recompensa las troneras exitosas, las jugadas de varias bolas, las rachas y los tiros eficientes. Los objetivos de la mesa y los intentos limitados generan presión a medida que el jugador avanza en una serie.</p><p dir=\"auto\"><strong>Enfoque de la implementación</strong><br>Cálculo de puntuación, rachas, objetivos de la mesa, vidas, seguimiento de tiros, recompensas y progresión de la serie.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              badge: { en: "04", es: "04" },
+              icon: asset("Claws/claws-si-scoring.svg"),
+              order: 4,
             },
           ],
         },
@@ -198,7 +213,7 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
     vfx: {
       id: "lDTCToA6p",
       title: { en: "Claws and Cue Balls - VFX", es: "Garras y Bolas de Billar - VFX" },
-      displayTitle: { en: "VFX & Game Feel", es: "Efectos Visuales (VFX) y Sensación del Juego (Game Feel)" },
+      displayTitle: { en: "VFX & Game Feel", es: "VFX y sensación de juego" },
       bodyHtml: { en: "<p dir=\"auto\">Because many cards change the physical behavior of a ball, visual feedback was designed to make each active effect immediately recognizable during play.</p><p dir=\"auto\">Abilities such as <strong>Fire, Ice, Orbit, Explosion, Giant, and Ricochet</strong> use combinations of Niagara particles, material overlays, trails, decals, impact effects, and camera feedback. Effects follow the ball and react to gameplay events while preserving visibility of the billiards action.</p>", es: "<p dir=\"auto\">Debido a que muchas cartas cambian el comportamiento físico de la bola, se diseñó la retroalimentación visual para que cada efecto activo sea reconocible de inmediato durante el juego.</p><p dir=\"auto\">Habilidades como <strong>Fuego, Hielo, Órbita, Explosión, Gigante y Rebote</strong> utilizan combinaciones de partículas de Niagara, superposiciones de materiales, rastros, calcomanías, efectos de impacto y retroalimentación de la cámara. Los efectos siguen a la bola y reaccionan a los eventos del juego mientras conservan la visibilidad de la acción del billar.</p>" },
       bodyMobileHtml: { en: "<p dir=\"auto\">Because many cards change the physical behavior of a ball, visual feedback was designed to make each active effect immediately recognizable during play.</p><p dir=\"auto\">Abilities such as <strong>Fire, Ice, Orbit, Explosion, Giant, and Ricochet</strong> use combinations of Niagara particles, material overlays, trails, decals, impact effects, and camera feedback. Effects follow the ball and react to gameplay events while preserving visibility of the billiards action.</p>", es: "<p dir=\"auto\">Debido a que muchas cartas cambian el comportamiento físico de la bola, se diseñó la retroalimentación visual para que cada efecto activo sea reconocible de inmediato durante el juego.</p><p dir=\"auto\">Habilidades como <strong>Fuego, Hielo, Órbita, Explosión, Gigante y Rebote</strong> utilizan combinaciones de partículas Niagara, superposiciones de materiales, estelas, calcomanías, efectos de impacto y retroalimentación de cámara. Los efectos siguen a la bola y reaccionan a los eventos del juego, manteniendo la visibilidad de la acción del billar.</p>" },
       subsections: [
@@ -207,27 +222,27 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
           items: [
             {
               id: "dCeIDZLcz",
-              displayTitle: { en: "01 · Modular Ball Effects", es: "01 · Efectos de bolas modulares" },
+              displayTitle: { en: "01 · Modular Ball Effects", es: "01 · Efectos modulares de bola" },
               bodyHtml: { en: "<p dir=\"auto\">Visual effects can be attached to individual balls and combined when multiple abilities are active.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Niagara systems, reusable effect configuration, effect duration, ball-scale awareness, and simultaneous VFX.</p>", es: "<p dir=\"auto\">Los efectos visuales se pueden adjuntar a bolas individuales y combinar cuando hay múltiples habilidades activas.</p><p dir=\"auto\"><strong>Enfoque de la implementación</strong><br>Sistemas Niagara, configuración de efectos reutilizables, duración de los efectos, adaptabilidad a la escala de la bola y efectos visuales (VFX) simultáneos.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
+              badge: { en: "01", es: "01" },
+              icon: asset("Claws/claws-si-vfx-modular.svg"),
               order: 1,
             },
             {
               id: "DSJsMjCh7",
-              displayTitle: { en: "02 · Material Effects", es: "02 · Efectos materiales" },
+              displayTitle: { en: "02 · Material Effects", es: "02 · Efectos de materiales" },
               bodyHtml: { en: "<p dir=\"auto\">Ball materials can receive temporary visual layers for effects such as fire, ice, or energy states.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Material overlays, Fresnel effects, animated textures, emissive response, and reusable shell materials.</p>", es: "<p dir=\"auto\">Los materiales de la bola pueden recibir capas visuales temporales para efectos como fuego, hielo o estados de energía.</p><p dir=\"auto\"><strong>Enfoque de implementación</strong><br>Superposiciones de materiales, efectos Fresnel, texturas animadas, respuesta emisiva y materiales de carcasa reutilizables.</p>" },
               badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              icon: asset("Claws/claws-si-vfx-material.svg"),
+              order: 2,
             },
             {
               id: "jrrh8KgD_",
-              displayTitle: { en: "03 · Impact Feedback", es: "03 · Comentarios sobre el impacto" },
+              displayTitle: { en: "03 · Impact Feedback", es: "03 · Feedback de impacto" },
               bodyHtml: { en: "<p dir=\"auto\">Collisions and ability triggers use particles, decals, animation, and camera feedback to communicate force and timing.</p><p dir=\"auto\"><strong>Implementation focus</strong><br>Impact bursts, smoke, debris, trails, decals, camera shake, and effect synchronization.</p>", es: "<p dir=\"auto\">Las colisiones y los activadores de habilidades utilizan partículas, calcomanías, animación y retroalimentación de la cámara para comunicar la fuerza y el tiempo.</p><p dir=\"auto\"><strong>Enfoque de implementación</strong><br>Ráfagas de impacto, humo, escombros, estelas, calcomanías, sacudida de cámara y sincronización de efectos.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              badge: { en: "03", es: "03" },
+              icon: asset("Claws/claws-si-vfx-impact.svg"),
+              order: 3,
             },
           ],
         },
@@ -237,7 +252,7 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
     ui: {
       id: "l3m8X0wz4",
       title: { en: "Claws and Cue balls- UI", es: "Garras y bolas de billar: interfaz de usuario" },
-      displayTitle: { en: "UI & Player Feedback", es: "Interfaz de usuario y comentarios del jugador" },
+      displayTitle: { en: "UI & Player Feedback", es: "Interfaz y feedback del jugador" },
       bodyHtml: { en: "<p dir=\"auto\">The interface was designed around the different stages of a billiards turn, keeping information available when it becomes relevant.</p><p dir=\"auto\">During the pre-shot phase, players can manage cards, read the predicted trajectory, identify targets, and adjust shot power. During and after the shot, the interface shifts toward scoring, active effects, remaining lives, and table progression.</p>", es: "<p dir=\"auto\">La interfaz se diseñó en torno a las diferentes etapas del turno de billar, manteniendo la información disponible a medida que resulta relevante.</p><p dir=\"auto\">Durante la fase previa al tiro, los jugadores pueden gestionar las cartas, leer la trayectoria prevista, identificar objetivos y ajustar la potencia del tiro. Durante y después del tiro, la interfaz cambia hacia la puntuación, los efectos activos, las vidas restantes y la progresión de la mesa.</p>" },
       bodyMobileHtml: { en: "<p dir=\"auto\">The interface was designed around the different stages of a billiards turn, keeping information available when it becomes relevant.</p><p dir=\"auto\">During the pre-shot phase, players can manage cards, read the predicted trajectory, identify targets, and adjust shot power. During and after the shot, the interface shifts toward scoring, active effects, remaining lives, and table progression.</p>", es: "<p dir=\"auto\">La interfaz se diseñó en torno a las diferentes etapas del turno de billar, manteniendo la información disponible cuando es relevante.</p><p dir=\"auto\">Durante la fase previa al tiro, los jugadores pueden gestionar las cartas, leer la trayectoria prevista, identificar objetivos y ajustar la potencia del tiro. Durante y después del tiro, la interfaz cambia hacia la puntuación, los efectos activos, las vidas restantes y la progresión de la mesa.</p>" },
       subsections: [
@@ -249,33 +264,33 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
               id: "m3nj1_xpI",
               displayTitle: { en: "01 · Card Hand", es: "01 · Mano de cartas" },
               bodyHtml: { en: "<p dir=\"auto\">Shows available cards and supports activating multiple effects before a shot.</p>", es: "<p dir=\"auto\">Muestra las cartas disponibles y permite activar varios efectos antes de un disparo.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
+              badge: { en: "01", es: "01" },
+              icon: asset("Claws/claws-si-ui-hand.svg"),
               order: 1,
             },
             {
               id: "eLAXJfgVL",
-              displayTitle: { en: "02 · Shot Feedback", es: "02 · Comentarios sobre la toma" },
+              displayTitle: { en: "02 · Shot Feedback", es: "02 · Feedback del tiro" },
               bodyHtml: { en: "<p dir=\"auto\">Trajectory lines, ghost-ball prediction, target markers, and power visualization support shot planning.</p>", es: "<p dir=\"auto\">Las líneas de trayectoria, la predicción de bola fantasma, los marcadores de objetivo y la visualización de potencia apoyan la planificación del tiro.</p>" },
               badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              icon: asset("Claws/claws-si-ui-shot.svg"),
+              order: 2,
             },
             {
               id: "OQow04KZn",
-              displayTitle: { en: "03 · Run HUD", es: "03 · Ejecutar HUD" },
+              displayTitle: { en: "03 · Run HUD", es: "03 · HUD de la partida" },
               bodyHtml: { en: "<p dir=\"auto\">Displays score, lives, table progression, rewards, and active gameplay states.</p>", es: "<p dir=\"auto\">Muestra la puntuación, las vidas, el progreso de la mesa, las recompensas y los estados de juego activos.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              badge: { en: "03", es: "03" },
+              icon: asset("Claws/claws-si-ui-hud.svg"),
+              order: 3,
             },
             {
               id: "aPAq6JJI6",
-              displayTitle: { en: "04 · Deck Management", es: "04 · Gestión de barajas" },
+              displayTitle: { en: "04 · Deck Management", es: "04 · Gestión del mazo" },
               bodyHtml: { en: "<p dir=\"auto\">Allows players to review their deck, card upgrades, passive effects, and available cards between runs.</p>", es: "<p dir=\"auto\">Permite a los jugadores revisar su mazo, mejoras de cartas, efectos pasivos y cartas disponibles entre partidas.</p>" },
-              badge: { en: "02", es: "02" },
-              icon: asset("si-placeholder.png"),
-              order: 1,
+              badge: { en: "04", es: "04" },
+              icon: asset("Claws/claws-si-ui-deck.svg"),
+              order: 4,
             },
           ],
         },

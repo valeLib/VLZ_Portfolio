@@ -83,6 +83,13 @@ const DEFAULTS = {
     shrinkOnScroll: true,
     shrinkWidthOnScroll: false,
     shrunkWidth: 86,
+    /** Cap the compact bar takes instead of its full one. A CSS length, so it
+     *  can be expressed against the shared content column. Empty = unchanged. */
+    shrunkMaxWidth: "" as number | string,
+    /** How far the page must move before the bar compacts. Deliberately longer
+     *  than the 24px that flips `scrolled`, so the width change reads as
+     *  intentional rather than twitching off the first wheel notch. */
+    shrinkOffset: 24,
     scrollAlign: "center",
     fadeOnScroll: false,
     scrolledOpacity: 0.92,
@@ -98,7 +105,7 @@ const DEFAULTS = {
     borderColor: "#1C1B22",
     borderWidth: 2.5,
     radius: 0,
-    maxWidth: 1200,
+    maxWidth: 1200 as number | string,
     wordmarkFont: "Fredoka",
     wordmarkLayer: false,
     wordmarkLayerMode: "Relief",
@@ -111,7 +118,7 @@ const DEFAULTS = {
     overlay: false,
     overlayTop: 20,
     overlayInset: 24,
-    overlayMaxWidth: 930,
+    overlayMaxWidth: 930 as number | string,
     autoHide: false,
     autoHideDelay: 2.5,
     autoHideOffset: 120,
@@ -143,6 +150,9 @@ const DEFAULTS = {
     ] as { label: string; anchor: string }[],
 }
 
+/** A bare number means px; a string passes through as authored CSS. */
+const cssLength = (v: number | string) => (typeof v === "number" ? `${v}px` : v)
+
 export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: React.CSSProperties }) {
     const {
         background,
@@ -165,6 +175,8 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         shrinkOnScroll,
         shrinkWidthOnScroll,
         shrunkWidth,
+        shrunkMaxWidth,
+        shrinkOffset,
         scrollAlign,
         fadeOnScroll,
         scrolledOpacity,
@@ -221,6 +233,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     } = { ...DEFAULTS, ...props }
 
     const [scrolled, setScrolled] = useState(false)
+    const [pastCompact, setPastCompact] = useState(false)
     const [active, setActive] = useState<string>("")
     const [menuOpen, setMenuOpen] = useState(false)
     const [localeOpen, setLocaleOpen] = useState(false)
@@ -277,6 +290,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     useEffect(() => {
         const onScroll = () => {
             setScrolled(window.scrollY > 24)
+            setPastCompact(window.scrollY > shrinkOffset)
             // Sticky sections all report a rect top of 0 once scrolled past, so
             // several match at a time. The one visually occupying the viewport
             // is the last match in document order — which is not the order the
@@ -296,7 +310,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
             window.removeEventListener("scroll", onScroll)
             window.removeEventListener("resize", onScroll)
         }
-    }, [sectionElements])
+    }, [sectionElements, shrinkOffset])
 
     // Anyone using the bar holds it open: pointer over it, keyboard focus
     // inside it, or one of its menus open.
@@ -349,14 +363,14 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     // shadowMode "Always" matters in overlay mode, where the bar floats over the
     // page from the first frame with nothing else separating it from the background.
     const showShadow = elevateOnScroll && (shadowMode === "Always" || scrolled)
-    const shrunk = shrinkWidthOnScroll && scrolled
-    const navWidth = shrunk ? `${shrunkWidth}%` : "100%"
+    const compact = shrinkWidthOnScroll && pastCompact
+    const navWidth = compact ? `${shrunkWidth}%` : "100%"
     const navOpacity = fadeOnScroll && scrolled ? scrolledOpacity : 1
 
     const alignMargin =
-        shrunk && scrollAlign === "left"
+        compact && scrollAlign === "left"
             ? "0 auto 0 0"
-            : shrunk && scrollAlign === "right"
+            : compact && scrollAlign === "right"
             ? "0 0 0 auto"
             : "0 auto"
 
@@ -466,7 +480,13 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
     const barStyle = {
         position: "relative",
         width: navWidth,
-        maxWidth: overlay ? `${overlayMaxWidth}px` : undefined,
+        // The compact cap is a CSS length rather than a Motion value: it is
+        // written against --content-col, and Motion cannot tween a calc() over a
+        // custom property. The browser interpolates the two computed lengths, so
+        // the width still eases rather than snapping.
+        maxWidth: overlay
+            ? cssLength(compact && shrunkMaxWidth ? shrunkMaxWidth : overlayMaxWidth)
+            : undefined,
         margin: alignMargin,
         boxSizing: "border-box",
         background: barBackground,
@@ -477,7 +497,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
         borderRadius: radius,
         boxShadow: barShadow,
         transition:
-            "width 0.3s ease, margin 0.3s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.2s ease, backdrop-filter 0.25s ease, border-radius 0.2s ease",
+            "width 0.35s cubic-bezier(0.4, 0, 0.2, 1), max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1), margin 0.3s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.2s ease, backdrop-filter 0.25s ease, border-radius 0.2s ease",
     } as React.CSSProperties
 
     const navClass = [
@@ -497,7 +517,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
                 className={`sticky-nav-bar${menuOpen ? " is-open" : ""}`}
                 style={barStyle}
                 data-visible={visible ? "true" : "false"}
-                animate={{ y: visible ? 0 : "-150%", opacity: visible ? navOpacity : 0 }}
+                animate={{ y: visible ? (compact ? -3 : 0) : "-150%", opacity: visible ? navOpacity : 0 }}
                 transition={{ type: "tween", duration: 0.28, ease: [0.4, 0, 0.2, 1] }}
                 onPointerEnter={() => setHover(true)}
                 onPointerLeave={() => setHover(false)}
@@ -508,7 +528,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
             >
                 <div
                     style={{
-                        maxWidth,
+                        maxWidth: cssLength(maxWidth),
                         margin: "0 auto",
                         height,
                         padding: "0 24px",
@@ -643,7 +663,7 @@ export default function StickyNav(props: Partial<typeof DEFAULTS> & { style?: Re
 
                 {/* Mobile dropdown (always mounted so it can animate open/closed) */}
                 <div className={`sticky-nav-mobile${menuOpen ? " is-open" : ""}`}>
-                    <div className="sticky-nav-mobile-inner" style={{ maxWidth, margin: "0 auto" }}>
+                    <div className="sticky-nav-mobile-inner" style={{ maxWidth: cssLength(maxWidth), margin: "0 auto" }}>
                         {items.map((l, i) => {
                             const id = (l.anchor || "").replace(/^#/, "")
                             const isActive = id && id === active

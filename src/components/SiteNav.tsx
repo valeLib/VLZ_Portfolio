@@ -42,12 +42,29 @@ export default function SiteNav({ autoHide = "phone" }: {
             overlay
             overlayTop={phone ? 12 : 27}
             overlayInset={phone ? 16 : tablet ? 20 : 30}
-            overlayMaxWidth={tablet ? 760 : 870}
+            overlayMaxWidth="var(--content-col)"
             baseHeight={phone ? 48 : 52}
             shrinkOnScroll
             shrunkHeight={45}
             shrinkWidthOnScroll
-            shrunkWidth={phone ? 85 : tablet ? 95 : 64}
+            // Phones keep their existing percentage shrink; on every wider
+            // viewport the compact size comes from the cap below, so the bar
+            // stays measured against the content column rather than the
+            // viewport it happens to be sitting in.
+            shrunkWidth={phone ? 85 : 100}
+            // The nav row needs 601px for the wordmark, links and locale. 78%
+            // of the column lands well clear of that on desktop; the 700px
+            // floor holds ~100px of slack once the column itself gets small,
+            // and the outer min() lets the compaction taper to nothing on a
+            // narrow tablet instead of squeezing the links.
+            shrunkMaxWidth={
+                phone
+                    ? ""
+                    : "min(var(--content-col), max(calc(var(--content-col) * 0.78), 700px))"
+            }
+            // Past the hero's opening, so the bar does not narrow on the first
+            // wheel notch.
+            shrinkOffset={180}
             scrollAlign="center"
             fadeOnScroll
             scrolledOpacity={phone ? 0.96 : 0.98}
@@ -74,7 +91,7 @@ export default function SiteNav({ autoHide = "phone" }: {
             borderColor={colors.border}
             borderWidth={0.5}
             radius={30}
-            maxWidth={1085}
+            maxWidth="100%"
             showLocale
             localeSize={13}
             links={[

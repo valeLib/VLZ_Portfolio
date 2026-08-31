@@ -74,6 +74,9 @@ type FeatureModuleGridProps = {
     badgeTextColor?: string
     badgeBorderColor?: string
 
+    /** Subtle lift/zoom of the media frame on hover (pointer devices). */
+    mediaHoverEffect?: boolean
+
     // Text content
     eyebrow?: string
     title?: string
@@ -175,6 +178,8 @@ const DEFAULTS: Required<FeatureModuleGridProps> = {
     badgeTextColor: "#1a1520",
     badgeBorderColor: "",
 
+    mediaHoverEffect: false,
+
     eyebrow: "MODULE 01",
     title: "Grid Placement",
     body: "<p>Players place towers on a grid with hover and snap feedback. The system enforces buildable surfaces and gives instant visual confirmation.</p>",
@@ -242,6 +247,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
         showMediaShadow, mediaShadowX, mediaShadowY, mediaShadowColor,
 
         showMediaBadge, badgeText, badgeBg, badgeTextColor, badgeBorderColor,
+        mediaHoverEffect,
 
         eyebrow, title, body, bullets,
 
@@ -458,8 +464,15 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
     }
 
     // ── Media block ───────────────────────────────────────────────────────
+    const hasRealMedia =
+        (mediaType === "image" && !!imageSrc) ||
+        (mediaType === "video" && !!(videoSource === "file" ? videoFile : videoUrl)) ||
+        (mediaType === "iframe" && !!iframeUrl)
     const mediaBlock = (
-        <div style={{
+        <motion.div
+            whileHover={mediaHoverEffect && hasRealMedia ? { scale: 1.02, y: -4 } : undefined}
+            transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            style={{
             position: "relative",
             width: "100%",
             paddingBottom: autoRatio && imageSrc ? 0 : aspectPct,
@@ -500,7 +513,7 @@ export default function FeatureModuleGrid(props: FeatureModuleGridProps) {
                     lineHeight: 1,
                 }}>{badgeText}</div>
             )}
-        </div>
+        </motion.div>
     )
 
     // ── Text block ────────────────────────────────────────────────────────

@@ -731,23 +731,17 @@ export default function Home() {
                 <div className="hs-footer">
                     <div className="hs-footer-bar" ref={footerRef}>
                     <Footer
-                        wordmark="Valentina Liberona"
-                        showTagline={false}
-                        groups={[]}
-                        showSocials
-                        socials={[
-                            { label: "GitHub", url: "https://github.com/valeLib" },
-                            { label: "LinkedIn", url: "https://www.linkedin.com/in/valentina-liberona/" },
-                        ]}
                         background={colors.liberty}
-                        textColor={colors.gunmetalBlack}
-                        mutedColor={colors.linen}
-                        socialColor={colors.tangerine}
+                        mutedColor={colors.countryWhite}
+                        introColor={colors.countryWhite}
+                        linksTitleColor={colors.tangerine}
+                        socialColor={colors.countryWhite}
+                        socialHoverColor={colors.tangerine}
                         topBorder
                         borderColor={colors.primaryTxt}
                         radius={0}
                         padding={phone ? 21 : 48}
-                        gap={phone ? 16 : 40}
+                        gap={phone ? 20 : 40}
                     />
                     </div>
                 </div>
@@ -950,14 +944,11 @@ export default function Home() {
                    the paper and the checker dividers — runs edge to edge, so
                    there are no solid gutters for the sheet to end against; the
                    decoration layer and the reading column are centred containers
-                   inside it. The column starts at the 1200px the layout was
-                   composed for and widens by a fifth of the extra room, to a
-                   ceiling of 1320px, so the composition breathes on a large
-                   display without drifting apart.
+                   inside it. The column itself is --content-w, defined once in
+                   index.css and shared with the navigation bar.
                    This block must stay below the base rules: it overrides them at
                    equal specificity, so it wins only by coming later. */
                 @media (min-width: 1200.02px) {
-                    .hs { --content-w: min(1320px, calc(1200px + (100% - 1200px) * 0.2)); }
                     .hs-hero-inner,
                     .hs-hero-deco,
                     .hs-about-inner,
@@ -971,7 +962,7 @@ export default function Home() {
                         margin-right: auto;
                     }
                     /* The same 80px insets as the other sections. */
-                    .hs-proj-inner { width: 100%; max-width: calc(var(--content-w) - 160px); }
+                    .hs-proj-inner { width: 100%; max-width: var(--content-col); }
                 }
 
                 /* ── Tablet (810–1199) ─────────────────────────────────────── */

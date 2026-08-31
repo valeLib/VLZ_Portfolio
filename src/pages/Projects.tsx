@@ -60,10 +60,7 @@ export default function Projects() {
       </section>
 
       <Footer
-        wordmark="Valentina Liberona"
-        showTagline={false}
         background="rgb(79, 88, 175)"
-        textColor="rgb(26, 21, 32)"
         mutedColor="rgb(245, 238, 230)"
         borderColor="rgb(28, 27, 34)"
       />

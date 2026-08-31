@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600">
+  <!-- Modular ball effects: trailing effect follows the ball; effects combine -->
+  <defs>
+    <pattern id="dots" width="44" height="44" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="22" r="2.2" fill="#1A1520" opacity="0.07"/>
+    </pattern>
+    <marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1A1520"/>
+    </marker>
+  </defs>
+  <rect width="900" height="600" fill="#FFFDF8"/>
+  <rect width="900" height="600" fill="url(#dots)"/>
+
+  <!-- Trail -->
+  <circle cx="250" cy="230" r="34" fill="#D4DF68" opacity="0.25"/>
+  <circle cx="360" cy="230" r="46" fill="#D4DF68" opacity="0.45"/>
+  <circle cx="480" cy="230" r="58" fill="#D4DF68" opacity="0.65"/>
+  <g stroke="#1A1520" stroke-width="4" stroke-linecap="round" opacity="0.45">
+    <line x1="205" y1="196" x2="330" y2="196"/>
+    <line x1="185" y1="230" x2="300" y2="230"/>
+    <line x1="205" y1="264" x2="330" y2="264"/>
+  </g>
+
+  <!-- Ball with flame aura -->
+  <g transform="translate(618,230)">
+    <circle cx="7" cy="7" r="74" fill="#1A1520"/>
+    <circle r="74" fill="#FFFDF8" stroke="#1A1520" stroke-width="6"/>
+    <ellipse cx="-24" cy="-28" rx="18" ry="12" fill="#1A1520" opacity="0.1" transform="rotate(-30 -24 -28)"/>
+    <path d="M-30,-72 C-40,-92 -28,-108 -10,-120 C-12,-104 2,-100 4,-112 C18,-98 10,-88 22,-96 C30,-82 20,-70 4,-66" fill="none" stroke="#EE978E" stroke-width="7" stroke-linecap="round"/>
+    <g stroke="#FABA32" stroke-width="5" stroke-linecap="round">
+      <line x1="62" y1="-62" x2="76" y2="-76"/>
+      <line x1="84" y1="-24" x2="102" y2="-30"/>
+      <line x1="-66" y1="-52" x2="-80" y2="-64"/>
+    </g>
+  </g>
+
+  <!-- Combination lane -->
+  <g transform="translate(0,492)">
+    <g transform="translate(180,0)">
+      <circle cx="5" cy="5" r="42" fill="#1A1520"/>
+      <circle r="42" fill="#EE978E" stroke="#1A1520" stroke-width="5"/>
+      <path d="M0,24 C-16,18 -20,4 -10,-6 C-8,0 -3,2 -2,-3 C0,-11 -5,-14 2,-24 C5,-13 14,-11 16,0 C18,11 11,21 0,24 Z" fill="#FFFDF8" stroke="#1A1520" stroke-width="3" stroke-linejoin="round"/>
+    </g>
+    <text x="262" y="16" font-family="'Courier New', monospace" font-weight="bold" font-size="46" fill="#1A1520" text-anchor="middle">+</text>
+    <g transform="translate(345,0)">
+      <circle cx="5" cy="5" r="42" fill="#1A1520"/>
+      <circle r="42" fill="#8BD9C3" stroke="#1A1520" stroke-width="5"/>
+      <ellipse rx="26" ry="10" fill="none" stroke="#1A1520" stroke-width="4.5" transform="rotate(-18)"/>
+    </g>
+    <line x1="424" y1="0" x2="490" y2="0" stroke="#1A1520" stroke-width="5" marker-end="url(#ah)"/>
+    <!-- Combined result -->
+    <g transform="translate(600,0)">
+      <ellipse cx="4" cy="16" rx="78" ry="26" fill="none" stroke="#8BD9C3" stroke-width="7"/>
+      <circle cx="5" cy="5" r="48" fill="#1A1520"/>
+      <circle r="48" fill="#FFFDF8" stroke="#1A1520" stroke-width="5"/>
+      <path d="M-18,-44 C-26,-58 -18,-70 -4,-78 C-6,-66 4,-64 6,-72 C16,-62 10,-54 18,-58 C24,-48 16,-40 4,-38" fill="none" stroke="#EE978E" stroke-width="6" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>

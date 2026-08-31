@@ -103,6 +103,7 @@ const featureBase = {
     mediaShadowX: 5,
     mediaShadowY: 5,
     mediaShadowColor: "#1a1520",
+    mediaHoverEffect: true,
     showMediaBadge: false,
     panelScope: "module",
     textBg: "rgba(0, 0, 0, 0)",
@@ -693,10 +694,11 @@ function ProjectPage({ project }: { project: Project }) {
                                 <BodyText locale={locale} html={brief.bodyHtml} mobileHtml={brief.bodyMobileHtml} />
                             </Appear>
                         )}
+                        {project.playUrl && (
                         <div className="pd-brief-cta">
                             <ExternalLink
                                 label={t("playPrototype")}
-                                href="https://valelizu.itch.io/goblin-td"
+                                href={project.playUrl}
                                 newTab
                                 bracketStyle="None"
                                 leadStyle="Play"
@@ -722,6 +724,7 @@ function ProjectPage({ project }: { project: Project }) {
                                 hoverArrowShift={2}
                             />
                         </div>
+                        )}
                         {brief.tags && (
                             <Appear trigger="inView" transition="spring-duration 0.4s 0.2 0s" className="pd-brief-tags">
                                 <TagCloud tagsString={L(brief.tags)} />
@@ -740,6 +743,36 @@ function ProjectPage({ project }: { project: Project }) {
                                 className="pd-brief-video"
                             >
                                 <MediaFrame video={brief.video} style={{ width: phone ? "96%" : "70%" }} />
+                            </Appear>
+                        )}
+                        {!brief.video && brief.image && (
+                            // Image stand-in for the demo-clip slot: same width and
+                            // reveal as the video, framed like the page's media.
+                            <Appear
+                                trigger="inView"
+                                once
+                                threshold={0.05}
+                                transition="spring-duration 0.4s 0.2 0s"
+                                className="pd-brief-video"
+                            >
+                                <motion.div
+                                    whileHover={{ scale: 1.015, y: -4 }}
+                                    transition={{ type: "spring", stiffness: 260, damping: 20 }}
+                                    style={{ width: phone ? "96%" : "70%" }}
+                                >
+                                    <img
+                                        src={brief.image}
+                                        alt=""
+                                        style={{
+                                            width: "100%",
+                                            display: "block",
+                                            borderRadius: phone ? 16 : 24,
+                                            border: "2px solid #1a1520",
+                                            boxShadow: "6px 6px 0 #1a1520",
+                                            boxSizing: "border-box",
+                                        }}
+                                    />
+                                </motion.div>
                             </Appear>
                         )}
                         {briefItems[0] && (
@@ -829,6 +862,36 @@ function ProjectPage({ project }: { project: Project }) {
                                 <BodyText locale={locale} html={gameDesign.bodyHtml} mobileHtml={gameDesign.bodyMobileHtml} />
                             </Appear>
                         )}
+                        {gdFeatureItem && (
+                            // Leads into the diagram windows: the module states the
+                            // loop in words before the windows draw it.
+                            <div className="pd-features">
+                                <FeatureModuleGrid
+                                    {...featureBase}
+                                    mediaPosition="left"
+                                    mediaColumnWidth={50}
+                                    colGap={32}
+                                    rowGap={28}
+                                    verticalAlign="center"
+                                    stackedMediaWidth={65}
+                                    stackedMediaAlign="left"
+                                    stackedTextScale={0.9}
+                                    mediaFit="contain"
+                                    mediaRadius={tablet ? 15 : 16}
+                                    image={gdFeatureItem.icon ?? ""}
+                                    showMediaBadge
+                                    badgeText={L(gdFeatureItem.badge)}
+                                    badgeTextColor="#1a1520"
+                                    eyebrow={L(gdFeatureItem.subtitle)}
+                                    title={L(gdFeatureItem.displayTitle)}
+                                    body={L(gdFeatureItem.bodyHtml)}
+                                    panelScope="text"
+                                    textPadding={0}
+                                    textRadius={0}
+                                    titleSize={28}
+                                />
+                            </div>
+                        )}
                         {(gameDesign.diagram1 || gameDesign.diagram2 || gameDesign.diagram3) && (
                             <div className="pd-coreloop-row">
                                 {/* Window order flips on phone: CORELOOP first. */}
@@ -863,34 +926,6 @@ function ProjectPage({ project }: { project: Project }) {
                                         radiusOverride={phone ? 80 : 125}
                                     />
                                 )}
-                            </div>
-                        )}
-                        {gdFeatureItem && (
-                            <div className="pd-features">
-                                <FeatureModuleGrid
-                                    {...featureBase}
-                                    mediaPosition="left"
-                                    mediaColumnWidth={50}
-                                    colGap={32}
-                                    rowGap={28}
-                                    verticalAlign="center"
-                                    stackedMediaWidth={65}
-                                    stackedMediaAlign="left"
-                                    stackedTextScale={0.9}
-                                    mediaFit="contain"
-                                    mediaRadius={tablet ? 15 : 16}
-                                    image={gdFeatureItem.icon ?? ""}
-                                    showMediaBadge
-                                    badgeText={L(gdFeatureItem.badge)}
-                                    badgeTextColor="#1a1520"
-                                    eyebrow={L(gdFeatureItem.subtitle)}
-                                    title={L(gdFeatureItem.displayTitle)}
-                                    body={L(gdFeatureItem.bodyHtml)}
-                                    panelScope="text"
-                                    textPadding={0}
-                                    textRadius={0}
-                                    titleSize={28}
-                                />
                             </div>
                         )}
                         {gameDesign.table && (
@@ -985,11 +1020,9 @@ function ProjectPage({ project }: { project: Project }) {
                 {/* ── UI ───────────────────────────────────────────────── */}
                 {ui && (
                     <ProjectSection id="section-ui" variant="pd-ui">
-                        {/* This heading reads the section's `title`, not its
-                            `displayTitle` like the other sections. */}
-                        {ui.title && (
+                        {(ui.displayTitle ?? ui.title) && (
                             <div style={{ width: "100%" }}>
-                                <SectionTitle {...tangerineTitle} title={L(ui.title)} />
+                                <SectionTitle {...tangerineTitle} title={L(ui.displayTitle ?? ui.title)} />
                             </div>
                         )}
                         {ui.bodyHtml && (
