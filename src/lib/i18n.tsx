@@ -83,13 +83,13 @@ export const STRINGS = {
     heroMy: { en: "My", es: "Mi" },
     heroPortfolio: { en: "Portfolio", es: "Portafolio" },
     heroTagline: {
-        en: "7+ years building games, VR experiences, and motion-driven web interfaces.",
-        es: "Más de 7 años creando juegos, experiencias de realidad virtual e interfaces web basadas en movimiento.",
+        en: "",
+        es: "",
     },
     heroSeeWork: { en: "See my work ↓", es: "Mira mi trabajo ↓" },
     heroGetInTouch: { en: "Get in touch", es: "Ponte en contacto" },
-    statUnityDev: { en: "Unity Dev", es: "Desarrollador de Unity" },
-    statCreativeFrontend: { en: "Creative Frontend", es: "Frontend creativo" },
+    statUnityDev: { en: "Game Dev", es: "Game dev" },
+    statCreativeFrontend: { en: "Frontend Dev", es: "Frontend dev" },
     statYearsXP: { en: "Years XP", es: "Años de experiencia" },
     statFields: { en: "Fields", es: "Campos" },
     statSkills: { en: "Skills", es: "Habilidades" },
@@ -98,8 +98,8 @@ export const STRINGS = {
     aboutEyebrow: { en: "ABOUT ME", es: "SOBRE MÍ" },
     aboutTitle: { en: "Hi, I'm Vale.", es: "Hola, soy Vale." },
     aboutBodyHtml: {
-        en: "<p dir=\"auto\">I’m a game developer based in Chile, working remotely, focused on building optimized systems that are both performant and visually clear. My work spans Unity and Unreal, where I design gameplay, AI behaviors, and scalable architectures. I also use frontend tools when needed to support interfaces and interactive systems.</p>",
-        es: "<p dir=\"auto\">Soy un desarrollador de videojuegos radicado en Chile, trabajo de forma remota y me enfoco en construir sistemas optimizados que sean de alto rendimiento y visualmente claros. Mi trabajo abarca Unity y Unreal, donde diseño jugabilidad, comportamientos de IA y arquitecturas escalables. También utilizo herramientas de frontend cuando es necesario para dar soporte a interfaces y sistemas interactivos.</p>",
+        en: "<p dir=\"auto\">I’m a game developer and technical artist focused on gameplay, UI, VFX, and interactive systems. I work mainly with Unreal Engine and Unity, combining code and visual design to turn ideas into polished, playable experiences.</p>",
+        es: "<p dir=\"auto\">Soy desarrolladora de videojuegos y technical artist, enfocada en gameplay, UI, VFX y sistemas interactivos. Trabajo principalmente con Unreal Engine y Unity, combinando código y diseño visual para transformar ideas en experiencias jugables y pulidas.</p>",
     },
     profileExe: { en: "PROFILE.EXE", es: "PERFIL.EXE" },
 
@@ -116,26 +116,52 @@ export const STRINGS = {
     skillsTitle: { en: "What I use", es: "Lo que uso" },
 
     // Contact
-    contactTitle: { en: "Let's build something playful.", es: "Construyamos algo lúdico." },
+    contactTitle: { en: "Let's build something playful.", es: "Construyamos algo único." },
     contactBody: {
         en: "Have a game, an interface, or a wild idea? Drop a line and I'll get back to you.",
-        es: "¿Tienes un juego, una interfaz o una idea descabellada? Escríbeme y me pondré en contacto contigo.",
+        es: "¿Tienes un juego, una interfaz o una gran idea? Escríbeme y me pondré en contacto contigo.",
     },
     contactName: { en: "Name", es: "Nombre" },
     contactEmail: { en: "Email", es: "Correo electrónico" },
     contactMessage: { en: "Message", es: "Mensaje" },
     contactSend: { en: "Send message", es: "Enviar mensaje" },
+    contactSending: { en: "Sending…", es: "Enviando…" },
     contactThanks: { en: "Thanks! I'll be in touch soon.", es: "¡Gracias! Me pondré en contacto pronto." },
     contactBasedIn: { en: "Based in", es: "Basado en" },
+    // Sample values, not copy: the two names read the same in both locales.
+    contactNamePlaceholder: { en: "Jane Doe", es: "Jane Doe" },
+    contactEmailPlaceholder: { en: "jane@studio.com", es: "jane@studio.com" },
+    contactMessagePlaceholder: {
+        en: "Tell me about your project…",
+        es: "Cuéntame sobre tu proyecto…",
+    },
+    contactFormError: {
+        en: "Please add your email and a message, then try again.",
+        es: "Agrega tu correo y un mensaje, luego inténtalo de nuevo.",
+    },
+    // Subject line of the mailto fallback, so the visitor's mail client opens
+    // in the language they were reading in. {name} is the name they typed.
+    contactMailSubject: {
+        en: "Portfolio message from {name}",
+        es: "Mensaje del portafolio de {name}",
+    },
+    contactMailSomeone: { en: "someone", es: "alguien" },
 
     // Footer
-    footerTagline: {
-        en: "Unity developer & creative frontend engineer building playful, retro-flavored interfaces.",
-        es: "Desarrollador de Unity e ingeniero de frontend creativo que crea interfaces divertidas y con un toque retro.",
+    footerIntro: {
+        en: "Hi, I’m Valentina Sofía Liberona Zúñiga.",
+        es: "Hola, soy Valentina Sofía Liberona Zúñiga.",
     },
-    footerCopyright: {
-        en: "© {year} Valentina Liberona Zúñiga. All rights reserved.",
-        es: "© {year} Valentina Liberona Zúñiga. Todos los derechos reservados.",
+    footerSummary: {
+        en: "Game Developer, Game Designer and Technical Artist. I build gameplay, game feel, VFX, and UI, with a focus on technical art and technical game design.",
+        es: "Game Developer, Game Designer y Technical Artist. Desarrollo gameplay, game feel, VFX y UI, con foco en technical art y diseño técnico de videojuegos.",
+    },
+    // Rendered uppercase by the footer's own stylesheet.
+    footerLinksTitle: { en: "Find me", es: "Encuéntrame" },
+    footerDownloadCv: { en: "Download CV", es: "Descargar CV" },
+    footerDownloadCvAria: {
+        en: "Download CV — Valentina Sofía Liberona Zúñiga (PDF)",
+        es: "Descargar CV — Valentina Sofía Liberona Zúñiga (PDF)",
     },
 
     // Project detail pages
