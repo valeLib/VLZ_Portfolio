@@ -26,7 +26,7 @@ import Appear from "../components/Appear"
 import PageEnter from "../components/PageEnter"
 import { publicProjects, asset } from "../data/projects"
 import { useBreakpoint } from "../hooks/useBreakpoint"
-import { pick, useLocale, useLocalePath, useT } from "../lib/i18n"
+import { STRINGS, pick, useLocale, useLocalePath, useT } from "../lib/i18n"
 import type { L10n, Locale } from "../lib/i18n"
 import { colors } from "../tokens"
 
@@ -40,52 +40,52 @@ const tags = (en: string[], es?: string[]): LTags => ({ en, es: es ?? en })
 const workCards: { title: L10n; label: L10n; badge: L10n; tags: LTags }[] = [
     {
         title: { en: "Icnovatio", es: "Icnovatio" },
-        label: { en: "Frontend & UI Designer", es: "Diseñador de Frontend y de Interfaz de Usuario" },
+        label: { en: "Frontend & UI/UX Designer", es: "Diseñadora Frontend UI/UX" },
         badge: { en: "2026–Now", es: "2026–Presente" },
         tags: tags(["React", "Typescript", "Figma"], ["React", "TypeScript", "Figma"]),
     },
     {
         title: { en: "Rehaviour —  Pignus", es: "Rehaviour — Pignus" },
-        label: { en: "Unity Dev & Frontend", es: "Desarrollador Unity y Frontend" },
+        label: { en: "Unity Dev & Frontend", es: "Desarrolladora Unity y Frontend" },
         badge: { en: "2023–Now", es: "2023–presente" },
         tags: tags(
             ["Unity", "C#", "Blender", "HLSL", "VR", "Meta Quest", "Vue.js"],
-            ["Unidad", "C#", "Licuadora", "HLSL", "RV", "Meta Quest", "Vue.js"]
+            ["Unity", "C#", "Blender", "HLSL", "VR", "Meta Quest", "Vue.js"]
         ),
     },
     {
         title: { en: "AmblyopiaVR — Oxford", es: "AmblyopiaVR — Oxford" },
-        label: { en: "Unity Dev & Technical Artist", es: "Desarrollador Unity y Artista Técnico" },
+        label: { en: "Unity Dev & Technical Artist", es: "Desarrolladora Unity y Technical Artist" },
         badge: { en: "2022", es: "2022" },
-        tags: tags(["Unity", "HLSL", "VR"], ["Unidad", "HLSL", "RV"]),
+        tags: tags(["Unity", "HLSL", "VR"], ["Unity", "HLSL", "VR"]),
     },
     {
         title: { en: "NeurospeechAI  — UCL", es: "NeurospeechAI — UCL" },
-        label: { en: "Frontend & UI/UX", es: "Frontend y UI/UX" },
+        label: { en: "Frontend & UI/UX", es: "Desarrolladora Frontend y UI/UX" },
         badge: { en: "2023", es: "2023" },
-        tags: tags(["React", "TypeScript", "WCAG 2.1"], ["Reaccionar", "TypeScript", "WCAG 2.1"]),
+        tags: tags(["React", "TypeScript", "WCAG 2.1"], ["React", "TypeScript", "WCAG 2.1"]),
     },
     {
         title: { en: "U. de Chile", es: "U. de Chile" },
-        label: { en: "Unity Dev & UI/UX", es: "Desarrollo en Unity y UI/UX" },
+        label: { en: "Unity Dev & UI/UX", es: "Desarrolladora Unity y UI/UX" },
         badge: { en: "2020-2021", es: "2020-2021" },
-        tags: tags(["Unity", "Blender", "Meta Quest"], ["Unidad", "licuadora", "Meta Quest"]),
+        tags: tags(["Unity", "Blender", "Meta Quest"], ["Unity", "Blender", "Meta Quest"]),
     },
     {
-        title: { en: "Eye-Search — UCL", es: "Búsqueda ocular — UCL" },
-        label: { en: "Frontend & UI/UX", es: "Frontend y UI/UX" },
+        title: { en: "Eye-Search — UCL", es: "Eye-Search — UCL" },
+        label: { en: "Frontend & UI/UX", es: "Desarrolladora Frontend y UI/UX" },
         badge: { en: "2022", es: "2022" },
         tags: tags(["React", "TypeScript", "Unity WebGL"]),
     },
     {
         title: { en: "Radar— Pulso Escolar", es: "Radar — Pulso Escolar" },
-        label: { en: "Full-Stack Developer", es: "Desarrollador Full-Stack" },
+        label: { en: "Full-Stack Developer", es: "Desarrolladora Full-Stack" },
         badge: { en: "2019", es: "2019" },
         tags: tags(["Vue.js", "Node.js", "GCP"]),
     },
     {
         title: { en: "Capitalizarme", es: "Capitalizarme" },
-        label: { en: "Frontend & UI/UX", es: "Frontend y UI/UX" },
+        label: { en: "Frontend & UI/UX", es: "Desarrolladora Frontend y UI/UX" },
         badge: { en: "2022-2023", es: "2022-2023" },
         tags: tags(["React", "Next.js", "Redux"]),
     },
@@ -93,26 +93,26 @@ const workCards: { title: L10n; label: L10n; badge: L10n; tags: LTags }[] = [
 
 const skillCards = [
     {
-        emoji: "🎮", title: { en: "Game & VR", es: "Juegos y RV" }, className: "hs-skill-a", hoverRotate: 1,
-        bg: colors.teal, border: colors.gunmetalBlack, titleColor: colors.liberty, paddingV: 16, tagFontSize: 13,
+        emoji: "🎮", title: { en: "Game & VR", es: "Juegos y VR" }, className: "hs-skill-a", hoverRotate: 1,
+        bg: colors.teal, border: colors.gunmetalBlack, titleColor: colors.liberty, paddingV: 18, tagFontSize: 13,
         tags: tags(
             ["Unity 6 (URP)", "C++", "Unreal 5", "C#", "HLSL", "Blender", "Substance Painter", "VR", "Meta Quest"],
-            ["Unity 6 (URP)", "C++", "Unreal 5", "C#", "HLSL", "Licuadora", "Substance Painter", "RV", "Meta Quest"]
+            ["Unity 6 (URP)", "C++", "Unreal 5", "C#", "HLSL", "Blender", "Substance Painter", "VR", "Meta Quest"]
         ),
         tagBg: "rgb(122, 199, 178)", tagText: "rgb(51, 102, 102)", tagRadius: 6,
     },
     {
         emoji: "💻", title: { en: "Frontend", es: "Frontend" }, className: "hs-skill-b", hoverRotate: -1,
-        bg: colors.tangerine, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 16, tagFontSize: 11,
+        bg: colors.tangerine, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 18, tagFontSize: 11,
         tags: tags(["React", "TypeScript", "Next.js", "Vue.js", "Vite", "GSAP", "Three.js", "R3F", "Lenis", "Lottie", "Framer Motion", "Framer"]),
         tagBg: colors.babyPink, tagText: "rgb(135, 104, 109)", tagRadius: 6,
     },
     {
         emoji: "✨", title: { en: "Shared", es: "Compartido" }, className: "hs-skill-c", hoverRotate: 1,
-        bg: colors.liberty, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 30, tagFontSize: 13,
+        bg: colors.liberty, border: colors.gunmetalBlack, titleColor: colors.linen, paddingV: 26, tagFontSize: 13,
         tags: tags(
             ["Git", "Node.js", "Python", "MongoDB", "PostgreSQL", "Figma", "Krita", "Affinity"],
-            ["Git", "Node.js", "Python", "MongoDB", "PostgreSQL", "Figma", "Krita", "Afinidad"]
+            ["Git", "Node.js", "Python", "MongoDB", "PostgreSQL", "Figma", "Krita", "Affinity"]
         ),
         tagBg: "rgb(114, 121, 191)", tagText: colors.surface, tagRadius: 8,
     },
@@ -128,17 +128,21 @@ const whoamiRows = [
 
 const whoamiTags = ["C#", "C++", "HLSL", "Unity", "Unreal Engine", "React", "Typescript", "Vue.js", "Python", "Figma"]
 
-const checkerStrip = (
-    <div style={{ width: 168, height: 56 }}>
-        <PatternBackground
-            patternType="checker"
-            checkerColor2={colors.background}
-            checkerSize={28}
-            patternColor={colors.tangerine}
-            bgColor="rgb(240, 235, 224)"
-        />
-    </div>
-)
+function tape(w: number, h: number, color: string) {
+    return (
+        <div style={{ width: w, height: h }}>
+            <PatternBackground
+                patternType="checker"
+                checkerColor2={colors.background}
+                checkerSize={Math.round(h / 2)}
+                patternColor={color}
+                bgColor="rgb(240, 235, 224)"
+            />
+        </div>
+    )
+}
+
+const checkerStrip = tape(168, 56, colors.tangerine)
 
 // One hero tag; the three settle in one after another.
 function HeroTag({ rotate, delay, children }: { rotate: number; delay: number; children: React.ReactNode }) {
@@ -162,15 +166,19 @@ function SectionHead({
     dotColor,
     header,
     headerColor,
+    gap = 10,
 }: {
     title: string
     titleColor: string
     dotColor?: string
     header: string
     headerColor: string
+    /** Eyebrow-to-title distance; tighten it where the heading needs to read
+     *  as one block rather than two lines. */
+    gap?: number
 }) {
     return (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap }}>
             <Appear trigger="inView" threshold={0.2} transition="tween 0.44,0,0.56,1 0.45s 0s" style={{ maxWidth: 615 }}>
                 <SectionTitle
                     title={title}
@@ -209,6 +217,110 @@ function SectionHead({
     )
 }
 
+/* ── Skills ─────────────────────────────────────────────────────────────────
+   One card of the skills set. The reveal is a short fade up with a hair of
+   scale, and the three are delayed one after the other so the group reads as
+   one system arriving rather than three unrelated cards. Hover keeps the
+   scrapbook feel: a small lift, the card's own tilt, and a soft shadow that
+   sits under the hard offset the card already carries. */
+function SkillCard({ index, hoverRotate, children }: { index: number; hoverRotate: number; children: React.ReactNode }) {
+    const reduce = useReducedMotion()
+    if (reduce) return <div className="hs-skill-lift">{children}</div>
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 28, scale: 0.955 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ amount: 0.2, once: true }}
+            transition={{ type: "spring", duration: 0.72, bounce: 0.26, delay: 0.12 + index * 0.14 }}
+        >
+            <motion.div
+                className="hs-skill-lift"
+                whileHover={{ y: -6, scale: 1.025, rotate: hoverRotate }}
+                transition={{ type: "spring", duration: 0.4, bounce: 0.22 }}
+            >
+                {children}
+            </motion.div>
+        </motion.div>
+    )
+}
+
+/* Paper marks scattered around the card group: sparkles, a dashed ring, a
+   squiggle and a code bracket, in the section's own accents. They live on a
+   layer behind the cards that stretches past them left and right, so every
+   mark lands in the margin rather than on a card, and the layer takes no
+   pointer events. */
+const decoSparkle = (color: string) => (
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+        <path d="M12 1.4c.9 6.8 3.8 9.7 10.6 10.6C15.8 12.9 12.9 15.8 12 22.6 11.1 15.8 8.2 12.9 1.4 12 8.2 11.1 11.1 8.2 12 1.4Z" fill={color} />
+    </svg>
+)
+const decoStar = (color: string) => (
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+        <path d="M12 2.6l2.7 6.1 6.6.6-5 4.4 1.5 6.5L12 16.8 6.2 20.2l1.5-6.5-5-4.4 6.6-.6L12 2.6Z" fill={color} />
+    </svg>
+)
+const decoDots = (color: string) => (
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+        <circle cx="6" cy="5.5" r="2.7" fill={color} />
+        <circle cx="15" cy="12" r="2.2" fill={color} />
+        <circle cx="7.5" cy="19" r="1.8" fill={color} />
+    </svg>
+)
+const decoPlus = (color: string) => (
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+        <path d="M12 3.5v17M3.5 12h17" stroke={color} strokeWidth="3" strokeLinecap="round" />
+    </svg>
+)
+const decoRing = (color: string) => (
+    <svg viewBox="0 0 24 24" width="100%" height="100%" fill="none">
+        <circle cx="12" cy="12" r="9.2" stroke={color} strokeWidth="2.6" strokeDasharray="3 5.4" strokeLinecap="round" />
+    </svg>
+)
+const decoSquiggle = (color: string) => (
+    <svg viewBox="0 0 34 16" width="100%" height="100%" fill="none">
+        <path d="M2 9q4-8 8 0t8 0 8 0" stroke={color} strokeWidth="2.4" strokeLinecap="round" />
+    </svg>
+)
+const decoCode = (color: string) => (
+    <svg viewBox="0 0 28 20" width="100%" height="100%" fill="none">
+        <path d="M8.5 4 3 10l5.5 6M19.5 4 25 10l-5.5 6M16 2.6l-4 14.8" stroke={color} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+)
+
+// Ordered outside in: corners first, then the margins, then the one mark that
+// sits inside the group. `phone`/`tablet` mark the ones that drop out as the
+// margins get too tight to hold them.
+const skillDecos = [
+    { cls: "hs-deco-1", node: decoSparkle(colors.saffron) },
+    { cls: "hs-deco-2", node: decoCode(colors.liberty) },
+    { cls: "hs-deco-3", node: decoSquiggle(colors.straw) },
+    { cls: "hs-deco-4", node: decoStar(colors.tangerine) },
+    { cls: "hs-deco-5", node: decoDots(colors.teal) },
+    { cls: "hs-deco-6", node: decoPlus(colors.tangerine) },
+    { cls: "hs-deco-7", node: decoRing(colors.saffron) },
+    { cls: "hs-deco-8", node: decoSparkle(colors.teal) },
+]
+
+function SkillsDeco() {
+    const reduce = useReducedMotion()
+    const marks = skillDecos.map((d) => (
+        <span key={d.cls} className={`hs-deco ${d.cls}`}>{d.node}</span>
+    ))
+    if (reduce) return <div className="hs-skill-deco" aria-hidden>{marks}</div>
+    return (
+        <motion.div
+            className="hs-skill-deco"
+            aria-hidden
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ amount: 0.2, once: true }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+        >
+            {marks}
+        </motion.div>
+    )
+}
+
 // PROFILE.EXE + LOCATION.EXE, shared by the desktop reveal stage and the
 // in-section phone layout. Tablet/phone use the compact terminal variant and a
 // counter-rotated profile window (net 0°).
@@ -216,7 +328,7 @@ function AboutWindows({ compact }: { compact: boolean }) {
     return (
         <>
             <div className="hs-win hs-win-profile" style={compact ? { transform: "none" } : undefined}>
-                <Appear trigger="inView" threshold={0.25} transition="spring-duration 0.55s 0.2 0s">
+                <Appear trigger="inView" threshold={0.5} once y={260} transition="tween 0.33,0,0.2,1 1.2s 0s">
                     <RetroWindow
                         title="PROFILE.EXE"
                         titleBarColor={colors.liberty}
@@ -262,7 +374,7 @@ function AboutWindows({ compact }: { compact: boolean }) {
                 </Appear>
             </div>
             <div className="hs-win hs-win-loc">
-                <Appear trigger="inView" threshold={0.25} transition="spring-duration 0.55s 0.2 0.15s">
+                <Appear trigger="inView" threshold={0.5} once y={260} transition="tween 0.33,0,0.2,1 1.2s 0.15s">
                     <RetroWindow
                         title="LOCATION.EXE"
                         titleBarColor={colors.teal}
@@ -455,7 +567,9 @@ export default function Home() {
                             <div className="hs-hero-cat">
                                 {/* The top strip renders immediately; only the spacer
                                     below it carries the appear delay. */}
-                                <div className="hs-strip">{checkerStrip}</div>
+                                <Sticker className="hs-strip" draggable tilt={0.25} elevation={0.12} z={5}>
+                                    {checkerStrip}
+                                </Sticker>
                                 <div className="hs-shelf" aria-hidden />
                                 <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.4s" className="hs-glb-row">
                                     <div className="hs-glb">
@@ -463,7 +577,9 @@ export default function Home() {
                                     </div>
                                 </Appear>
                                 <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.6s" className="hs-strip-row">
-                                    {checkerStrip}
+                                    <Sticker draggable tilt={0.25} elevation={0.12} z={5}>
+                                        {checkerStrip}
+                                    </Sticker>
                                 </Appear>
                             </div>
 
@@ -474,17 +590,22 @@ export default function Home() {
                             same column as the content so they keep their relation
                             to it however wide the sheet runs. */}
                         <div className="hs-hero-deco">
-                            <Sticker className="hs-sticker-drag" image={asset("sticker.png")} tilt={0.4} elevation={0.2} draggable />
-                            <Sticker className="hs-sticker-peel" image={asset("sticker.png")} peel />
+                            <Sticker className="hs-sticker-drag" image={asset("sticker.png")} tilt={0.4} elevation={0.2} z={4} draggable />
+                            <Sticker className="hs-sticker-peel" image={asset("sticker.png")} tilt={0.4} elevation={0.2} rotate={-1} z={4} peel draggable />
                         </div>
                     </section>
 
-                    {/* ── ABOUT — stage 1: text on the left ────────────────── */}
+                    {/* ── ABOUT — text left, PROFILE/LOCATION windows right ────────────────── */}
                     <section id="about" className="hs hs-about" style={{ zIndex: 2 }}>
                         <div className="hs-bg hs-about-bg">
                             <NotebookBackground paperColor={colors.liberty} gridType="grid" gridColor={colors.lilac} gridOpacity={0.05} gridSize={28} gridWeight={4} />
                         </div>
                         <div className="hs-divider"><CheckerDivider color1="rgb(114, 121, 191)" color2={colors.lilac} cellSize={12} rows={2} /></div>
+                        {/* <div className="hs-deco-layer hs-about-deco">
+                            <Sticker className="hs-tape-ab" draggable tilt={0.25} elevation={0.12}>
+                                {tape(118, 38, colors.saffron)}
+                            </Sticker>
+                        </div> */}
                         <div className="hs-about-inner">
                             <div className="hs-about-row">
                                 <div className="hs-about-text">
@@ -497,31 +618,21 @@ export default function Home() {
                                             className="hs-body"
                                             style={{ color: colors.linen }}
                                             dangerouslySetInnerHTML={{ __html: pick(locale, {
-                                                en: "I’m a game developer based in Chile, working remotely, focused on building optimized systems that are both performant and visually clear. My work spans Unity and Unreal, where I design gameplay, AI behaviors, and scalable architectures. I also use frontend tools when needed to support interfaces and interactive systems.",
-                                                es: "Soy un desarrollador de videojuegos radicado en Chile, trabajo de forma remota y me enfoco en construir sistemas optimizados que sean de alto rendimiento y visualmente claros. Mi trabajo abarca Unity y Unreal, donde diseño jugabilidad, comportamientos de IA y arquitecturas escalables. También utilizo herramientas de frontend cuando es necesario para dar soporte a interfaces y sistemas interactivos.",
+                                                en: "I’m a game developer and technical artist focused on gameplay, UI, VFX, and interactive systems. I work mainly with Unreal Engine and Unity, combining code and visual design to turn ideas into polished, playable experiences.",
+                                                es: "Soy desarrolladora de videojuegos y technical artist, enfocada en gameplay, UI, VFX y sistemas interactivos. Trabajo principalmente con Unreal Engine y Unity, combinando programación y diseño visual para crear experiencias con buen game feel, identidad visual y sistemas bien construidos.",
                                             }) }}
                                         />
                                     </Appear>
                                 </div>
-                                {/* On desktop and tablet this stays empty — the windows
-                                    arrive with the next sticky stage. */}
-                                <div className="hs-about-side" aria-hidden />
+                                {/* Desktop and tablet: the window column. Phone hides
+                                    it and uses the stacked block below instead. */}
+                                <div className="hs-about-side">
+                                    <AboutWindows compact={tablet} />
+                                </div>
                             </div>
                             {/* Phone shows the windows inline, below the text. */}
                             <div className="hs-about-winmobile">
                                 <AboutWindows compact />
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* ── ABOUT — stage 2: the window column rises over stage 1.
-                        Transparent 90vh sticky layer; its left side is empty so
-                        the pinned text stays visible behind it. ─────────────── */}
-                    <section className="hs hs-about2 hs-desktop-only" style={{ zIndex: 3 }}>
-                        <div className="hs-about2-inner">
-                            <div className="hs-about2-spacer" aria-hidden />
-                            <div className="hs-about2-col">
-                                <AboutWindows compact={tablet} />
                             </div>
                         </div>
                     </section>
@@ -637,51 +748,69 @@ export default function Home() {
                             <NotebookBackground paperColor={colors.background} gridType="ruled" gridColor={colors.liberty} gridOpacity={0.15} gridSize={34} gridWeight={2.6} />
                         </div>
                         <div className="hs-divider"><CheckerDivider color1={colors.liberty} color2={colors.linen} cellSize={12} rows={2} /></div>
+                        {/* Loose pieces, in the paper around the cards. */}
+                        <div className="hs-deco-layer hs-skills-deco">
+                            <Sticker className="hs-tape-sk-a" draggable tilt={0.25} elevation={0.12} rotate={-4}>
+                                {tape(126, 42, colors.teal)}
+                            </Sticker>
+                            <Sticker className="hs-tape-sk-b" draggable tilt={0.25} elevation={0.12} rotate={4}>
+                                {tape(119, 34, colors.babyPink)}
+                            </Sticker>
+                            <Sticker className="hs-berry-sk" image={asset("sticker.png")} tilt={0.4} elevation={0.2} rotate={5} draggable />
+                        </div>
                         <div className="hs-skills-body">
-                            <SectionHead title={t("skillsEyebrow")} titleColor={colors.tangerine} header={t("skillsTitle")} headerColor={colors.gunmetalBlack} />
-                            {/* Desktop staggers the three cards diagonally with
-                                absolute anchors; tablet and phone stack them. */}
-                            <div className="hs-skill-stage">
-                                {skillCards.map((c, i) => (
-                                    <div key={c.title.en} className={`hs-skill-card ${c.className}`}>
-                                        <Appear trigger="scroll" threshold={0.2} transition={`spring-duration 0.8s 0.2 ${0.1 + i * 0.15}s`}>
-                                            <motion.div whileHover={{ scale: 1.02, rotate: c.hoverRotate }} transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}>
-                                                <InfoCard
-                                                    device={phone ? "mobile" : "desktop"}
-                                                    iconType="emoji"
-                                                    iconEmoji={c.emoji}
-                                                    iconSize={22}
-                                                    label=""
-                                                    title={pick(locale, c.title)}
-                                                    titleSize={22}
-                                                    showBadge={false}
-                                                    bodyMode="tags"
-                                                    tags={LT(c.tags)}
-                                                    tagBg={c.tagBg}
-                                                    tagText={c.tagText}
-                                                    tagBorder="rgba(36, 38, 46, 0.28)"
-                                                    tagBorderWidth={1.5}
-                                                    tagBorderRadius={c.tagRadius}
-                                                    tagFontSize={c.tagFontSize}
-                                                    tagPaddingH={8}
-                                                    tagPaddingV={6}
-                                                    tagGap={5}
-                                                    bgColor={c.bg}
-                                                    borderColor={c.border}
-                                                    borderWidth={2}
-                                                    titleColor={c.titleColor}
-                                                    showShadow
-                                                    shadowColor={colors.gunmetalBlack}
-                                                    shadowX={4}
-                                                    shadowY={4}
-                                                    paddingH={24}
-                                                    paddingV={c.paddingV}
-                                                    borderRadius={14}
-                                                />
-                                            </motion.div>
-                                        </Appear>
+                            {/* Heading and cards share one centred column, so the
+                                eyebrow, the title and the left edge of the first
+                                card all start on the same line. */}
+                            <div className="hs-skills-inner">
+                                <SectionHead title={t("skillsEyebrow")} titleColor={colors.tangerine} header={t("skillsTitle")} headerColor={colors.gunmetalBlack} gap={6} />
+                                {/* Desktop runs the three cards across one centred
+                                    grid and steps them down a shallow diagonal;
+                                    tablet pairs them over a centred third, and
+                                    phone stacks them. The marks layer sits behind. */}
+                                <div className="hs-skill-group">
+                                    <SkillsDeco />
+                                    <div className="hs-skill-stage">
+                                        {skillCards.map((c, i) => (
+                                            <div key={c.title.en} className={`hs-skill-card ${c.className}`}>
+                                                <SkillCard index={i} hoverRotate={c.hoverRotate}>
+                                                    <InfoCard
+                                                        device={phone ? "mobile" : "desktop"}
+                                                        iconType="emoji"
+                                                        iconEmoji={c.emoji}
+                                                        iconSize={22}
+                                                        label=""
+                                                        title={pick(locale, c.title)}
+                                                        titleSize={22}
+                                                        showBadge={false}
+                                                        bodyMode="tags"
+                                                        tags={LT(c.tags)}
+                                                        tagBg={c.tagBg}
+                                                        tagText={c.tagText}
+                                                        tagBorder="rgba(36, 38, 46, 0.28)"
+                                                        tagBorderWidth={1.5}
+                                                        tagBorderRadius={c.tagRadius}
+                                                        tagFontSize={c.tagFontSize}
+                                                        tagPaddingH={9}
+                                                        tagPaddingV={6}
+                                                        tagGap={6}
+                                                        bgColor={c.bg}
+                                                        borderColor={c.border}
+                                                        borderWidth={2}
+                                                        titleColor={c.titleColor}
+                                                        showShadow
+                                                        shadowColor={colors.gunmetalBlack}
+                                                        shadowX={4}
+                                                        shadowY={4}
+                                                        paddingH={24}
+                                                        paddingV={c.paddingV}
+                                                        borderRadius={14}
+                                                    />
+                                                </SkillCard>
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -692,6 +821,11 @@ export default function Home() {
                             <NotebookBackground paperColor={colors.background} gridType="dot" gridColor={colors.liberty} gridOpacity={0.15} gridSize={36} gridWeight={2.4} />
                         </div>
                         <div className="hs-divider"><CheckerDivider color1={colors.tangerine} color2={colors.linen} cellSize={12} rows={2} /></div>
+                        <div className="hs-deco-layer hs-contact-deco">
+                            <Sticker className="hs-tape-ct" draggable tilt={0.25} elevation={0.12} rotate={2}>
+                                {tape(108, 36, colors.straw)}
+                            </Sticker>
+                        </div>
                         <div className="hs-contact-body">
                             <div className="hs-contact-inner">
                                 <ContactPage
@@ -769,7 +903,7 @@ export default function Home() {
                 /* The sheet is an absolutely positioned layer, so it would paint
                    over an in-flow divider; the dividers get their own layer. */
                 .hs-divider { position: relative; z-index: 1; width: 100%; flex-shrink: 0; }
-                .hs-spacer, .hs-about2 { background: transparent; }
+                .hs-spacer { background: transparent; }
                 .hs-spacer { pointer-events: none; }
                 /* The footer bar rises from the document's end, so the bar's own
                    height is exactly the scroll it takes to reveal; the rest is
@@ -830,28 +964,44 @@ export default function Home() {
                 .hs-glb { width: 348px; max-width: 100%; height: 348px; }
                 .hs-strip-row { width: 100%; height: 85px; display: flex; justify-content: flex-end; align-items: center; padding: 16px 12px 0 0; box-sizing: border-box; }
                 .hs-scroll-ind { position: absolute; bottom: 30px; left: 54.58%; transform: translateX(-50%); z-index: 8; }
-                .hs-sticker-drag { position: absolute; top: 156px; left: 63%; width: 129px; height: 79px; z-index: 4; }
-                .hs-sticker-peel { position: absolute; bottom: 81px; left: 81.333%; width: 150px; height: 166px; transform: rotate(-1deg); }
+                .hs-sticker-drag { position: absolute; top: 156px; left: 63%; width: 129px; height: 79px; }
+                /* No CSS transform here: the drag owns this element's transform,
+                   so the resting tilt is passed to the component instead. */
+                .hs-sticker-peel { position: absolute; bottom: 81px; left: 81.333%; width: 150px; height: 166px; }
 
-                /* About stage 1 — text in the left 36.25%, right side empty */
-                .hs-about-inner { position: relative; z-index: 1; margin-top: 40px; padding: 20px 80px 0; }
-                .hs-about-row { display: flex; }
-                .hs-about-text { width: 36.25%; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-                .hs-about-side { flex: 1; }
+                /* Loose scrapbook pieces. One layer per section, sitting over the
+                   content but transparent to the pointer except on the pieces
+                   themselves, so nothing they float near stops being clickable. */
+                .hs-deco-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+                .hs-deco-layer > * { position: absolute; pointer-events: auto; }
+                .hs-tape-sk-a { top: 13%; right: 3.5%; }
+                .hs-tape-sk-b { bottom: 18%; left: 6%; }
+                .hs-berry-sk { bottom: 24%; right: 7%; width: 96px; height: 59px; }
+                .hs-tape-ab { bottom: 13%; left: 11%; }
+                .hs-tape-ct { bottom: 20%; left: 5%; }
+
+                /* About — text in the left 36.25%, windows in the rest. The inner
+                   block owns the sheet's free height and centres the row inside
+                   it; the two columns then start on the same line, so ABOUT ME
+                   sits level with the top of PROFILE.EXE. */
+                .hs-about-inner {
+                    position: relative; z-index: 1;
+                    flex: 1; min-height: 0;
+                    padding: 20px 80px 40px; box-sizing: border-box;
+                    display: flex; flex-direction: column; justify-content: center;
+                }
+                .hs-about-row { display: flex; align-items: flex-start; }
+                .hs-about-text { width: 36.25%; display: flex; flex-direction: column; gap: 10px; }
+                .hs-about-side {
+                    flex: 1; min-width: 0;
+                    display: flex; flex-direction: column; align-items: center;
+                    gap: 20px;
+                }
                 .hs-body {
                     font-family: "Anonymous Pro", monospace; font-size: 14px;
                     line-height: 1.75em; letter-spacing: -0.02em; margin: 0;
                 }
 
-                /* About stage 2 — transparent overlay carrying the windows */
-                .hs-about2 { height: 90vh; }
-                .hs-about2-inner { display: flex; padding: 80px 80px 0; height: 100%; box-sizing: border-box; }
-                .hs-about2-spacer { width: 36.25%; }
-                .hs-about2-col {
-                    flex: 1; min-width: 0;
-                    display: flex; flex-direction: column; justify-content: center; align-items: center;
-                    gap: 20px; padding-top: 20px;
-                }
                 .hs-win { width: 80%; }
                 .hs-win-profile { transform: rotate(1deg); }
                 .hs-win-loc { transform: rotate(-1deg); }
@@ -903,20 +1053,68 @@ export default function Home() {
                 }
                 .hs-work-grid > * { width: 40%; }
 
-                /* Skills — desktop cascades the cards along a diagonal */
+                /* Skills — one centred column holds the heading and the cards */
                 .hs-skills-body {
                     position: relative; z-index: 1; flex: 1; min-height: 0;
-                    padding: 100px 80px 0; box-sizing: border-box;
-                    display: flex; flex-direction: column; gap: 10px;
+                    /* Centred, but biased upward: the block is centred inside
+                       the padding box, so the extra bottom padding lifts it by
+                       half its excess (~65px). That buys the heading more weight
+                       and cuts the dead paper above it, while keeping the
+                       proportional placement — a fixed top offset would strand
+                       the block again on a tall viewport. */
+                    padding: 26px 80px 350px; box-sizing: border-box;
+                    display: flex; flex-direction: column; justify-content: center;
                 }
-                /* Desktop anchors the three cards on a diagonal, so the stage
-                   needs a fixed height. Every other layout stacks them and must
-                   size to content, or the later cards get flattened to nothing. */
-                .hs-skill-stage { position: relative; flex: 0 0 auto; height: 332px; }
-                .hs-skill-card { position: absolute; width: 31.5%; transform: translateY(-50%); }
-                .hs-skill-a { left: 1.44%; top: 30.1%; }
-                .hs-skill-b { left: 34.23%; top: 50%; }
-                .hs-skill-c { left: 67.12%; top: 69.37%; }
+                /* Narrower than the section gutters: at the full column width the
+                   three cards ran the whole page and read as three separate
+                   things. Centred inside it, with the heading sharing the same
+                   left edge, they read as one block. */
+                .hs-skills-inner {
+                    width: 100%; max-width: 1020px; margin: 0 auto;
+                    display: flex; flex-direction: column; gap: 12px;
+                }
+                /* The group is the positioning context for the marks layer, and
+                   its padding is the room the diagonal steps into. */
+                .hs-skill-group { position: relative; width: 100%; padding: 36px 0 22px; }
+                .hs-skill-stage {
+                    position: relative; z-index: 1;
+                    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+                    gap: 24px; align-items: start;
+                }
+                /* A shallow, even step down the row — the old diagonal, held to
+                   a quarter of its drop so the three stay visibly related. */
+                .hs-skill-card { position: relative; z-index: 1; min-width: 0; }
+                .hs-skill-card:hover { z-index: 3; }
+                .hs-skill-a { transform: translateY(-22px); }
+                .hs-skill-b { transform: translateY(0); }
+                .hs-skill-c { transform: translateY(22px); }
+                /* The hard offset shadow stays on the card; hover adds a soft one
+                   under it, so the lift has somewhere to lift from. */
+                .hs-skill-lift { transition: filter .28s ease; }
+                .hs-skill-card:hover .hs-skill-lift { filter: drop-shadow(0 12px 16px rgba(26, 21, 32, 0.18)); }
+
+                /* Paper marks. The layer reaches past the cards on both sides so
+                   every mark lands in the margin, never on a card. */
+                .hs-skill-deco { position: absolute; inset: 0 -54px; z-index: 0; pointer-events: none; }
+                .hs-skill-deco .hs-deco { position: absolute; display: block; }
+                .hs-skill-deco .hs-deco-1 { top: -2px; left: 0.4%; width: 25px; height: 25px; animation: hs-deco-twinkle 4.4s ease-in-out infinite; }
+                .hs-skill-deco .hs-deco-2 { top: 4px; right: 0.6%; width: 31px; height: 22px; opacity: .62; animation: hs-deco-float 7.2s ease-in-out .6s infinite; }
+                .hs-skill-deco .hs-deco-3 { bottom: 0; left: 4.5%; width: 38px; height: 18px; opacity: .72; animation: hs-deco-float 6.4s ease-in-out .3s infinite; }
+                /* The one mark inside the group: card B sits a step lower than
+                   card A, and this drops into the pocket that leaves. */
+                .hs-skill-deco .hs-deco-4 { top: 16px; left: 36%; width: 14px; height: 14px; opacity: .8; animation: hs-deco-twinkle 5.2s ease-in-out .9s infinite; }
+                .hs-skill-deco .hs-deco-5 { top: 40%; left: 0.2%; width: 19px; height: 19px; opacity: .68; animation: hs-deco-float 8s ease-in-out 1.1s infinite; }
+                .hs-skill-deco .hs-deco-6 { top: 26%; right: 0.2%; width: 16px; height: 16px; opacity: .6; animation: hs-deco-float 6.8s ease-in-out .2s infinite; }
+                .hs-skill-deco .hs-deco-7 { top: 64%; right: 1.6%; width: 20px; height: 20px; opacity: .6; animation: hs-deco-float 7.6s ease-in-out 1.4s infinite; }
+                .hs-skill-deco .hs-deco-8 { bottom: 4%; right: 0.4%; width: 17px; height: 17px; animation: hs-deco-twinkle 4.8s ease-in-out 1.6s infinite; }
+                @keyframes hs-deco-float {
+                    0%, 100% { transform: translateY(0) rotate(0deg); }
+                    50% { transform: translateY(-7px) rotate(6deg); }
+                }
+                @keyframes hs-deco-twinkle {
+                    0%, 100% { opacity: .5; transform: scale(.84) rotate(-6deg); }
+                    50% { opacity: 1; transform: scale(1) rotate(6deg); }
+                }
 
                 /* Contact. The last pinned section reserves the footer's height
                    below its content, so on a short viewport the two together can
@@ -952,7 +1150,6 @@ export default function Home() {
                     .hs-hero-inner,
                     .hs-hero-deco,
                     .hs-about-inner,
-                    .hs-about2-inner,
                     .hs-work-content,
                     .hs-skills-body,
                     .hs-contact-body {
@@ -981,10 +1178,13 @@ export default function Home() {
                     .hs-scroll-ind { left: 56.17%; bottom: 113px; }
                     .hs-sticker-drag { top: 167px; left: 526px; width: 105px; height: 64px; }
                     .hs-sticker-peel { bottom: 44px; left: 632px; width: 102px; height: 113px; }
+                    .hs-tape-sk-a { top: 9%; right: 2%; }
+                    .hs-tape-sk-b { bottom: 10%; left: 3%; }
+                    .hs-berry-sk { bottom: 7%; right: 4%; width: 84px; height: 52px; }
+                    .hs-tape-ab { bottom: 9%; left: 6%; }
+                    .hs-tape-ct { bottom: 12%; left: 3%; }
 
                     .hs-about-text { width: 32.46%; }
-                    .hs-about2 { height: 66vh; }
-                    .hs-about2-spacer { width: 34.46%; }
                     .hs-win { width: 100%; }
                     .hs-win-profile { transform: none; }
 
@@ -1000,8 +1200,21 @@ export default function Home() {
                     }
                     .hs-work-grid > * { width: auto; }
 
-                    .hs-skill-stage { display: flex; flex-wrap: wrap; gap: 36px 18px; padding: 28px 0; height: auto; min-height: 0; align-items: flex-start; }
-                    .hs-skill-card { position: static; width: 80%; transform: none; }
+                    /* A 100vh sheet cannot hold three stacked cards, so the pair
+                       sits over a third centred beneath them — the diagonal
+                       becomes a pyramid, still deliberate, and it fits. */
+                    .hs-skills-body { padding: 32px 52px 102px; }
+                    .hs-skills-inner { max-width: 720px; gap: 10px; }
+                    .hs-skill-group { padding: 26px 0 16px; }
+                    .hs-skill-stage { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+                    .hs-skill-card { transform: none; }
+                    .hs-skill-c { grid-column: 1 / -1; width: calc(50% - 10px); justify-self: center; }
+                    /* The margins are half as wide here; the marks that lived in
+                       them go, and the rest pull in. */
+                    .hs-skill-deco { inset: 0 -30px; }
+                    .hs-skill-deco .hs-deco-4, .hs-skill-deco .hs-deco-7 { display: none; }
+                    .hs-skill-deco .hs-deco-5 { top: 46%; }
+                    .hs-skill-deco .hs-deco-6 { top: 22%; }
 
                     .hs-contact-body { justify-content: flex-start; }
                     .hs-contact-inner { padding-top: 0; }
@@ -1039,7 +1252,7 @@ export default function Home() {
                     .hs-hero-cat { flex: none; flex-direction: row; justify-content: center; width: 73%; height: 30vh; padding-top: 0; gap: 0; }
                     .hs-strip, .hs-strip-row, .hs-shelf { display: none; }
                     .hs-glb { width: 197px; height: 197px; }
-                    .hs-sticker-drag, .hs-sticker-peel { display: none; }
+                    .hs-sticker-drag, .hs-sticker-peel, .hs-deco-layer { display: none; }
                     /* In flow between the stat boxes and the cat, so the cue owns
                        a band of its own instead of floating over the copy. The
                        markup order puts it last, hence the explicit order values. */
@@ -1055,7 +1268,7 @@ export default function Home() {
                        the next transition. Content sizes the section. */
                     .hs-about { min-height: 0; background: rgb(245, 238, 230); }
                     .hs-about-bg { inset: 0; height: auto; }
-                    .hs-about-inner { padding: 40px 42px 0; margin-top: 0; }
+                    .hs-about-inner { padding: 40px 42px 0; }
                     .hs-about-row { flex-direction: column; }
                     .hs-about-text { width: 100%; gap: 4px; }
                     .hs-about-side { display: none; }
@@ -1079,9 +1292,23 @@ export default function Home() {
                     .hs-work-grid { display: grid; grid-template-columns: 1fr; gap: 18px 0; padding: 6px; width: 315px; max-width: 100%; }
                     .hs-work-grid > * { width: auto; }
 
-                    .hs-skills-body { padding: 40px 40px 60px; align-items: center; }
-                    .hs-skill-stage { display: flex; flex-direction: column; gap: 40px; padding: 40px 8px 20px; height: auto; min-height: 0; width: 100%; }
-                    .hs-skill-card { position: static; width: 100%; transform: none; }
+                    /* One column, held to a readable measure and centred, so the
+                       section stays compact instead of stretching to the edges. */
+                    .hs-skills-body { padding: 32px 24px 52px; align-items: center; }
+                    .hs-skills-inner { max-width: 380px; gap: 10px; align-items: stretch; }
+                    .hs-skill-group { padding: 26px 0 22px; }
+                    .hs-skill-stage { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+                    .hs-skill-card, .hs-skill-c { grid-column: auto; width: 100%; transform: none; justify-self: stretch; }
+                    /* Three marks only, in the narrow gutters left over. */
+                    .hs-skill-deco { inset: 0 -14px; }
+                    .hs-skill-deco .hs-deco-4,
+                    .hs-skill-deco .hs-deco-5,
+                    .hs-skill-deco .hs-deco-6,
+                    .hs-skill-deco .hs-deco-7,
+                    .hs-skill-deco .hs-deco-8 { display: none; }
+                    .hs-skill-deco .hs-deco-1 { top: 0; left: -2px; width: 19px; height: 19px; }
+                    .hs-skill-deco .hs-deco-2 { top: 4px; right: -2px; width: 23px; height: 16px; }
+                    .hs-skill-deco .hs-deco-3 { bottom: 0; left: 50%; margin-left: -16px; width: 32px; height: 15px; }
 
                     /* The end of the page reads form → button → footer. The
                        section is content-sized and reserves the button's zone in
@@ -1108,8 +1335,9 @@ export default function Home() {
                 @media (prefers-reduced-motion: reduce) {
                     .hs { position: relative; height: auto; min-height: 100vh; overflow: visible; }
                     .hs-spacer, .hs-tail { display: none; }
-                    .hs-about2 { height: auto; }
-                    .hs-about2-inner { padding-bottom: 40px; }
+                    /* The marks stay, but they hold still. */
+                    .hs-skill-deco .hs-deco { animation: none; }
+                    .hs-skill-lift { transition: none; }
                 }
             `}</style>
         </div>
@@ -1118,8 +1346,8 @@ export default function Home() {
 
 function contactDetails(locale: Locale) {
     return [
-        { label: pick(locale, { en: "Email", es: "Correo electrónico" }), value: "vliberonazuniga@gmail.com", url: "mailto:vliberonazuniga@gmail.com", color: colors.liberty, newTab: false },
-        { label: pick(locale, { en: "Based in", es: "Basado en" }), value: "Santiago, Chile", url: "#", color: colors.tangerine, newTab: false },
+        { label: pick(locale, STRINGS.contactEmail), value: "vliberonazuniga@gmail.com", url: "mailto:vliberonazuniga@gmail.com", color: colors.liberty, newTab: false },
+        { label: pick(locale, STRINGS.contactBasedIn), value: "Santiago, Chile", url: "#", color: colors.tangerine, newTab: false },
         { label: "GitHub", value: "@valeLib", url: "https://github.com/valeLib", color: colors.straw, newTab: true },
     ]
 }

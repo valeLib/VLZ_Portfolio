@@ -5,7 +5,7 @@ import type { MotionValue } from "framer-motion"
 import { getProject, getPublicProject, publicProjects } from "../data/projects"
 import type { Project } from "../data/projects"
 import { projectSections } from "../data/projectSections"
-import type { ProjectSection, ProjectSectionsMap, SectionItem, SubSection } from "../data/projectSections"
+import type { MediaGroup, ProjectSection, ProjectSectionsMap, SectionItem, SubSection } from "../data/projectSections"
 import { colors } from "../tokens"
 import { useBreakpoint } from "../hooks/useBreakpoint"
 import { pick, useLocale, useLocalePath, useT } from "../lib/i18n"
@@ -20,6 +20,7 @@ import HeroSection from "../components/HeroSection"
 import TagCloud from "../components/TagCloud"
 import PastelCard from "../components/PastelCard"
 import MediaFrame from "../components/MediaFrame"
+import MediaShowcase from "../components/MediaShowcase"
 import Gallery from "../components/Gallery"
 import FlowDiagram from "../components/FlowDiagram"
 import CoreLoopDiagram from "../components/CoreLoopDiagram"
@@ -130,6 +131,34 @@ const featureBase = {
     animationDuration: 0.55,
     slideDistance: 24,
 } as const
+
+/**
+ * The capture groups a section carries, filtered to one side of its feature
+ * modules. Sections hold their media in a single list and each group declares
+ * where it belongs, so a section can establish itself with a wide visual before
+ * the modules and follow them with supporting detail.
+ */
+function SectionMedia({
+    groups,
+    placement,
+    locale,
+}: {
+    groups?: (MediaGroup | undefined)[]
+    placement: "beforeItems" | "afterItems"
+    locale: "en" | "es"
+}) {
+    const matching = (groups ?? []).filter(
+        (g): g is MediaGroup => Boolean(g) && (g!.placement ?? "afterItems") === placement
+    )
+    if (matching.length === 0) return null
+    return (
+        <div className="pd-media-col">
+            {matching.map((g) => (
+                <MediaShowcase key={g.id} group={g} locale={locale} />
+            ))}
+        </div>
+    )
+}
 
 // Hover lift used by the snapshot pastel cards (rotation is preserved).
 function LiftCard({ rotate = 0, children }: { rotate?: number; children: React.ReactNode }) {
@@ -424,7 +453,29 @@ export default function ProjectDetail() {
                     box-sizing: border-box;
                 }
                 .pd-ui-features { gap: 12px; }
+                /* A VFX module and the capture that answers it are one block:
+                   the schematic sits close to its evidence, and the air goes
+                   between blocks instead of inside them. */
+                .pd-vfx-features { gap: 52px; }
+                .pd-feature-block {
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 6px;
+                }
                 .pd-table { width: 100%; display: flex; justify-content: center; padding: 8px 16px; box-sizing: border-box; }
+
+                /* Capture groups. The inset matches .pd-features so a screenshot
+                   block lines up with the feature modules above and below it,
+                   and the hard shadows on the frames get room on the right. */
+                .pd-media-col {
+                    width: 100%;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 36px;
+                    padding: 8px 16px 8px 8px;
+                    box-sizing: border-box;
+                }
 
                 .pd-subsections {
                     width: 100%;
@@ -447,7 +498,7 @@ export default function ProjectDetail() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    gap: 12px;
+                    gap: 6px;
                     padding: 8px;
                     box-sizing: border-box;
                 }
@@ -499,6 +550,10 @@ export default function ProjectDetail() {
                     .pd-sub-features { padding: 8px 0; }
                     .pd-features { padding: 16px 0 0; }
                     .pd-feature-col { padding: 8px 0; }
+                    .pd-vfx-features { gap: 34px; }
+                    /* Phones give captures the full column: only the shadow's
+                       6px is kept on the right so nothing is clipped. */
+                    .pd-media-col { padding: 8px 6px 8px 0; gap: 28px; }
                     .pd-table { padding: 8px 0; }
                     .pd-card-col { padding: 0; }
                     .pd-brief-cta { padding: 6px 0; }
@@ -742,7 +797,11 @@ function ProjectPage({ project }: { project: Project }) {
                                 transition="spring-duration 0.4s 0.2 0s"
                                 className="pd-brief-video"
                             >
-                                <MediaFrame video={brief.video} style={{ width: phone ? "96%" : "70%" }} />
+                                <MediaFrame
+                                    video={brief.video}
+                                    poster={brief.posterImage}
+                                    style={{ width: phone ? "96%" : "70%" }}
+                                />
                             </Appear>
                         )}
                         {!brief.video && brief.image && (
@@ -862,6 +921,7 @@ function ProjectPage({ project }: { project: Project }) {
                                 <BodyText locale={locale} html={gameDesign.bodyHtml} mobileHtml={gameDesign.bodyMobileHtml} />
                             </Appear>
                         )}
+                        <SectionMedia groups={gameDesign.media} placement="beforeItems" locale={locale} />
                         {gdFeatureItem && (
                             // Leads into the diagram windows: the module states the
                             // loop in words before the windows draw it.
@@ -928,6 +988,9 @@ function ProjectPage({ project }: { project: Project }) {
                                 )}
                             </div>
                         )}
+                        {/* After the loop windows: the diagrams name the phases,
+                            these frames show what each one looks like in play. */}
+                        <SectionMedia groups={gameDesign.media} placement="afterItems" locale={locale} />
                         {gameDesign.table && (
                             <div className="pd-table">
                                 <ImpactTable locale={locale} phone={phone} dsl={gameDesign.table}
@@ -989,31 +1052,47 @@ function ProjectPage({ project }: { project: Project }) {
                                 <RichText html={L(vfx.bodyHtml)} />
                             </Appear>
                         )}
+                        <SectionMedia groups={vfx.media} placement="beforeItems" locale={locale} />
                         {vfxFeatureItems.some(Boolean) && (
-                            <div className="pd-feature-col">
+                            <div className="pd-feature-col pd-vfx-features">
                                 {vfxFeatureItems.map((item, i) =>
                                     item ? (
-                                        <FeatureModuleGrid
-                                            key={item.id}
-                                            {...featureBase}
-                                            mediaPosition={i % 2 === 0 ? "left" : "right"}
-                                            mediaColumnWidth={50}
-                                            verticalAlign="center"
-                                            stackedMediaWidth={phone ? 100 : tablet ? 60 : 40}
-                                            stackedMediaAlign={phone ? "center" : "left"}
-                                            stackedTextScale={phone ? 0.85 : 0.9}
-                                            mediaRadius={tablet ? 15 : 16}
-                                            image={item.icon ?? ""}
-                                            eyebrow=""
-                                            title={L(item.displayTitle)}
-                                            body={L(item.bodyHtml)}
-                                            textPadding={phone ? 4 : 10}
-                                            textRadius={phone ? 16 : 22}
-                                        />
+                                        <div key={item.id} className="pd-feature-block">
+                                            <FeatureModuleGrid
+                                                {...featureBase}
+                                                mediaPosition={i % 2 === 0 ? "left" : "right"}
+                                                // The schematics carry almost no
+                                                // labelling, so they read at a
+                                                // third of the row and leave the
+                                                // width to the explanation.
+                                                mediaColumnWidth={tablet ? 42 : 36}
+                                                colGap={phone ? 16 : 22}
+                                                rowGap={16}
+                                                verticalAlign="center"
+                                                // Stacked, the module reads
+                                                // title → explanation → diagram,
+                                                // so the schematic arrives as
+                                                // the answer to the text rather
+                                                // than ahead of it.
+                                                stackedOrder="textFirst"
+                                                stackedMediaWidth={phone ? 62 : tablet ? 42 : 32}
+                                                stackedMediaAlign={phone ? "center" : "left"}
+                                                stackedTextScale={phone ? 0.85 : 0.9}
+                                                mediaRadius={tablet ? 15 : 16}
+                                                image={item.icon ?? ""}
+                                                eyebrow=""
+                                                title={L(item.displayTitle)}
+                                                body={L(item.bodyHtml)}
+                                                textPadding={phone ? 4 : 10}
+                                                textRadius={phone ? 16 : 22}
+                                            />
+                                            <SectionMedia groups={item.media} placement="afterItems" locale={locale} />
+                                        </div>
                                     ) : null
                                 )}
                             </div>
                         )}
+                        <SectionMedia groups={vfx.media} placement="afterItems" locale={locale} />
                     </ProjectSection>
                 )}
 
@@ -1030,6 +1109,7 @@ function ProjectPage({ project }: { project: Project }) {
                                 <BodyText locale={locale} html={ui.bodyHtml} mobileHtml={ui.bodyMobileHtml} />
                             </Appear>
                         )}
+                        <SectionMedia groups={ui.media} placement="beforeItems" locale={locale} />
                         {uiFeatureItems.some(Boolean) && (
                             <div className="pd-feature-col pd-ui-features">
                                 {uiFeatureItems.map((item, i) =>
@@ -1055,6 +1135,7 @@ function ProjectPage({ project }: { project: Project }) {
                                 )}
                             </div>
                         )}
+                        <SectionMedia groups={ui.media} placement="afterItems" locale={locale} />
                         {galleryItems.length > 0 && (
                             <div className="pd-gallery-stage">
                                 <div className="pd-gallery">
@@ -1369,26 +1450,46 @@ function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tab
     const diagram = sub.diagram1 ? L(sub.diagram1) : ""
     const vertical = phone || (diagram.includes("|") && diagram.split("->").length > 3)
 
-    const feature = (item: SectionItem, i: number) => (
-        <FeatureModuleGrid
-            key={item.id}
-            {...featureBase}
-            mediaPosition={i % 2 === 0 ? "left" : "right"}
-            mediaColumnWidth={first ? 40 : tablet ? 70 : 50}
-            verticalAlign={first ? "top" : "center"}
-            stackedMediaWidth={phone ? 100 : tablet ? (first ? 65 : 60) : 40}
-            stackedMediaAlign={phone ? "center" : "left"}
-            stackedTextScale={phone ? 0.85 : 0.9}
-            mediaRadius={tablet ? 15 : 16}
-            mediaAspectRatio="auto"
-            image={item.icon ?? ""}
-            eyebrow=""
-            title={L(item.displayTitle)}
-            body={L(item.bodyHtml)}
-            textPadding={phone ? 4 : 10}
-            textRadius={phone ? 16 : 22}
-        />
-    )
+    // A drawn schematic and a build capture want opposite treatments in the
+    // same slot. The schematics carry a handful of labels at most, so they read
+    // at roughly a third of the row and let the explanation take the width; a
+    // screenshot in the same position is evidence and keeps its size. The file
+    // extension is the honest signal for which one an item holds.
+    const feature = (item: SectionItem, i: number) => {
+        const schematic = /\.svg(\?|#|$)/i.test(item.icon ?? "")
+        return (
+            <FeatureModuleGrid
+                key={item.id}
+                {...featureBase}
+                mediaPosition={i % 2 === 0 ? "left" : "right"}
+                mediaColumnWidth={
+                    schematic ? (tablet ? 44 : 38) : first ? 40 : tablet ? 70 : 50
+                }
+                colGap={schematic ? (phone ? 16 : 22) : featureBase.colGap}
+                rowGap={schematic ? 16 : featureBase.rowGap}
+                verticalAlign={first && !schematic ? "top" : "center"}
+                // Stacked, a schematic follows the text it illustrates; a
+                // capture still leads, the way the rest of the page opens on
+                // its media.
+                stackedOrder={schematic ? "textFirst" : featureBase.stackedOrder}
+                stackedMediaWidth={
+                    schematic
+                        ? phone ? 62 : tablet ? 44 : 34
+                        : phone ? 100 : tablet ? (first ? 65 : 60) : 40
+                }
+                stackedMediaAlign={phone ? "center" : "left"}
+                stackedTextScale={phone ? 0.85 : 0.9}
+                mediaRadius={tablet ? 15 : 16}
+                mediaAspectRatio="auto"
+                image={item.icon ?? ""}
+                eyebrow=""
+                title={L(item.displayTitle)}
+                body={L(item.bodyHtml)}
+                textPadding={phone ? 4 : 10}
+                textRadius={phone ? 16 : 22}
+            />
+        )
+    }
 
     return (
         <div className="pd-subsection">
@@ -1400,6 +1501,7 @@ function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tab
                     <RichText html={L(sub.bodyHtml)} />
                 </Appear>
             )}
+            <SectionMedia groups={sub.media} placement="beforeItems" locale={locale} />
             {diagram ? (
                 <>
                     {items[0] && <div className="pd-sub-features">{feature(items[0], 0)}</div>}
@@ -1432,6 +1534,7 @@ function DevSubsection({ locale, sub, index, phone, tablet, tableLeftHeader, tab
                     </div>
                 )
             )}
+            <SectionMedia groups={sub.media} placement="afterItems" locale={locale} />
             {sub.table1 && (
                 <div className="pd-table">
                     <ImpactTable locale={locale} phone={phone} dsl={sub.table1}

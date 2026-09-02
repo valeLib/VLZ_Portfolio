@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import { motion, useReducedMotion } from "framer-motion"
+import { useT } from "../lib/i18n"
 
 const FONT_STACKS: Record<string, string> = {
     Fredoka: '"Fredoka", sans-serif',
@@ -25,16 +26,8 @@ const DEFAULTS = {
     headingFont: "Fredoka",
     bodyFont: "Anonymous Pro",
     accent: "#FABA32",
-    eyebrow: "Get in touch",
-    headline: "Let's build something playful.",
-    intro: "Have a game, an interface, or a wild idea? Drop a line and I'll get back to you.",
     endpoint: "",
     email: "hello@valentina.dev",
-    nameLabel: "Name",
-    emailLabel: "Email",
-    messageLabel: "Message",
-    buttonLabel: "Send message",
-    successMessage: "Thanks! I'll be in touch soon.",
     hardShadow: true,
     shadowColor: "#1C1B22",
     radius: 20,
@@ -44,14 +37,51 @@ const DEFAULTS = {
     gap: 40,
     mobileGap: 28,
     mobileAlign: "flex-start",
-    details: [
-        { label: "Email", value: "hello@valentina.dev", url: "mailto:hello@valentina.dev", color: "#4F58AF", newTab: false },
-        { label: "Based in", value: "Santiago, Chile", url: "#", color: "#EE978E", newTab: false },
-        { label: "GitHub", value: "@valentina", url: "#", color: "#FABA32", newTab: true },
-    ] as Detail[],
 }
 
-export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: React.CSSProperties }) {
+/** Copy that follows the active locale unless the call site overrides it. */
+type ContactCopy = {
+    eyebrow: string
+    headline: string
+    intro: string
+    nameLabel: string
+    namePlaceholder: string
+    emailLabel: string
+    emailPlaceholder: string
+    messageLabel: string
+    messagePlaceholder: string
+    buttonLabel: string
+    sendingLabel: string
+    successMessage: string
+    errorMessage: string
+    details: Detail[]
+}
+
+export default function ContactPage(
+    props: Partial<typeof DEFAULTS> & Partial<ContactCopy> & { style?: React.CSSProperties }
+) {
+    const t = useT()
+    // Translated first, so an explicit prop still wins over the locale default.
+    const copy: ContactCopy = {
+        eyebrow: t("heroGetInTouch"),
+        headline: t("contactTitle"),
+        intro: t("contactBody"),
+        nameLabel: t("contactName"),
+        namePlaceholder: t("contactNamePlaceholder"),
+        emailLabel: t("contactEmail"),
+        emailPlaceholder: t("contactEmailPlaceholder"),
+        messageLabel: t("contactMessage"),
+        messagePlaceholder: t("contactMessagePlaceholder"),
+        buttonLabel: t("contactSend"),
+        sendingLabel: t("contactSending"),
+        successMessage: t("contactThanks"),
+        errorMessage: t("contactFormError"),
+        details: [
+            { label: t("contactEmail"), value: "hello@valentina.dev", url: "mailto:hello@valentina.dev", color: "#4F58AF", newTab: false },
+            { label: t("contactBasedIn"), value: "Santiago, Chile", url: "#", color: "#EE978E", newTab: false },
+            { label: "GitHub", value: "@valentina", url: "#", color: "#FABA32", newTab: true },
+        ],
+    }
     const {
         background,
         cardColor,
@@ -66,10 +96,15 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
         endpoint,
         email,
         nameLabel,
+        namePlaceholder,
         emailLabel,
+        emailPlaceholder,
         messageLabel,
+        messagePlaceholder,
         buttonLabel,
+        sendingLabel,
         successMessage,
+        errorMessage,
         details,
         hardShadow,
         shadowColor,
@@ -81,7 +116,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
         mobileAlign,
         mobilePadding,
         style,
-    } = { ...DEFAULTS, ...props }
+    } = { ...DEFAULTS, ...copy, ...props }
 
     const [name, setName] = useState("")
     const [from, setFrom] = useState("")
@@ -145,7 +180,9 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
             return
         }
         // No endpoint → mailto fallback.
-        const subject = encodeURIComponent(`Portfolio message from ${name || "someone"}`)
+        const subject = encodeURIComponent(
+            t("contactMailSubject").replace("{name}", name || t("contactMailSomeone"))
+        )
         const body = encodeURIComponent(`${message}\n\n— ${name}\n${from}`)
         window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
         setStatus("done")
@@ -290,7 +327,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 style={inputStyle}
-                                placeholder="Jane Doe"
+                                placeholder={namePlaceholder}
                             />
                         </div>
                         <div>
@@ -302,7 +339,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                                 onChange={(e) => setFrom(e.target.value)}
                                 type="email"
                                 style={inputStyle}
-                                placeholder="jane@studio.com"
+                                placeholder={emailPlaceholder}
                             />
                         </div>
                         <div>
@@ -314,13 +351,13 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                                 onChange={(e) => setMessage(e.target.value)}
                                 rows={4}
                                 style={{ ...inputStyle, resize: "vertical", minHeight: 96 }}
-                                placeholder="Tell me about your project…"
+                                placeholder={messagePlaceholder}
                             />
                         </div>
 
                         {status === "error" && (
                             <span style={{ fontSize: 13, color: "#C7443B" }}>
-                                Please add your email and a message, then try again.
+                                {errorMessage}
                             </span>
                         )}
 
@@ -344,7 +381,7 @@ export default function ContactPage(props: Partial<typeof DEFAULTS> & { style?: 
                             onMouseDown={(e) => (e.currentTarget.style.transform = "translate(2px,2px)")}
                             onMouseUp={(e) => (e.currentTarget.style.transform = "translate(0,0)")}
                         >
-                            {status === "sending" ? "Sending…" : buttonLabel}
+                            {status === "sending" ? sendingLabel : buttonLabel}
                         </button>
                     </div>
                 )}

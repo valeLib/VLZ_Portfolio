@@ -1,6 +1,7 @@
 import type { CSSProperties } from "react"
 import Appear from "./Appear"
 import { CV_FILE, CV_URL } from "../lib/paths"
+import { useT } from "../lib/i18n"
 
 // Retro / Y2K portfolio footer: a compact closing profile card — a short
 // self-introduction on the left, the outbound links on the right, and a thin
@@ -77,13 +78,8 @@ const DEFAULTS = {
     mutedColor: "#F5EEE6", // countryWhite
     headingFont: "Fredoka",
     bodyFont: "Anonymous Pro",
-    /** First line of the mini profile — carries the name at reading size. */
-    intro: "Hi, I’m Valentina Sofía Liberona Zúñiga.",
     introColor: "#F5EEE6", // countryWhite
     showSummary: true,
-    summary:
-        "Game Developer, Game Designer and Technical Artist. I build playable systems — gameplay, game feel, VFX and UI — with a focus on Unreal Engine, technical art, and systems-driven design.",
-    linksTitle: "Find me",
     linksTitleColor: "#EE978E", // tangerine
     // Links rest in off-white and only warm to tangerine on hover/focus, so the
     // group reads as one block rather than four permanent accents.
@@ -102,25 +98,48 @@ const DEFAULTS = {
     contentMaxWidth: 1200,
     gap: 40,
     showSocials: true,
-    socials: [
-        { label: "GitHub", url: "https://github.com/valeLib", icon: "github" },
-        {
-            label: "LinkedIn",
-            url: "https://www.linkedin.com/in/valentina-liberona/",
-            icon: "linkedin",
-        },
-        { label: "Itch.io", url: "https://valelizu.itch.io/", icon: "itch" },
-        {
-            label: "Download CV",
-            url: CV_URL,
-            icon: "download",
-            download: CV_FILE,
-            ariaLabel: "Download CV — Valentina Sofía Liberona Zúñiga (PDF)",
-        },
-    ] as Social[],
 }
 
-export default function Footer(props: Partial<typeof DEFAULTS> & { style?: CSSProperties }) {
+/** The three outbound profiles: proper names, identical in every locale. */
+const PROFILE_LINKS: Social[] = [
+    { label: "GitHub", url: "https://github.com/valeLib", icon: "github" },
+    {
+        label: "LinkedIn",
+        url: "https://www.linkedin.com/in/valentina-liberona/",
+        icon: "linkedin",
+    },
+    { label: "Itch.io", url: "https://valelizu.itch.io/", icon: "itch" },
+]
+
+/** Copy that follows the active locale unless the call site overrides it. */
+type FooterCopy = {
+    /** First line of the mini profile — carries the name at reading size. */
+    intro: string
+    summary: string
+    linksTitle: string
+    socials: Social[]
+}
+
+export default function Footer(
+    props: Partial<typeof DEFAULTS> & Partial<FooterCopy> & { style?: CSSProperties }
+) {
+    const t = useT()
+    // Translated first, so an explicit prop still wins over the locale default.
+    const copy: FooterCopy = {
+        intro: t("footerIntro"),
+        summary: t("footerSummary"),
+        linksTitle: t("footerLinksTitle"),
+        socials: [
+            ...PROFILE_LINKS,
+            {
+                label: t("footerDownloadCv"),
+                url: CV_URL,
+                icon: "download",
+                download: CV_FILE,
+                ariaLabel: t("footerDownloadCvAria"),
+            },
+        ],
+    }
     const {
         background,
         mutedColor,
@@ -147,7 +166,7 @@ export default function Footer(props: Partial<typeof DEFAULTS> & { style?: CSSPr
         contentMaxWidth,
         gap,
         style,
-    } = { ...DEFAULTS, ...props }
+    } = { ...DEFAULTS, ...copy, ...props }
 
     const year = new Date().getFullYear()
     const copyText = !copyright

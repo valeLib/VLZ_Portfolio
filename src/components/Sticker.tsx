@@ -1,10 +1,22 @@
 import { useRef, useState } from "react"
+import type { ReactNode } from "react"
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion"
 
 /**
- * Decorative hero sticker, in two variants:
- *   "drag" — draggable, tilts toward the cursor and lifts its shadow while held
- *   "peel" — sits on a curled corner that flattens on hover
+ * A scrapbook decoration you can pick up and move.
+ *
+ * It carries either a sticker image (`image`) or any decorative node passed as
+ * `children` — a strip of washi tape, a paper shape — so every decoration on
+ * the page shares one drag implementation and one set of hover manners.
+ *
+ * Behaviours, mixable:
+ *   drag  — pick it up; it stays where it is dropped (no momentum)
+ *   peel  — rests on a curled corner that flattens when touched
+ *   tilt  — leans toward the pointer in 3D
+ *
+ * The outer element owns the drag transform, so a resting rotation belongs on
+ * the `rotate` prop (applied to the inner layer) and never in CSS, where the
+ * drag transform would overwrite it.
  */
 
 const SHADOW_FLAT = "0px 1px 2px 0px rgba(0, 0, 0, 0.30)"
@@ -12,21 +24,35 @@ const SHADOW_LIFTED = "0px 13px 14px 0px rgba(0, 0, 0, 0.30)"
 
 export default function Sticker({
     image,
+    children,
     className,
     style,
     tilt = 0.4,
     elevation = 0.2,
     draggable = false,
     peel = false,
+    rotate = 0,
+    z,
+    liftZ = 60,
     alt = "",
 }: {
-    image: string
+    /** Sticker artwork. Ignored when `children` is given. */
+    image?: string
+    /** Decorative content to carry instead of an image (e.g. washi tape). */
+    children?: ReactNode
     className?: string
     style?: React.CSSProperties
     tilt?: number
     elevation?: number
     draggable?: boolean
     peel?: boolean
+    /** Resting rotation in degrees. Set it here, not in CSS: the outer element's
+     *  transform belongs to the drag. */
+    rotate?: number
+    /** Resting stack order. */
+    z?: number
+    /** Stack order while held, so the piece being moved rides over the rest. */
+    liftZ?: number
     alt?: string
 }) {
     const ref = useRef<HTMLDivElement>(null)
@@ -58,7 +84,15 @@ export default function Sticker({
         <motion.div
             ref={ref}
             className={className}
-            style={{ perspective: 900, ...style }}
+            style={{
+                perspective: 900,
+                // Held pieces ride above their neighbours; at rest each keeps the
+                // order its placement asked for.
+                zIndex: active ? liftZ : z,
+                cursor: draggable ? (active ? "grabbing" : "grab") : undefined,
+                touchAction: draggable ? "none" : undefined,
+                ...style,
+            }}
             drag={draggable}
             dragMomentum={false}
             dragElastic={0.18}
@@ -80,28 +114,30 @@ export default function Sticker({
                 }}
                 animate={{
                     y: active ? -6 * (elevation * 10) : 0,
-                    rotate: peel ? (active ? 0 : -6) : 0,
+                    rotate: peel ? (active ? rotate : rotate - 6) : rotate,
                     scale: active ? 1.04 : 1,
                     filter: `drop-shadow(${active ? SHADOW_LIFTED : SHADOW_FLAT})`,
                 }}
                 transition={{ type: "tween", ease: [0.44, 0, 0.56, 1], duration: 0.6 }}
             >
-                <img
-                    src={image}
-                    alt={alt}
-                    draggable={false}
-                    style={{
-                        width: "100%",
-                        height: "100%",
-                        objectFit: "contain",
-                        userSelect: "none",
-                        pointerEvents: "none",
-                        // Curl highlight for the peeling variant.
-                        maskImage: peel
-                            ? "linear-gradient(135deg, rgba(0,0,0,1) 78%, rgba(0,0,0,0.85) 100%)"
-                            : undefined,
-                    }}
-                />
+                {children ?? (
+                    <img
+                        src={image}
+                        alt={alt}
+                        draggable={false}
+                        style={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                            userSelect: "none",
+                            pointerEvents: "none",
+                            // Curl highlight for the peeling variant.
+                            maskImage: peel
+                                ? "linear-gradient(135deg, rgba(0,0,0,1) 78%, rgba(0,0,0,0.85) 100%)"
+                                : undefined,
+                        }}
+                    />
+                )}
             </motion.div>
         </motion.div>
     )
