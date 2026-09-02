@@ -645,39 +645,39 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
             },
           ],
         },
-        {
-          id: "claws-ui-anatomy",
-          displayTitle: { en: "HUD anatomy", es: "Anatomía del HUD" },
-          columns: 2,
-          items: [
-            {
-              id: "claws-ui-topbar",
-              src: claws("UI/UI_TopBar_HUD_01.png"),
-              ratio: "192:13",
-              wide: true,
-              label: { en: "Top bar — passives, active effects, score against target, table, shots, lives", es: "Barra superior — pasivas, efectos activos, puntuación frente al objetivo, mesa, tiros, vidas" },
-            },
-            {
-              id: "claws-ui-hand",
-              src: claws("UI/UI_CardHand_01.png"),
-              ratio: "96:11",
-              wide: true,
-              label: { en: "Card hand — the bottom edge, tier markers on each card", es: "Mano de cartas — el borde inferior, con marcadores de nivel en cada carta" },
-            },
-            {
-              id: "claws-ui-power",
-              src: claws("UI/UI_PowerMeter_01.png"),
-              ratio: "8:5",
-              label: { en: "Power gauge, read beside the cue ball rather than at the screen edge", es: "Medidor de potencia, junto a la bola blanca y no en el borde de la pantalla" },
-            },
-            {
-              id: "claws-ui-trick",
-              src: claws("UI/UI_TrickProgress_01.png"),
-              ratio: "42:11",
-              label: { en: "Trick progress — the current shot's objective, counted live", es: "Progreso del truco — el objetivo del tiro actual, contado en vivo" },
-            },
-          ],
-        },
+        // {
+        //   id: "claws-ui-anatomy",
+        //   displayTitle: { en: "HUD anatomy", es: "Anatomía del HUD" },
+        //   columns: 2,
+        //   items: [
+        //     {
+        //       id: "claws-ui-topbar",
+        //       src: claws("UI/UI_TopBar_HUD_01.png"),
+        //       ratio: "192:13",
+        //       wide: true,
+        //       label: { en: "Top bar — passives, active effects, score against target, table, shots, lives", es: "Barra superior — pasivas, efectos activos, puntuación frente al objetivo, mesa, tiros, vidas" },
+        //     },
+        //     {
+        //       id: "claws-ui-hand",
+        //       src: claws("UI/UI_CardHand_01.png"),
+        //       ratio: "96:11",
+        //       wide: true,
+        //       label: { en: "Card hand — the bottom edge, tier markers on each card", es: "Mano de cartas — el borde inferior, con marcadores de nivel en cada carta" },
+        //     },
+        //     {
+        //       id: "claws-ui-power",
+        //       src: claws("UI/UI_PowerMeter_01.png"),
+        //       ratio: "8:5",
+        //       label: { en: "Power gauge, read beside the cue ball rather than at the screen edge", es: "Medidor de potencia, junto a la bola blanca y no en el borde de la pantalla" },
+        //     },
+        //     {
+        //       id: "claws-ui-trick",
+        //       src: claws("UI/UI_TrickProgress_01.png"),
+        //       ratio: "42:11",
+        //       label: { en: "Trick progress — the current shot's objective, counted live", es: "Progreso del truco — el objetivo del tiro actual, contado en vivo" },
+        //     },
+        //   ],
+        // },
         {
           id: "claws-ui-between-runs",
           displayTitle: { en: "Between tables", es: "Entre mesas" },
