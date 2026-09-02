@@ -128,17 +128,21 @@ const whoamiRows = [
 
 const whoamiTags = ["C#", "C++", "HLSL", "Unity", "Unreal Engine", "React", "Typescript", "Vue.js", "Python", "Figma"]
 
-const checkerStrip = (
-    <div style={{ width: 168, height: 56 }}>
-        <PatternBackground
-            patternType="checker"
-            checkerColor2={colors.background}
-            checkerSize={28}
-            patternColor={colors.tangerine}
-            bgColor="rgb(240, 235, 224)"
-        />
-    </div>
-)
+function tape(w: number, h: number, color: string) {
+    return (
+        <div style={{ width: w, height: h }}>
+            <PatternBackground
+                patternType="checker"
+                checkerColor2={colors.background}
+                checkerSize={Math.round(h / 2)}
+                patternColor={color}
+                bgColor="rgb(240, 235, 224)"
+            />
+        </div>
+    )
+}
+
+const checkerStrip = tape(168, 56, colors.tangerine)
 
 // One hero tag; the three settle in one after another.
 function HeroTag({ rotate, delay, children }: { rotate: number; delay: number; children: React.ReactNode }) {
@@ -324,7 +328,7 @@ function AboutWindows({ compact }: { compact: boolean }) {
     return (
         <>
             <div className="hs-win hs-win-profile" style={compact ? { transform: "none" } : undefined}>
-                <Appear trigger="inView" threshold={0.25} transition="spring-duration 0.55s 0.2 0s">
+                <Appear trigger="inView" threshold={0.5} once y={260} transition="tween 0.33,0,0.2,1 1.2s 0s">
                     <RetroWindow
                         title="PROFILE.EXE"
                         titleBarColor={colors.liberty}
@@ -370,7 +374,7 @@ function AboutWindows({ compact }: { compact: boolean }) {
                 </Appear>
             </div>
             <div className="hs-win hs-win-loc">
-                <Appear trigger="inView" threshold={0.25} transition="spring-duration 0.55s 0.2 0.15s">
+                <Appear trigger="inView" threshold={0.5} once y={260} transition="tween 0.33,0,0.2,1 1.2s 0.15s">
                     <RetroWindow
                         title="LOCATION.EXE"
                         titleBarColor={colors.teal}
@@ -563,7 +567,9 @@ export default function Home() {
                             <div className="hs-hero-cat">
                                 {/* The top strip renders immediately; only the spacer
                                     below it carries the appear delay. */}
-                                <div className="hs-strip">{checkerStrip}</div>
+                                <Sticker className="hs-strip" draggable tilt={0.25} elevation={0.12} z={5}>
+                                    {checkerStrip}
+                                </Sticker>
                                 <div className="hs-shelf" aria-hidden />
                                 <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.4s" className="hs-glb-row">
                                     <div className="hs-glb">
@@ -571,7 +577,9 @@ export default function Home() {
                                     </div>
                                 </Appear>
                                 <Appear trigger="mount" transition="tween 0.44,0,0.56,1 1.5s 0.6s" className="hs-strip-row">
-                                    {checkerStrip}
+                                    <Sticker draggable tilt={0.25} elevation={0.12} z={5}>
+                                        {checkerStrip}
+                                    </Sticker>
                                 </Appear>
                             </div>
 
@@ -582,17 +590,22 @@ export default function Home() {
                             same column as the content so they keep their relation
                             to it however wide the sheet runs. */}
                         <div className="hs-hero-deco">
-                            <Sticker className="hs-sticker-drag" image={asset("sticker.png")} tilt={0.4} elevation={0.2} draggable />
-                            <Sticker className="hs-sticker-peel" image={asset("sticker.png")} peel />
+                            <Sticker className="hs-sticker-drag" image={asset("sticker.png")} tilt={0.4} elevation={0.2} z={4} draggable />
+                            <Sticker className="hs-sticker-peel" image={asset("sticker.png")} tilt={0.4} elevation={0.2} rotate={-1} z={4} peel draggable />
                         </div>
                     </section>
 
-                    {/* ── ABOUT — stage 1: text on the left ────────────────── */}
+                    {/* ── ABOUT — text left, PROFILE/LOCATION windows right ────────────────── */}
                     <section id="about" className="hs hs-about" style={{ zIndex: 2 }}>
                         <div className="hs-bg hs-about-bg">
                             <NotebookBackground paperColor={colors.liberty} gridType="grid" gridColor={colors.lilac} gridOpacity={0.05} gridSize={28} gridWeight={4} />
                         </div>
                         <div className="hs-divider"><CheckerDivider color1="rgb(114, 121, 191)" color2={colors.lilac} cellSize={12} rows={2} /></div>
+                        {/* <div className="hs-deco-layer hs-about-deco">
+                            <Sticker className="hs-tape-ab" draggable tilt={0.25} elevation={0.12}>
+                                {tape(118, 38, colors.saffron)}
+                            </Sticker>
+                        </div> */}
                         <div className="hs-about-inner">
                             <div className="hs-about-row">
                                 <div className="hs-about-text">
@@ -611,25 +624,15 @@ export default function Home() {
                                         />
                                     </Appear>
                                 </div>
-                                {/* On desktop and tablet this stays empty — the windows
-                                    arrive with the next sticky stage. */}
-                                <div className="hs-about-side" aria-hidden />
+                                {/* Desktop and tablet: the window column. Phone hides
+                                    it and uses the stacked block below instead. */}
+                                <div className="hs-about-side">
+                                    <AboutWindows compact={tablet} />
+                                </div>
                             </div>
                             {/* Phone shows the windows inline, below the text. */}
                             <div className="hs-about-winmobile">
                                 <AboutWindows compact />
-                            </div>
-                        </div>
-                    </section>
-
-                    {/* ── ABOUT — stage 2: the window column rises over stage 1.
-                        Transparent 90vh sticky layer; its left side is empty so
-                        the pinned text stays visible behind it. ─────────────── */}
-                    <section className="hs hs-about2 hs-desktop-only" style={{ zIndex: 3 }}>
-                        <div className="hs-about2-inner">
-                            <div className="hs-about2-spacer" aria-hidden />
-                            <div className="hs-about2-col">
-                                <AboutWindows compact={tablet} />
                             </div>
                         </div>
                     </section>
@@ -745,6 +748,16 @@ export default function Home() {
                             <NotebookBackground paperColor={colors.background} gridType="ruled" gridColor={colors.liberty} gridOpacity={0.15} gridSize={34} gridWeight={2.6} />
                         </div>
                         <div className="hs-divider"><CheckerDivider color1={colors.liberty} color2={colors.linen} cellSize={12} rows={2} /></div>
+                        {/* Loose pieces, in the paper around the cards. */}
+                        <div className="hs-deco-layer hs-skills-deco">
+                            <Sticker className="hs-tape-sk-a" draggable tilt={0.25} elevation={0.12} rotate={-4}>
+                                {tape(126, 42, colors.teal)}
+                            </Sticker>
+                            <Sticker className="hs-tape-sk-b" draggable tilt={0.25} elevation={0.12} rotate={4}>
+                                {tape(119, 34, colors.babyPink)}
+                            </Sticker>
+                            <Sticker className="hs-berry-sk" image={asset("sticker.png")} tilt={0.4} elevation={0.2} rotate={5} draggable />
+                        </div>
                         <div className="hs-skills-body">
                             {/* Heading and cards share one centred column, so the
                                 eyebrow, the title and the left edge of the first
@@ -808,6 +821,11 @@ export default function Home() {
                             <NotebookBackground paperColor={colors.background} gridType="dot" gridColor={colors.liberty} gridOpacity={0.15} gridSize={36} gridWeight={2.4} />
                         </div>
                         <div className="hs-divider"><CheckerDivider color1={colors.tangerine} color2={colors.linen} cellSize={12} rows={2} /></div>
+                        <div className="hs-deco-layer hs-contact-deco">
+                            <Sticker className="hs-tape-ct" draggable tilt={0.25} elevation={0.12} rotate={2}>
+                                {tape(108, 36, colors.straw)}
+                            </Sticker>
+                        </div>
                         <div className="hs-contact-body">
                             <div className="hs-contact-inner">
                                 <ContactPage
@@ -885,7 +903,7 @@ export default function Home() {
                 /* The sheet is an absolutely positioned layer, so it would paint
                    over an in-flow divider; the dividers get their own layer. */
                 .hs-divider { position: relative; z-index: 1; width: 100%; flex-shrink: 0; }
-                .hs-spacer, .hs-about2 { background: transparent; }
+                .hs-spacer { background: transparent; }
                 .hs-spacer { pointer-events: none; }
                 /* The footer bar rises from the document's end, so the bar's own
                    height is exactly the scroll it takes to reveal; the rest is
@@ -946,28 +964,44 @@ export default function Home() {
                 .hs-glb { width: 348px; max-width: 100%; height: 348px; }
                 .hs-strip-row { width: 100%; height: 85px; display: flex; justify-content: flex-end; align-items: center; padding: 16px 12px 0 0; box-sizing: border-box; }
                 .hs-scroll-ind { position: absolute; bottom: 30px; left: 54.58%; transform: translateX(-50%); z-index: 8; }
-                .hs-sticker-drag { position: absolute; top: 156px; left: 63%; width: 129px; height: 79px; z-index: 4; }
-                .hs-sticker-peel { position: absolute; bottom: 81px; left: 81.333%; width: 150px; height: 166px; transform: rotate(-1deg); }
+                .hs-sticker-drag { position: absolute; top: 156px; left: 63%; width: 129px; height: 79px; }
+                /* No CSS transform here: the drag owns this element's transform,
+                   so the resting tilt is passed to the component instead. */
+                .hs-sticker-peel { position: absolute; bottom: 81px; left: 81.333%; width: 150px; height: 166px; }
 
-                /* About stage 1 — text in the left 36.25%, right side empty */
-                .hs-about-inner { position: relative; z-index: 1; margin-top: 40px; padding: 20px 80px 0; }
-                .hs-about-row { display: flex; }
-                .hs-about-text { width: 36.25%; padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
-                .hs-about-side { flex: 1; }
+                /* Loose scrapbook pieces. One layer per section, sitting over the
+                   content but transparent to the pointer except on the pieces
+                   themselves, so nothing they float near stops being clickable. */
+                .hs-deco-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+                .hs-deco-layer > * { position: absolute; pointer-events: auto; }
+                .hs-tape-sk-a { top: 13%; right: 3.5%; }
+                .hs-tape-sk-b { bottom: 18%; left: 6%; }
+                .hs-berry-sk { bottom: 24%; right: 7%; width: 96px; height: 59px; }
+                .hs-tape-ab { bottom: 13%; left: 11%; }
+                .hs-tape-ct { bottom: 20%; left: 5%; }
+
+                /* About — text in the left 36.25%, windows in the rest. The inner
+                   block owns the sheet's free height and centres the row inside
+                   it; the two columns then start on the same line, so ABOUT ME
+                   sits level with the top of PROFILE.EXE. */
+                .hs-about-inner {
+                    position: relative; z-index: 1;
+                    flex: 1; min-height: 0;
+                    padding: 20px 80px 40px; box-sizing: border-box;
+                    display: flex; flex-direction: column; justify-content: center;
+                }
+                .hs-about-row { display: flex; align-items: flex-start; }
+                .hs-about-text { width: 36.25%; display: flex; flex-direction: column; gap: 10px; }
+                .hs-about-side {
+                    flex: 1; min-width: 0;
+                    display: flex; flex-direction: column; align-items: center;
+                    gap: 20px;
+                }
                 .hs-body {
                     font-family: "Anonymous Pro", monospace; font-size: 14px;
                     line-height: 1.75em; letter-spacing: -0.02em; margin: 0;
                 }
 
-                /* About stage 2 — transparent overlay carrying the windows */
-                .hs-about2 { height: 90vh; }
-                .hs-about2-inner { display: flex; padding: 80px 80px 0; height: 100%; box-sizing: border-box; }
-                .hs-about2-spacer { width: 36.25%; }
-                .hs-about2-col {
-                    flex: 1; min-width: 0;
-                    display: flex; flex-direction: column; justify-content: center; align-items: center;
-                    gap: 20px; padding-top: 20px;
-                }
                 .hs-win { width: 80%; }
                 .hs-win-profile { transform: rotate(1deg); }
                 .hs-win-loc { transform: rotate(-1deg); }
@@ -1116,7 +1150,6 @@ export default function Home() {
                     .hs-hero-inner,
                     .hs-hero-deco,
                     .hs-about-inner,
-                    .hs-about2-inner,
                     .hs-work-content,
                     .hs-skills-body,
                     .hs-contact-body {
@@ -1145,10 +1178,13 @@ export default function Home() {
                     .hs-scroll-ind { left: 56.17%; bottom: 113px; }
                     .hs-sticker-drag { top: 167px; left: 526px; width: 105px; height: 64px; }
                     .hs-sticker-peel { bottom: 44px; left: 632px; width: 102px; height: 113px; }
+                    .hs-tape-sk-a { top: 9%; right: 2%; }
+                    .hs-tape-sk-b { bottom: 10%; left: 3%; }
+                    .hs-berry-sk { bottom: 7%; right: 4%; width: 84px; height: 52px; }
+                    .hs-tape-ab { bottom: 9%; left: 6%; }
+                    .hs-tape-ct { bottom: 12%; left: 3%; }
 
                     .hs-about-text { width: 32.46%; }
-                    .hs-about2 { height: 66vh; }
-                    .hs-about2-spacer { width: 34.46%; }
                     .hs-win { width: 100%; }
                     .hs-win-profile { transform: none; }
 
@@ -1216,7 +1252,7 @@ export default function Home() {
                     .hs-hero-cat { flex: none; flex-direction: row; justify-content: center; width: 73%; height: 30vh; padding-top: 0; gap: 0; }
                     .hs-strip, .hs-strip-row, .hs-shelf { display: none; }
                     .hs-glb { width: 197px; height: 197px; }
-                    .hs-sticker-drag, .hs-sticker-peel { display: none; }
+                    .hs-sticker-drag, .hs-sticker-peel, .hs-deco-layer { display: none; }
                     /* In flow between the stat boxes and the cat, so the cue owns
                        a band of its own instead of floating over the copy. The
                        markup order puts it last, hence the explicit order values. */
@@ -1232,7 +1268,7 @@ export default function Home() {
                        the next transition. Content sizes the section. */
                     .hs-about { min-height: 0; background: rgb(245, 238, 230); }
                     .hs-about-bg { inset: 0; height: auto; }
-                    .hs-about-inner { padding: 40px 42px 0; margin-top: 0; }
+                    .hs-about-inner { padding: 40px 42px 0; }
                     .hs-about-row { flex-direction: column; }
                     .hs-about-text { width: 100%; gap: 4px; }
                     .hs-about-side { display: none; }
@@ -1299,8 +1335,6 @@ export default function Home() {
                 @media (prefers-reduced-motion: reduce) {
                     .hs { position: relative; height: auto; min-height: 100vh; overflow: visible; }
                     .hs-spacer, .hs-tail { display: none; }
-                    .hs-about2 { height: auto; }
-                    .hs-about2-inner { padding-bottom: 40px; }
                     /* The marks stay, but they hold still. */
                     .hs-skill-deco .hs-deco { animation: none; }
                     .hs-skill-lift { transition: none; }
