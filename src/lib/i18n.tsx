@@ -172,6 +172,7 @@ export const STRINGS = {
     contextLabel: { en: "Context", es: "Contexto" },
     roleLabel: { en: "Role", es: "Rol" },
     playPrototype: { en: "Play Prototype", es: "Jugar prototipo" },
+    playDemo: { en: "Play Demo", es: "Jugar demo" },
     metaLoopWindow: { en: "META_PROGRESSION_LOOP.EXE", es: "BUCLE_DE_METAPROGRESION.EXE" },
     tableLeftHeader: { en: "Design Decision", es: "Decisión de diseño" },
     tableRightHeader: { en: "Gameplay Impact", es: "Impacto en el juego" },
