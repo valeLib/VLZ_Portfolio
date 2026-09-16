@@ -235,7 +235,7 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
             },
             {
               id: "claws-loop-reward",
-              src: claws("Systems/System_CardReward_01.png"),
+              src: claws("Images/CC_Itchio_Cards.png"),
               ratio: "16:9",
               label: { en: "Reward — the next card", es: "Recompensa — la siguiente carta" },
             },
@@ -394,7 +394,7 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
               items: [
                 {
                   id: "claws-boss-select",
-                  src: claws("Bosses/Boss_MontBlanc_Selection_01.png"),
+                  src: claws("Images/CC_Itchio_BossSelection.png"),
                   ratio: "16:9",
                   wide: true,
                   label: { en: "The modifier is chosen with the run", es: "El modificador se elige con la partida" },
@@ -691,15 +691,13 @@ export const projectSections: Record<string, ProjectSectionsMap> = {
           items: [
             {
               id: "claws-ui-deckbuilder",
-              src: claws("Videos/System_DeckBuilder_01.mp4"),
-              kind: "video",
+              src: claws("Images/CC_Itchio_Deck_Build.png"),
               ratio: "16:9",
-              poster: claws("UI/UI_DeckBuilder_01.png"),
               label: { en: "Deck builder — character, card detail, deck and collection, 4/15 to 5/15", es: "Constructor de mazos — personaje, detalle de carta, mazo y colección, de 4/15 a 5/15" },
             },
             {
               id: "claws-ui-shop",
-              src: claws("Systems/System_CardShop_01.png"),
+              src: claws("Images/CC_Itchio_Shop.png"),
               ratio: "16:9",
               label: { en: "Shop — tiered offers with the keyword glossary open", es: "Tienda — ofertas por nivel con el glosario de palabras clave abierto" },
             },
