@@ -23,6 +23,8 @@ export type Project = {
   status?: string
   /** Public playable build; the Brief CTA renders only when this exists. */
   playUrl?: string
+  /** CTA wording for playUrl; defaults to "prototype". */
+  playKind?: "prototype" | "demo"
   featured: boolean
   color: string
   colorName?: string
@@ -43,6 +45,8 @@ export const projects: Project[] = [
     tags: { en: "PC Game, Billiards, Roguelite, Card-Based, Physics, Stylized 3D", es: "Juego de PC, Billar, Roguelite, Basado en cartas, Física, 3D estilizado" },
     role: { en: "Gameplay, UI & VFX Developer", es: "Desarrolladora de gameplay, UI y VFX" },
     status: "Academic project",
+    playUrl: "https://valelizu.itch.io/claws-and-cue-balls",
+    playKind: "demo",
     featured: true,
     color: "rgb(212, 223, 104)",
     colorName: "Straw",

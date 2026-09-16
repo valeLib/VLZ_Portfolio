@@ -752,7 +752,7 @@ function ProjectPage({ project }: { project: Project }) {
                         {project.playUrl && (
                         <div className="pd-brief-cta">
                             <ExternalLink
-                                label={t("playPrototype")}
+                                label={t(project.playKind === "demo" ? "playDemo" : "playPrototype")}
                                 href={project.playUrl}
                                 newTab
                                 bracketStyle="None"
